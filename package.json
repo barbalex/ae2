@@ -78,7 +78,7 @@
     "simplebar-react": "2.3.6",
     "styled-components": "5.3.3",
     "typography": "0.16.21",
-    "use-debounce": "^7.0.0",
+    "use-debounce": "7.0.0",
     "use-subscription": "1.5.1",
     "xlsx": "0.17.3"
   },
