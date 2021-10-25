@@ -1,9 +1,6 @@
 import React, { useEffect, useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
 import { FaSearch } from 'react-icons/fa'
-import Autosuggest from 'react-autosuggest'
-import match from 'autosuggest-highlight/match'
-import parse from 'autosuggest-highlight/parse'
 import Highlighter from 'react-highlight-words'
 import Select from 'react-select/async'
 import { useQuery, gql, useApolloClient } from '@apollo/client'
@@ -109,28 +106,6 @@ const formatOptionLabel = ({ label }, { inputValue }) => (
   <Highlighter searchWords={[inputValue]} textToHighlight={label} />
 )
 
-const filterSuggestionsQuery = gql`
-  query filterSuggestionsQuery($treeFilterText: String!, $run: Boolean!) {
-    propertyCollectionByPropertyName(propertyName: $treeFilterText)
-      @include(if: $run) {
-      nodes {
-        id
-        name
-      }
-    }
-    objectByObjectName(objectName: $treeFilterText) @include(if: $run) {
-      nodes {
-        id
-        name
-        taxonomyByTaxonomyId {
-          id
-          type
-          name
-        }
-      }
-    }
-  }
-`
 const objectUrlQuery = gql`
   query objectUrlDataQuery($treeFilterId: UUID!, $run: Boolean!) {
     objectById(id: $treeFilterId) @include(if: $run) {
@@ -170,13 +145,6 @@ const TreeFilter = ({ dimensions }) => {
   const { setTreeFilter } = treeFilter
 
   const treeFilterId = treeFilter.id ?? '99999999-9999-9999-9999-999999999999'
-  const { data: filterSuggestionsData, error: filterSuggestionsError } =
-    useQuery(filterSuggestionsQuery, {
-      variables: {
-        treeFilterText: treeFilter.text || 'ZZZZ',
-        run: !!treeFilter.text,
-      },
-    })
   const { data: objectUrlData, error: objectUrlError } = useQuery(
     objectUrlQuery,
     {
@@ -199,6 +167,7 @@ const TreeFilter = ({ dimensions }) => {
   )
   const onChange = useCallback(
     (option) => {
+      if (!option) return
       switch (option.type) {
         case 'pC':
           navigate(`/Eigenschaften-Sammlungen/${option.val}`)
@@ -214,7 +183,7 @@ const TreeFilter = ({ dimensions }) => {
            * passes it to getUrlForObject
            * mutates history
            */
-          setTreeFilter({ id: option.val, text: treeFilterText })
+          setTreeFilter({ id: option.val, text: option.label })
         }
       }
     },

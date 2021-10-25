@@ -22,36 +22,6 @@ const filterSuggestionsQuery = gql`
     }
   }
 `
-const objectUrlQuery = gql`
-  query objectUrlDataQuery($treeFilterId: UUID!, $run: Boolean!) {
-    objectById(id: $treeFilterId) @include(if: $run) {
-      id
-      objectByParentId {
-        id
-        objectByParentId {
-          id
-          objectByParentId {
-            id
-            objectByParentId {
-              id
-              objectByParentId {
-                id
-                objectByParentId {
-                  id
-                }
-              }
-            }
-          }
-        }
-      }
-      taxonomyByTaxonomyId {
-        id
-        type
-        name
-      }
-    }
-  }
-`
 
 const buildOptions = async ({ cb, client, treeFilter }) => {
   const treeFilterId = treeFilter.id ?? '99999999-9999-9999-9999-999999999999'
@@ -71,28 +41,9 @@ const buildOptions = async ({ cb, client, treeFilter }) => {
   const filterSuggestionsData = resultFilterSuggestionsQuery?.data
   const filterSuggestionsError = resultFilterSuggestionsQuery?.error
 
-  let resultObjectUrlQuery
-  try {
-    resultObjectUrlQuery = await client.query({
-      query: objectUrlQuery,
-      variables: {
-        treeFilterId,
-        run: !!treeFilter.id,
-      },
-    })
-  } catch (error) {
-    console.log(error)
-  }
-
   // TODO: on error surface to user
 
-  const objectUrlData = resultObjectUrlQuery?.data
-  const objectUrlError = resultObjectUrlQuery?.error
-
-  const urlObject = objectUrlData?.objectById ?? {}
-
   console.log({
-    objectUrlData,
     filterSuggestionsData,
     treeFilterText: treeFilter.text,
     treeFilterId,
