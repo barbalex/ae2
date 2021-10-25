@@ -1,8 +1,11 @@
 import React, { useEffect, useCallback, useContext } from 'react'
 import styled from 'styled-components'
+import { FaSearch } from 'react-icons/fa'
 import Autosuggest from 'react-autosuggest'
 import match from 'autosuggest-highlight/match'
 import parse from 'autosuggest-highlight/parse'
+import Highlighter from 'react-highlight-words'
+import Select from 'react-select/async'
 import get from 'lodash/get'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -39,7 +42,7 @@ const Container = styled.div`
     display: block;
     position: absolute;
     top: 32px;
-    width: ${(props) => `${props['data-autosuggestwidth']}px`};
+    width: ${(props) => `${props['data-ownwidth']}px`};
     border: 1px solid #aaa;
     background-color: #fff;
     font-family: Helvetica, sans-serif;
@@ -75,6 +78,31 @@ const Container = styled.div`
     color: #777;
   }
 `
+const StyledSelect = styled(Select)`
+  width: 100%;
+  .react-select__control:hover {
+    background-color: #ddd !important;
+  }
+  .react-select__control:focus-within {
+    background-color: #ddd !important;
+    box-shadow: none;
+  }
+  .react-select__option--is-focused {
+    background-color: rgba(74, 20, 140, 0.1) !important;
+  }
+`
+
+const SearchIcon = styled(FaSearch)`
+  margin: auto 5px;
+  margin-right: -25px;
+  z-index: 1;
+`
+
+const noOptionsMessage = () => null
+const loadingMessage = () => null
+const formatOptionLabel = ({ label }, { inputValue }) => (
+  <Highlighter searchWords={[inputValue]} textToHighlight={label} />
+)
 
 const filterSuggestionsQuery = gql`
   query filterSuggestionsQuery($treeFilterText: String!, $run: Boolean!) {
@@ -136,15 +164,13 @@ const TreeFilter = ({ dimensions }) => {
   const { setTreeFilter } = treeFilter
 
   const treeFilterId = treeFilter.id || '99999999-9999-9999-9999-999999999999'
-  const {
-    data: filterSuggestionsData,
-    error: filterSuggestionsError,
-  } = useQuery(filterSuggestionsQuery, {
-    variables: {
-      treeFilterText: treeFilter.text || 'ZZZZ',
-      run: !!treeFilter.text,
-    },
-  })
+  const { data: filterSuggestionsData, error: filterSuggestionsError } =
+    useQuery(filterSuggestionsQuery, {
+      variables: {
+        treeFilterText: treeFilter.text || 'ZZZZ',
+        run: !!treeFilter.text,
+      },
+    })
   const { data: objectUrlData, error: objectUrlError } = useQuery(
     objectUrlQuery,
     {
@@ -306,7 +332,7 @@ const TreeFilter = ({ dimensions }) => {
     : loadingSuggestions
   // on first render dimensions.width is passed as '100%'
   // later it is passed as number of pixels
-  const autosuggestWidth = isNaN(dimensions.width) ? 380 : dimensions.width - 29
+  const ownWidth = isNaN(dimensions.width) ? 380 : dimensions.width - 29
 
   const getSuggestionValue = useCallback(
     (suggestion) => suggestion && suggestion.name,
@@ -332,9 +358,101 @@ const TreeFilter = ({ dimensions }) => {
     return `Error fetching data: ${objectUrlError.message}`
   }
 
+  // TODO: replace with real value
+  const singleColumnView = false
+
+  const customStyles = useMemo(
+    () => ({
+      control: (provided) => ({
+        ...provided,
+        border: 'none',
+        borderRadius: '3px',
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        marginLeft: 0,
+        paddingLeft: singleColumnView ? '2px' : '25px',
+      }),
+      valueContainer: (provided) => ({
+        ...provided,
+        borderRadius: '3px',
+        paddingLeft: 0,
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: '#ac87d0',
+      }),
+      option: (provided) => ({
+        ...provided,
+        color: 'rgba(0,0,0,0.8)',
+        fontSize: '0.8em',
+        paddingTop: '3px',
+        paddingBottom: '3px',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+      }),
+      groupHeading: (provided) => ({
+        ...provided,
+        lineHeight: '1em',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        color: 'rgba(0, 0, 0, 0.8)',
+        fontWeight: '700',
+        userSelect: 'none',
+        textTransform: 'none',
+      }),
+      input: (provided) => ({
+        ...provided,
+        color: 'white',
+      }),
+      menuList: (provided) => ({
+        ...provided,
+        maxHeight: 'calc(100vh - 60px)',
+      }),
+      menu: (provided) => ({
+        ...provided,
+        maxHeight: 'calc(100vh - 60px)',
+        width: 'auto',
+        maxWidth: ownWidth,
+        marginTop: 0,
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: '#ac87d0',
+      }),
+      indicatorSeparator: (provided) => ({
+        ...provided,
+        display: 'none',
+      }),
+      dropdownIndicator: (provided) => ({
+        ...provided,
+        display: 'none',
+      }),
+      clearIndicator: (provided) => ({
+        ...provided,
+        color: '#ac87d0',
+      }),
+    }),
+    [ownWidth, singleColumnView],
+  )
+
   return (
     <ErrorBoundary>
-      <Container data-autosuggestwidth={autosuggestWidth}>
+      <Container data-ownwidth={ownWidth}>
+        <SearchIcon />
+        <StyledSelect
+          styles={customStyles}
+          onChange={onChange}
+          formatGroupLabel={renderSectionTitle}
+          formatOptionLabel={formatOptionLabel}
+          placeholder="suchen"
+          noOptionsMessage={noOptionsMessage}
+          loadingMessage={loadingMessage}
+          classNamePrefix="react-select"
+          loadOptions={loadOptions}
+          isClearable
+          spellCheck={false}
+        />
         <Autosuggest
           suggestions={suggestions}
           onSuggestionsFetchRequested={() => {
