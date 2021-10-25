@@ -6,7 +6,7 @@ import match from 'autosuggest-highlight/match'
 import parse from 'autosuggest-highlight/parse'
 import Highlighter from 'react-highlight-words'
 import Select from 'react-select/async'
-import { useQuery, gql } from '@apollo/client'
+import { useQuery, gql, useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { navigate } from 'gatsby'
 import { useDebouncedCallback } from 'use-debounce'
@@ -14,6 +14,7 @@ import { useDebouncedCallback } from 'use-debounce'
 import getUrlForObject from '../../../modules/getUrlForObject'
 import mobxStoreContext from '../../../mobxStoreContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
+import buildOptions from './buildOptions'
 
 const Container = styled.div`
   padding: 5px 16px 0 13px;
@@ -99,6 +100,7 @@ const SearchIcon = styled(FaSearch)`
   margin-right: -25px;
   z-index: 1;
   color: rgba(0, 0, 0, 0.8);
+  font-weight: 300;
 `
 
 const noOptionsMessage = () => null
@@ -161,6 +163,7 @@ const objectUrlQuery = gql`
 `
 
 const TreeFilter = ({ dimensions }) => {
+  const client = useApolloClient()
   const mobxStore = useContext(mobxStoreContext)
   const { treeFilter } = mobxStore
   const treeFilterText = treeFilter.text
@@ -379,6 +382,16 @@ const TreeFilter = ({ dimensions }) => {
     [],
   )
 
+  const buildOptionsDebounced = useDebouncedCallback(({ cb, val }) => {
+    buildOptions({ store, cb, val })
+  }, 600)
+  const loadOptions = useCallback(
+    (val, cb) => {
+      buildOptionsDebounced({ cb, val })
+    },
+    [buildOptionsDebounced],
+  )
+
   if (filterSuggestionsError) {
     return `Error fetching data: ${filterSuggestionsError.message}`
   }
@@ -468,7 +481,7 @@ const TreeFilter = ({ dimensions }) => {
     <ErrorBoundary>
       <Container data-ownwidth={ownWidth}>
         <SearchIcon />
-        {/*<StyledSelect
+        <StyledSelect
           styles={customStyles}
           onChange={onChange}
           formatGroupLabel={renderSectionTitle}
@@ -480,8 +493,8 @@ const TreeFilter = ({ dimensions }) => {
           loadOptions={loadOptions}
           isClearable
           spellCheck={false}
-        />*/}
-        <Autosuggest
+        />
+        {/*<Autosuggest
           suggestions={suggestions}
           onSuggestionsFetchRequested={() => {
             // Autosuggest wants this function
@@ -500,7 +513,7 @@ const TreeFilter = ({ dimensions }) => {
           getSectionSuggestions={getSectionSuggestions}
           inputProps={inputProps}
           focusInputOnSuggestionClick={false}
-        />
+        />*/}
       </Container>
     </ErrorBoundary>
   )
