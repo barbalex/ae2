@@ -48,7 +48,7 @@ const StyledSwipeableViews = styled(SwipeableViews)`
 `
 
 const Dokumentation = ({ data }) => {
-  const { windowWidth } = useContext(mobxStoreContext)
+  const { singleColumnView } = useContext(mobxStoreContext)
   const { allMarkdownRemark } = data
   const { edges } = allMarkdownRemark
   const { pathname } = useLocation()
@@ -59,9 +59,9 @@ const Dokumentation = ({ data }) => {
 
   const [stacked, setStacked] = useState(false)
   useEffect(() => {
-    const shouldBeStacked = windowWidth < 700
+    const shouldBeStacked = singleColumnView
     setStacked(shouldBeStacked)
-  }, [windowWidth])
+  }, [singleColumnView])
   useEffect(() => {
     if (pathElements.length > 1 && tab === 0) setTab(1)
     if (pathElements.length === 1 && tab === 1) setTab(0)

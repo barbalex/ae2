@@ -109,7 +109,7 @@ const query = gql`
 
 const Header = () => {
   const mobxStore = useContext(mobxStoreContext)
-  const { login, windowWidth } = mobxStore
+  const { login, singleColumnView } = mobxStore
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
 
   const objectId = getActiveObjectIdFromNodeArray(activeNodeArray)
@@ -139,13 +139,13 @@ const Header = () => {
 
   const [wide, setWide] = useState(false)
   useEffect(() => {
-    if (windowWidth > 700 && !wide) {
+    if (!singleColumnView && !wide) {
       setWide(true)
     }
-    if (windowWidth <= 700 && wide) {
+    if (singleColumnView && wide) {
       setWide(false)
     }
-  }, [wide, windowWidth])
+  }, [wide, singleColumnView])
 
   const url0 = activeNodeArray[0] && activeNodeArray[0].toLowerCase()
   const { username } = login

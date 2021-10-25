@@ -62,5 +62,10 @@ const mobxStore = ({ navigate }) =>
         self.historyAfterLogin = value
       },
     }))
+    .views((self) => ({
+      get singleColumnView() {
+        return self.windowWidth <= 700
+      },
+    }))
 
 export default mobxStore
