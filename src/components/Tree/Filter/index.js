@@ -189,7 +189,7 @@ const TreeFilter = ({ dimensions }) => {
 
   const urlObject = objectUrlData?.objectById ?? {}
 
-  const onChange = useCallback(
+  const onInputChange = useCallback(
     (option) => {
       console.log('onChange, option:', option)
       if (!option) return
@@ -197,11 +197,11 @@ const TreeFilter = ({ dimensions }) => {
     },
     [setTreeFilter, treeFilterId],
   )
-  const onSuggestionSelected = useCallback(
-    (event, { suggestion }) => {
-      switch (suggestion.type) {
+  const onChange = useCallback(
+    (option) => {
+      switch (option.type) {
         case 'pC':
-          navigate(`/Eigenschaften-Sammlungen/${suggestion.val}`)
+          navigate(`/Eigenschaften-Sammlungen/${option.val}`)
           break
         case 'art':
         case 'lr':
@@ -214,39 +214,11 @@ const TreeFilter = ({ dimensions }) => {
            * passes it to getUrlForObject
            * mutates history
            */
-          setTreeFilter({ id: suggestion.val, text: treeFilterText })
+          setTreeFilter({ id: option.val, text: treeFilterText })
         }
       }
     },
     [setTreeFilter, treeFilterText],
-  )
-  const renderSuggestion = useCallback(
-    (suggestion, { query, isHighlighted }) => {
-      const matches = match(suggestion.label, query)
-      const parts = parse(suggestion.label, matches)
-      return (
-        <>
-          {parts.map((part, index) => {
-            return part.highlight ? (
-              <strong
-                key={String(index)}
-                style={{ fontWeight: '700 !important' }}
-              >
-                {part.text}
-              </strong>
-            ) : (
-              <span
-                key={String(index)}
-                style={{ fontWeight: '400 !important' }}
-              >
-                {part.text}
-              </span>
-            )
-          })}
-        </>
-      )
-    },
-    [],
   )
 
   useEffect(() => {
@@ -269,118 +241,12 @@ const TreeFilter = ({ dimensions }) => {
     }
   }, [urlObject, treeFilterId, setTreeFilter])
 
-  const objectByObjectName =
-    filterSuggestionsData?.objectByObjectName?.nodes ?? []
-  const pCByPropertyName =
-    filterSuggestionsData?.propertyCollectionByPropertyName?.nodes ?? []
-  const inputProps = {
-    value: treeFilterText,
-    onChange,
-    type: 'search',
-    placeholder: 'suchen',
-    spellCheck: false,
-  }
-  /**
-   * need add type:
-   * when suggestion is clicked,
-   * url is calculated by id depending on type
-   */
-  const suggestionsArt = objectByObjectName
-    .filter((n) => n?.taxonomyByTaxonomyId?.type === 'ART')
-    .map((o) => ({
-      val: o.id,
-      label: `${o?.taxonomyByTaxonomyId?.name ?? ''}: ${o.name}`,
-      type: 'art',
-    }))
-  const suggestionsLr = objectByObjectName
-    .filter((n) => n?.taxonomyByTaxonomyId?.type === 'LEBENSRAUM')
-    .map((o) => ({
-      val: o.id,
-      label: `${o?.taxonomyByTaxonomyId?.name ?? ''}: ${o.name}`,
-      type: 'lr',
-    }))
-  const suggestionsPC = pCByPropertyName.map((s) => ({
-    ...s,
-    type: 'pC',
-  }))
-  const loadingOptions = [
-    {
-      title: 'Lade Daten',
-      options: [
-        {
-          val: 'none',
-          label: '',
-          type: 'art',
-        },
-      ],
-    },
-  ]
-  const loadingSuggestions = [
-    {
-      title: 'Lade Daten',
-      suggestions: [
-        {
-          val: 'none',
-          label: '',
-          type: 'art',
-        },
-      ],
-    },
-  ]
-  const options = []
-  if (suggestionsArt.length) {
-    options.push({
-      label: `Arten (${suggestionsArt.length})`,
-      options: suggestionsArt,
-    })
-  }
-  if (suggestionsLr.length) {
-    options.push({
-      label: `Lebensräume (${suggestionsLr.length})`,
-      options: suggestionsLr,
-    })
-  }
-  if (suggestionsPC.length) {
-    options.push({
-      label: `Eigenschaften-Sammlungen (${suggestionsPC.length})`,
-      options: suggestionsPC,
-    })
-  }
-  const suggestions = [...suggestionsArt, ...suggestionsLr, ...suggestionsPC]
-    .length
-    ? [
-        {
-          title: `Arten (${suggestionsArt.length})`,
-          suggestions: suggestionsArt,
-        },
-        {
-          title: `Lebensräume (${suggestionsLr.length})`,
-          suggestions: suggestionsLr,
-        },
-        {
-          title: `Eigenschaften-Sammlungen (${suggestionsPC.length})`,
-          suggestions: suggestionsPC,
-        },
-      ]
-    : loadingSuggestions
   // on first render dimensions.width is passed as '100%'
   // later it is passed as number of pixels
   const ownWidth = isNaN(dimensions.width) ? 380 : dimensions.width - 29
 
-  const getSuggestionValue = useCallback(
-    (suggestion) => suggestion && suggestion.label,
-    [],
-  )
-  const shouldRenderSuggestions = useCallback(
-    (value) => value.trim().length > 2,
-    [],
-  )
   const renderSectionTitle = useCallback(
     (section) => <strong>{section.title}</strong>,
-    [],
-  )
-  const getSectionSuggestions = useCallback(
-    (section) => section.suggestions,
     [],
   )
 
@@ -393,13 +259,6 @@ const TreeFilter = ({ dimensions }) => {
     },
     [buildOptionsDebounced],
   )
-
-  if (filterSuggestionsError) {
-    return `Error fetching data: ${filterSuggestionsError.message}`
-  }
-  if (objectUrlError) {
-    return `Error fetching data: ${objectUrlError.message}`
-  }
 
   // TODO: replace with real value
   const singleColumnView = false
@@ -485,10 +344,8 @@ const TreeFilter = ({ dimensions }) => {
         <SearchIcon />
         <StyledSelect
           styles={customStyles}
-          onInputChange={onChange}
-          onChange={(val) => {
-            console.log('val choosen:', val)
-          }}
+          onInputChange={onInputChange}
+          onChange={onChange}
           formatGroupLabel={renderSectionTitle}
           formatOptionLabel={formatOptionLabel}
           placeholder="suchen"
@@ -499,26 +356,6 @@ const TreeFilter = ({ dimensions }) => {
           isClearable
           spellCheck={false}
         />
-        {/*<Autosuggest
-          suggestions={suggestions}
-          onSuggestionsFetchRequested={() => {
-            // Autosuggest wants this function
-            // could maybe be used to indicate loading?
-          }}
-          onSuggestionsClearRequested={() => {
-            // need this?
-            //console.log('clear requested')
-          }}
-          getSuggestionValue={getSuggestionValue}
-          shouldRenderSuggestions={shouldRenderSuggestions}
-          onSuggestionSelected={onSuggestionSelected}
-          renderSuggestion={renderSuggestion}
-          multiSection={true}
-          renderSectionTitle={renderSectionTitle}
-          getSectionSuggestions={getSectionSuggestions}
-          inputProps={inputProps}
-          focusInputOnSuggestionClick={false}
-        />*/}
       </Container>
     </ErrorBoundary>
   )

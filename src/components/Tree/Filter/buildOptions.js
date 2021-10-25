@@ -84,6 +84,8 @@ const buildOptions = async ({ cb, client, treeFilter }) => {
     console.log(error)
   }
 
+  // TODO: on error surface to user
+
   const objectUrlData = resultObjectUrlQuery?.data
   const objectUrlError = resultObjectUrlQuery?.error
 
