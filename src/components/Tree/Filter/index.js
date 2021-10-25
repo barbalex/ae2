@@ -383,7 +383,7 @@ const TreeFilter = ({ dimensions }) => {
   )
 
   const buildOptionsDebounced = useDebouncedCallback(({ cb, val }) => {
-    buildOptions({ store, cb, val })
+    buildOptions({ client, treeFilter, cb, val })
   }, 600)
   const loadOptions = useCallback(
     (val, cb) => {

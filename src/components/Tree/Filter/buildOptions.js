@@ -67,8 +67,9 @@ const buildOptions = async ({ cb, client, treeFilter }) => {
   } catch (error) {
     console.log(error)
   }
-  const { data: filterSuggestionsData, error: filterSuggestionsError } =
-    resultFilterSuggestionsQuery
+
+  const filterSuggestionsData = resultFilterSuggestionsQuery?.data
+  const filterSuggestionsError = resultFilterSuggestionsQuery?.error
 
   let resultObjectUrlQuery
   try {
@@ -82,7 +83,9 @@ const buildOptions = async ({ cb, client, treeFilter }) => {
   } catch (error) {
     console.log(error)
   }
-  const { data: objectUrlData, error: objectUrlError } = resultObjectUrlQuery
+
+  const objectUrlData = resultObjectUrlQuery?.data
+  const objectUrlError = resultObjectUrlQuery?.error
 
   const urlObject = objectUrlData?.objectById ?? {}
 
