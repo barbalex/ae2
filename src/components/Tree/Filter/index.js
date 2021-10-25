@@ -486,6 +486,9 @@ const TreeFilter = ({ dimensions }) => {
         <StyledSelect
           styles={customStyles}
           onInputChange={onChange}
+          onChange={(val) => {
+            console.log('val choosen:', val)
+          }}
           formatGroupLabel={renderSectionTitle}
           formatOptionLabel={formatOptionLabel}
           placeholder="suchen"

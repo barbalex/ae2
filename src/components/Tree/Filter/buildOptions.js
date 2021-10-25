@@ -55,7 +55,6 @@ const objectUrlQuery = gql`
 
 const buildOptions = async ({ cb, client, treeFilter }) => {
   const treeFilterId = treeFilter.id ?? '99999999-9999-9999-9999-999999999999'
-  const options = []
   let resultFilterSuggestionsQuery
   try {
     resultFilterSuggestionsQuery = await client.query({
@@ -92,11 +91,74 @@ const buildOptions = async ({ cb, client, treeFilter }) => {
 
   console.log({
     objectUrlData,
-    objectUrlError,
     filterSuggestionsData,
-    filterSuggestionsError,
     treeFilterText: treeFilter.text,
     treeFilterId,
+  })
+
+  const objectByObjectName =
+    filterSuggestionsData?.objectByObjectName?.nodes ?? []
+  const pCByPropertyName =
+    filterSuggestionsData?.propertyCollectionByPropertyName?.nodes ?? []
+
+  /**
+   * need add type:
+   * when suggestion is clicked,
+   * url is calculated by id depending on type
+   */
+  const suggestionsArt = objectByObjectName
+    .filter((n) => n?.taxonomyByTaxonomyId?.type === 'ART')
+    .map((o) => ({
+      val: o.id,
+      label: `${o?.taxonomyByTaxonomyId?.name ?? ''}: ${o.name}`,
+      type: 'art',
+    }))
+  const suggestionsLr = objectByObjectName
+    .filter((n) => n?.taxonomyByTaxonomyId?.type === 'LEBENSRAUM')
+    .map((o) => ({
+      val: o.id,
+      label: `${o?.taxonomyByTaxonomyId?.name ?? ''}: ${o.name}`,
+      type: 'lr',
+    }))
+  const suggestionsPC = pCByPropertyName.map((s) => ({
+    ...s,
+    type: 'pC',
+  }))
+  const loadingOptions = [
+    {
+      title: 'Lade Daten',
+      options: [
+        {
+          val: 'none',
+          label: '',
+          type: 'art',
+        },
+      ],
+    },
+  ]
+
+  const options = []
+  if (suggestionsArt.length) {
+    options.push({
+      label: `Arten (${suggestionsArt.length})`,
+      options: suggestionsArt,
+    })
+  }
+  if (suggestionsLr.length) {
+    options.push({
+      label: `Lebensräume (${suggestionsLr.length})`,
+      options: suggestionsLr,
+    })
+  }
+  if (suggestionsPC.length) {
+    options.push({
+      label: `Eigenschaften-Sammlungen (${suggestionsPC.length})`,
+      options: suggestionsPC,
+    })
+  }
+
+  console.log({
+    options,
   })
 
   cb(options)
