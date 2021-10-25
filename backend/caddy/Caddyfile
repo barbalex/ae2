@@ -5,6 +5,33 @@
   #acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }
 
+api.arteigenschaften.ch {
+  reverse_proxy /graphql* {
+    to ae_graphql:5000
+    header_down Access-Control-Allow-Origin *
+  }
+  reverse_proxy /graphiql* {
+    to ae_graphql:5000
+    header_down Access-Control-Allow-Origin *
+  }
+  reverse_proxy /json-api-test {
+    to ae_json:4000
+    header_down Access-Control-Allow-Origin *
+  }
+  reverse_proxy /artendb/* {
+    to ae_json:4000
+    header_down Access-Control-Allow-Origin *
+  }
+  reverse_proxy /evab* {
+    to ae_json:4000
+    header_down Access-Control-Allow-Origin *
+  }
+  reverse_proxy /alt* {
+    to ae_json:4000
+    header_down Access-Control-Allow-Origin *
+  }
+}
+
 api.artdaten.ch {
   reverse_proxy /graphql* {
     to ae_graphql:5000
