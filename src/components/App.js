@@ -34,7 +34,8 @@ const GraphIql = loadable(() => import('./GraphIql'))
 
 const App = () => {
   const mobxStore = useContext(mobxStoreContext)
-  const { updateAvailable, setWindowWidth, setWindowHeight } = mobxStore
+  const { updateAvailable, setWindowWidth, setWindowHeight, singleColumnView } =
+    mobxStore
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
 
   const [stacked, setStacked] = useState(false)
