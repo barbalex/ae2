@@ -1,7 +1,7 @@
 ---
-path: "/Dokumentation/Projektbeschreibung"
-date: "2019-09-29"
-title: "Projektbeschreibung"
+path: '/Dokumentation/Projektbeschreibung'
+date: '2019-09-29'
+title: 'Projektbeschreibung'
 sort1: 1
 ---
 
@@ -29,6 +29,7 @@ Die wichtigsten Merkmale dürften sein:
 ### Wozu wird arteigenschaften.ch benutzt?
 
 #### Nachschlagen
+
 Man kann arteigenschaften.ch benutzen, um Informationen nachzuschlagen. Das dürfte sogar der häufigste Anwendungszweck sein. Die Darstellung ist aber eingeschränkt, da die Benutzeroberfläche dynamisch aus flexiblen Datenstrukturen generiert wird und arteigenschaften.ch keine Bilder enthält. Anwendungen mit statischer Datenstruktur können Informationen benutzerfreundlicher darstellen.
 
 Hilfreich könnte allerdings sein, wenn der einfache Import (wie erhofft) dazu führen sollte, dass arteigenschaften.ch besonders umfassende und aktuelle Informationen enthält.<br/><br/>
@@ -250,7 +251,6 @@ Die für die Anwendung verwendete [Lizenz](https://github.com/barbalex/ae2/blob/
   - API-Server mit einer Zeile bauen und konfigurieren. Das sind _tausende_ weniger als bisher!
   - Daten-Logik und Rechte-Verwaltung obliegen der Datenbank - wie es sein sollte<br/>
   - GraphQL ist die kommende API-Technologie. Verglichen mit REST ist GraphQL extrem flexibel. Somit steht ein aussergewöhnlich benutzerfreundlicher API-Server zur Verfügung, mit dem jede(r) ganz nach eigenen Bedürfnissen alle öffentlichen Daten aus arteigenschaften.ch abfragen und - im Rahmen der Benutzer-Rechte - bearbeiten kann
-- [hapi.js](http://hapijs.com) liefert die Schnittstellen für [Artenlistentool](http://www.aln.zh.ch/internet/baudirektion/aln/de/naturschutz/naturschutzdaten/tools/artenlistentool.html#a-content) und [EVAB](http://www.aln.zh.ch/internet/baudirektion/aln/de/naturschutz/naturschutzdaten/tools/evab.html#a-content)
 - [Apollo](https://www.apollodata.com). Komponenten definieren, welche Daten sie brauchen. GraphQL und Apollo kümmern sich um die Bereitstellung. React (siehe unten), GraphQL und Apollo haben die Entwicklung von Anwendungen revolutioniert
 - Software-Abhängigkeiten werden mit [npm](https://www.npmjs.com) verwaltet
 - [React](https://facebook.github.io/react/index.html)
