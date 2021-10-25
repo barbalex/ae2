@@ -14,7 +14,7 @@ import ErrorBoundary from '../../shared/ErrorBoundary'
 import buildOptions from './buildOptions'
 
 const Container = styled.div`
-  padding: 5px 16px 0 13px;
+  padding: 5px 13px 0 13px;
   display: flex;
   justify-content: space-between;
 `
