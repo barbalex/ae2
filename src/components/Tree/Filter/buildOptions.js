@@ -43,12 +43,6 @@ const buildOptions = async ({ cb, client, treeFilter }) => {
 
   // TODO: on error surface to user
 
-  console.log({
-    filterSuggestionsData,
-    treeFilterText: treeFilter.text,
-    treeFilterId,
-  })
-
   const objectByObjectName =
     filterSuggestionsData?.objectByObjectName?.nodes ?? []
   const pCByPropertyName =
@@ -109,10 +103,6 @@ const buildOptions = async ({ cb, client, treeFilter }) => {
       options: suggestionsPC,
     })
   }
-
-  console.log({
-    options,
-  })
 
   cb(options)
 }

@@ -17,74 +17,14 @@ const Container = styled.div`
   padding: 5px 16px 0 13px;
   display: flex;
   justify-content: space-between;
-  .react-autosuggest__container {
-    width: 100%;
-    border-bottom: 1px solid #c6c6c6;
-  }
-  .react-autosuggest__input {
-    width: 100%;
-    border: none;
-    font-size: 16px;
-    padding: 5px;
-    background-color: rgba(0, 0, 0, 0);
-  }
-  .react-autosuggest__input--focused {
-    outline: none;
-  }
-  .react-autosuggest__input--open {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-  }
-  .react-autosuggest__suggestions-container {
-    display: none;
-  }
-  .react-autosuggest__suggestions-container--open {
-    display: block;
-    position: absolute;
-    top: 32px;
-    width: ${(props) => `${props['data-ownwidth']}px`};
-    border: 1px solid #aaa;
-    background-color: #fff;
-    font-family: Helvetica, sans-serif;
-    /*font-weight: 300;*/
-    font-size: 14px;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    z-index: 2;
-  }
-  .react-autosuggest__suggestions-list {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-  }
-  .react-autosuggest__suggestion {
-    cursor: pointer;
-    padding: 5px 20px;
-    margin-top: 0;
-    margin-bottom: 0;
-  }
-  .react-autosuggest__suggestion--highlighted {
-    background-color: #ddd;
-  }
-  .react-autosuggest__section-container {
-    border-top: 1px dashed #ccc;
-  }
-  .react-autosuggest__section-container--first {
-    border-top: 0;
-  }
-  .react-autosuggest__section-title {
-    padding: 5px 0 5px 10px;
-    font-size: 12px;
-    color: #777;
-  }
 `
 const StyledSelect = styled(Select)`
   width: 100%;
   .react-select__control:hover {
-    background-color: #ddd !important;
+    background-color: #ffcc80 !important !important;
   }
   .react-select__control:focus-within {
-    background-color: #ddd !important;
+    background-color: #ffcc80 !important !important;
     box-shadow: none;
   }
   .react-select__option--is-focused {
@@ -105,6 +45,7 @@ const loadingMessage = () => null
 const formatOptionLabel = ({ label }, { inputValue }) => (
   <Highlighter searchWords={[inputValue]} textToHighlight={label} />
 )
+const formatGroupLabel = (data) => <div>{data.label}</div>
 
 const objectUrlQuery = gql`
   query objectUrlDataQuery($treeFilterId: UUID!, $run: Boolean!) {
@@ -138,6 +79,7 @@ const objectUrlQuery = gql`
 `
 
 const TreeFilter = ({ dimensions }) => {
+  // TODO: use local state instead of mobx for label, id
   const client = useApolloClient()
   const mobxStore = useContext(mobxStoreContext)
   const { treeFilter } = mobxStore
@@ -159,7 +101,6 @@ const TreeFilter = ({ dimensions }) => {
 
   const onInputChange = useCallback(
     (option) => {
-      console.log('onChange, option:', option)
       if (!option) return
       setTreeFilter({ text: option, id: treeFilterId })
     },
@@ -178,7 +119,7 @@ const TreeFilter = ({ dimensions }) => {
           /**
            * set treeFilterId
            * then app rerenders
-           * componentDidUpdate finds treeFilterId
+           * effect finds treeFilterId
            * and result of objectUrlData query
            * passes it to getUrlForObject
            * mutates history
@@ -238,7 +179,7 @@ const TreeFilter = ({ dimensions }) => {
         ...provided,
         border: 'none',
         borderRadius: '3px',
-        backgroundColor: 'rgba(0, 0, 0, 0)',
+        backgroundColor: '#FFCC8042',
         marginLeft: 0,
         paddingLeft: singleColumnView ? '2px' : '25px',
       }),
@@ -249,14 +190,14 @@ const TreeFilter = ({ dimensions }) => {
       }),
       singleValue: (provided) => ({
         ...provided,
-        color: '#ac87d0',
+        color: 'rgba(0,0,0,0.8)',
       }),
       option: (provided) => ({
         ...provided,
         color: 'rgba(0,0,0,0.8)',
         fontSize: '0.8em',
-        paddingTop: '3px',
-        paddingBottom: '3px',
+        paddingTop: '5px',
+        paddingBottom: '5px',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -274,22 +215,22 @@ const TreeFilter = ({ dimensions }) => {
       }),
       input: (provided) => ({
         ...provided,
-        color: 'white',
+        color: 'rgba(0, 0, 0, 0.8)',
       }),
       menuList: (provided) => ({
         ...provided,
-        maxHeight: 'calc(100vh - 60px)',
+        maxHeight: 'calc(100vh - 110px)',
       }),
       menu: (provided) => ({
         ...provided,
-        maxHeight: 'calc(100vh - 60px)',
+        maxHeight: 'calc(100vh - 110px)',
         width: 'auto',
         maxWidth: ownWidth,
         marginTop: 0,
       }),
       placeholder: (provided) => ({
         ...provided,
-        color: '#ac87d0',
+        color: 'rgba(0,0,0,0.4)',
       }),
       indicatorSeparator: (provided) => ({
         ...provided,
@@ -301,7 +242,7 @@ const TreeFilter = ({ dimensions }) => {
       }),
       clearIndicator: (provided) => ({
         ...provided,
-        color: '#ac87d0',
+        color: 'rgba(0,0,0,0.8)',
       }),
     }),
     [ownWidth, singleColumnView],
@@ -315,7 +256,7 @@ const TreeFilter = ({ dimensions }) => {
           styles={customStyles}
           onInputChange={onInputChange}
           onChange={onChange}
-          formatGroupLabel={renderSectionTitle}
+          formatGroupLabel={formatGroupLabel}
           formatOptionLabel={formatOptionLabel}
           placeholder="suchen"
           noOptionsMessage={noOptionsMessage}
