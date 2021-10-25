@@ -6,7 +6,7 @@ const graphQlUri = () => {
   const isLocalhost = hostnameWithoutWww === 'localhost'
   if (isLocalhost) return 'http://localhost:5000/graphql'
 
-  return `https://api.artdaten/graphql`
+  return `https://api.artdaten.ch/graphql`
 
   //return `https://api.${hostnameWithoutWww}/graphql`
 }
