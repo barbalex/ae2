@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useContext } from 'react'
+import React, { useEffect, useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
 import { FaSearch } from 'react-icons/fa'
 import Autosuggest from 'react-autosuggest'
@@ -6,17 +6,19 @@ import match from 'autosuggest-highlight/match'
 import parse from 'autosuggest-highlight/parse'
 import Highlighter from 'react-highlight-words'
 import Select from 'react-select/async'
-import get from 'lodash/get'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { navigate } from 'gatsby'
+import { useDebouncedCallback } from 'use-debounce'
 
-import getUrlForObject from '../../modules/getUrlForObject'
-import mobxStoreContext from '../../mobxStoreContext'
-import ErrorBoundary from '../shared/ErrorBoundary'
+import getUrlForObject from '../../../modules/getUrlForObject'
+import mobxStoreContext from '../../../mobxStoreContext'
+import ErrorBoundary from '../../shared/ErrorBoundary'
 
 const Container = styled.div`
   padding: 5px 16px 0 13px;
+  display: flex;
+  justify-content: space-between;
   .react-autosuggest__container {
     width: 100%;
     border-bottom: 1px solid #c6c6c6;
@@ -96,6 +98,7 @@ const SearchIcon = styled(FaSearch)`
   margin: auto 5px;
   margin-right: -25px;
   z-index: 1;
+  color: rgba(0, 0, 0, 0.8);
 `
 
 const noOptionsMessage = () => null
@@ -181,7 +184,7 @@ const TreeFilter = ({ dimensions }) => {
     },
   )
 
-  const urlObject = get(objectUrlData, 'objectById', {})
+  const urlObject = objectUrlData?.objectById ?? {}
 
   const onChange = useCallback(
     (event, { newValue }) => {
@@ -193,7 +196,7 @@ const TreeFilter = ({ dimensions }) => {
     (event, { suggestion }) => {
       switch (suggestion.type) {
         case 'pC':
-          navigate(`/Eigenschaften-Sammlungen/${suggestion.id}`)
+          navigate(`/Eigenschaften-Sammlungen/${suggestion.val}`)
           break
         case 'art':
         case 'lr':
@@ -206,7 +209,7 @@ const TreeFilter = ({ dimensions }) => {
            * passes it to getUrlForObject
            * mutates history
            */
-          setTreeFilter({ id: suggestion.id, text: treeFilterText })
+          setTreeFilter({ id: suggestion.val, text: treeFilterText })
         }
       }
     },
@@ -214,8 +217,8 @@ const TreeFilter = ({ dimensions }) => {
   )
   const renderSuggestion = useCallback(
     (suggestion, { query, isHighlighted }) => {
-      const matches = match(suggestion.name, query)
-      const parts = parse(suggestion.name, matches)
+      const matches = match(suggestion.label, query)
+      const parts = parse(suggestion.label, matches)
       return (
         <>
           {parts.map((part, index) => {
@@ -261,16 +264,10 @@ const TreeFilter = ({ dimensions }) => {
     }
   }, [urlObject, treeFilterId, setTreeFilter])
 
-  const objectByObjectName = get(
-    filterSuggestionsData,
-    'objectByObjectName.nodes',
-    [],
-  )
-  const pCByPropertyName = get(
-    filterSuggestionsData,
-    'propertyCollectionByPropertyName.nodes',
-    [],
-  )
+  const objectByObjectName =
+    filterSuggestionsData?.objectByObjectName?.nodes ?? []
+  const pCByPropertyName =
+    filterSuggestionsData?.propertyCollectionByPropertyName?.nodes ?? []
   const inputProps = {
     value: treeFilterText,
     onChange,
@@ -284,35 +281,66 @@ const TreeFilter = ({ dimensions }) => {
    * url is calculated by id depending on type
    */
   const suggestionsArt = objectByObjectName
-    .filter((n) => get(n, 'taxonomyByTaxonomyId.type') === 'ART')
+    .filter((n) => n?.taxonomyByTaxonomyId?.type === 'ART')
     .map((o) => ({
-      id: o.id,
-      name: `${get(o, 'taxonomyByTaxonomyId.name', '')}: ${o.name}`,
+      val: o.id,
+      label: `${o?.taxonomyByTaxonomyId?.name ?? ''}: ${o.name}`,
       type: 'art',
     }))
   const suggestionsLr = objectByObjectName
-    .filter((n) => get(n, 'taxonomyByTaxonomyId.type') === 'LEBENSRAUM')
+    .filter((n) => n?.taxonomyByTaxonomyId?.type === 'LEBENSRAUM')
     .map((o) => ({
-      id: o.id,
-      name: `${get(o, 'taxonomyByTaxonomyId.name', '')}: ${o.name}`,
+      val: o.id,
+      label: `${o?.taxonomyByTaxonomyId?.name ?? ''}: ${o.name}`,
       type: 'lr',
     }))
   const suggestionsPC = pCByPropertyName.map((s) => ({
     ...s,
     type: 'pC',
   }))
-  const loadingSuggestions = [
+  const loadingOptions = [
     {
       title: 'Lade Daten',
-      suggestions: [
+      options: [
         {
-          id: 'none',
-          name: '',
+          val: 'none',
+          label: '',
           type: 'art',
         },
       ],
     },
   ]
+  const loadingSuggestions = [
+    {
+      title: 'Lade Daten',
+      suggestions: [
+        {
+          val: 'none',
+          label: '',
+          type: 'art',
+        },
+      ],
+    },
+  ]
+  const options = []
+  if (suggestionsArt.length) {
+    options.push({
+      label: `Arten (${suggestionsArt.length})`,
+      options: suggestionsArt,
+    })
+  }
+  if (suggestionsLr.length) {
+    options.push({
+      label: `Lebensräume (${suggestionsLr.length})`,
+      options: suggestionsLr,
+    })
+  }
+  if (suggestionsPC.length) {
+    options.push({
+      label: `Eigenschaften-Sammlungen (${suggestionsPC.length})`,
+      options: suggestionsPC,
+    })
+  }
   const suggestions = [...suggestionsArt, ...suggestionsLr, ...suggestionsPC]
     .length
     ? [
@@ -335,7 +363,7 @@ const TreeFilter = ({ dimensions }) => {
   const ownWidth = isNaN(dimensions.width) ? 380 : dimensions.width - 29
 
   const getSuggestionValue = useCallback(
-    (suggestion) => suggestion && suggestion.name,
+    (suggestion) => suggestion && suggestion.label,
     [],
   )
   const shouldRenderSuggestions = useCallback(
@@ -440,7 +468,7 @@ const TreeFilter = ({ dimensions }) => {
     <ErrorBoundary>
       <Container data-ownwidth={ownWidth}>
         <SearchIcon />
-        <StyledSelect
+        {/*<StyledSelect
           styles={customStyles}
           onChange={onChange}
           formatGroupLabel={renderSectionTitle}
@@ -452,7 +480,7 @@ const TreeFilter = ({ dimensions }) => {
           loadOptions={loadOptions}
           isClearable
           spellCheck={false}
-        />
+        />*/}
         <Autosuggest
           suggestions={suggestions}
           onSuggestionsFetchRequested={() => {
