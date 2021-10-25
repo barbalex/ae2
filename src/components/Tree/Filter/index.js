@@ -169,7 +169,7 @@ const TreeFilter = ({ dimensions }) => {
   const treeFilterText = treeFilter.text
   const { setTreeFilter } = treeFilter
 
-  const treeFilterId = treeFilter.id || '99999999-9999-9999-9999-999999999999'
+  const treeFilterId = treeFilter.id ?? '99999999-9999-9999-9999-999999999999'
   const { data: filterSuggestionsData, error: filterSuggestionsError } =
     useQuery(filterSuggestionsQuery, {
       variables: {
@@ -190,8 +190,10 @@ const TreeFilter = ({ dimensions }) => {
   const urlObject = objectUrlData?.objectById ?? {}
 
   const onChange = useCallback(
-    (event, { newValue }) => {
-      setTreeFilter({ text: newValue, id: treeFilterId })
+    (option) => {
+      console.log('onChange, option:', option)
+      if (!option) return
+      setTreeFilter({ text: option, id: treeFilterId })
     },
     [setTreeFilter, treeFilterId],
   )
@@ -483,7 +485,7 @@ const TreeFilter = ({ dimensions }) => {
         <SearchIcon />
         <StyledSelect
           styles={customStyles}
-          onChange={onChange}
+          onInputChange={onChange}
           formatGroupLabel={renderSectionTitle}
           formatOptionLabel={formatOptionLabel}
           placeholder="suchen"

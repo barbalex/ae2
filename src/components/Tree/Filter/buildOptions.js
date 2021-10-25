@@ -54,6 +54,7 @@ const objectUrlQuery = gql`
 `
 
 const buildOptions = async ({ cb, client, treeFilter }) => {
+  const treeFilterId = treeFilter.id ?? '99999999-9999-9999-9999-999999999999'
   const options = []
   let resultFilterSuggestionsQuery
   try {
@@ -88,6 +89,15 @@ const buildOptions = async ({ cb, client, treeFilter }) => {
   const objectUrlError = resultObjectUrlQuery?.error
 
   const urlObject = objectUrlData?.objectById ?? {}
+
+  console.log({
+    objectUrlData,
+    objectUrlError,
+    filterSuggestionsData,
+    filterSuggestionsError,
+    treeFilterText: treeFilter.text,
+    treeFilterId,
+  })
 
   cb(options)
 }
