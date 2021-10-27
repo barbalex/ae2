@@ -1,6 +1,6 @@
 module.exports = {
   siteMetadata: {
-    title: 'arteigenschaften',
+    title: 'arteigenschaften v1.6.1',
   },
   plugins: [
     {
