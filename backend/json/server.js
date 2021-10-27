@@ -41,34 +41,11 @@ async function start() {
       return `Hello from the JSON-API`
     },
   })
-  // TODO: sunset this api
-  server.route({
-    method: 'GET',
-    path:
-      '/artendb/_design/artendb/_list/export_alt_mit_synonymen_standardfelder/alt_arten_mit_synonymen',
-    handler: alt,
-  })
-
-  // TODO: sunset this api
-  server.route({
-    method: 'GET',
-    // do not redirect because query is lost!
-    path:
-      '/artendb/_design/artendb/_list/export_alt_mit_synonymen/alt_arten_mit_synonymen',
-    handler: alt,
-  })
 
   server.route({
     method: 'GET',
     path: '/alt',
     handler: alt,
-  })
-
-  // TODO: sunset this api
-  server.route({
-    method: 'GET',
-    path: '/artendb/_design/artendb/_list/export_evab/evab_arten',
-    handler: evabArten,
   })
 
   server.route({
