@@ -11,7 +11,6 @@ module.exports = {
           `/Lebensräume/*`,
           `/Eigenschaften-Sammlungen/*`,
           `/Export/*`,
-          `/artenlistentool/*`,
           `/Benutzer/*`,
           `/Organisationen/*`,
         ],

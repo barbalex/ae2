@@ -58,24 +58,12 @@ const Router = ({ location }) => {
   }, [location.pathname, setActiveNodeArray])
   /**
    * check if old url was passed that contains objectId-Param
-   * for instance: from artenlistentool like this:
-   * /index.html?id=AD0B10AA-707D-42C6-B68D-8F88CCD2F0B3
+   * for instance:
+   * /?id=AD0B10AA-707D-42C6-B68D-8F88CCD2F0B3
    */
   const idParam = getUrlParamByName('id')
   const objectId =
     idParam && isUuid.anyNonNil(idParam) ? idParam.toLowerCase() : null
-  /**
-   * redirect /index.html?exportieren_fuer_artenlistentool=true
-   * to /artenlistentool/waehlen
-   */
-  const altUrlGenParam = getUrlParamByName('exportieren_fuer_artenlistentool')
-  if (altUrlGenParam) {
-    console.log(
-      'Router: redirecting to /artenlistentool/waehlen. objectId:',
-      objectId,
-    )
-    navigate('/artenlistentool/waehlen')
-  }
 
   const hasObjectId = !!objectId
   const { loading, error, data } = useQuery(objectQuery, {

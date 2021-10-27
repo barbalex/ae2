@@ -55,21 +55,6 @@ services:
         '--enable-query-batching',
         '--retry-on-init-fail',
       ]
-  json:
-    container_name: ae_json
-    restart: always
-    build:
-      context: ./json
-    networks:
-      - network
-    expose:
-      - '4000'
-    ports:
-      - '4000:4000'
-    depends_on:
-      - db
-    env_file:
-      - ./.env
   caddy:
     build:
       context: ./caddy

@@ -21,8 +21,6 @@ const Container = styled.div`
 // ReactDOMServer does not yet support Suspense
 //const Export = lazy(() => import('./Export'))
 const Export = loadable(() => import('./Export'))
-//const AltGenerateUrl = lazy(() => import('./AltGenerateUrl'))
-const AltGenerateUrl = loadable(() => import('./AltGenerateUrl'))
 //const Login = lazy(() => import('./Login'))
 const Login = loadable(() => import('./Login'))
 //const Data = lazy(() => import('./Data'))
@@ -54,7 +52,6 @@ const App = () => {
     'login',
     'benutzer',
     'graphiql',
-    'artenlistentool',
   ].includes(url0)
   const showData = [
     null,
@@ -65,8 +62,6 @@ const App = () => {
     'organisationen',
   ].includes(url0)
   const showExport = url0 === 'export'
-  const showAltGenerateUrl =
-    url0 === 'artenlistentool' && activeNodeArray[1] === 'waehlen'
   const showLogin = url0 === 'login'
   const showGraphIql = url0 === 'graphiql'
 
@@ -111,7 +106,6 @@ const App = () => {
           {showLogin && <Login />}
           {show404 && <FourOhFour />}
           {showGraphIql && <GraphIql />}
-          {showAltGenerateUrl && <AltGenerateUrl />}
           <Snackbar
             open={updateAvailable}
             message={

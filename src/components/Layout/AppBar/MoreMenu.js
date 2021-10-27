@@ -67,10 +67,6 @@ const MoreMenu = () => {
       window.open('https://github.com/FNSKtZH/ae2/issues')
     setAnchorEl(null)
   }, [])
-  const onClickFelderAlt = useCallback(() => {
-    navigate('/artenlistentool/waehlen')
-    setAnchorEl(null)
-  }, [])
   const onClickGqlQuery = useCallback(() => {
     navigate('/graphiql')
     setAnchorEl(null)
@@ -117,9 +113,6 @@ const MoreMenu = () => {
         </MenuItem>
         <MenuItem key="melden" onClick={onClickMelden}>
           Fehler oder Wünsche melden
-        </MenuItem>
-        <MenuItem key="alt" onClick={onClickFelderAlt}>
-          Felder für das Artenlistentool wählen
         </MenuItem>
         <TwoLineMenuItem key="graphiql" onClick={onClickGqlQuery}>
           GrahpQL-Abfragetool
