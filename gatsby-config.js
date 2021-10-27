@@ -1,6 +1,6 @@
 module.exports = {
   siteMetadata: {
-    title: 'arteigenschaften',
+    title: 'arteigenschaften v1.6.1',
   },
   plugins: [
     {
@@ -11,7 +11,6 @@ module.exports = {
           `/Lebensräume/*`,
           `/Eigenschaften-Sammlungen/*`,
           `/Export/*`,
-          `/artenlistentool/*`,
           `/Benutzer/*`,
           `/Organisationen/*`,
         ],

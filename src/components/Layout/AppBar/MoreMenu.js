@@ -67,10 +67,6 @@ const MoreMenu = () => {
       window.open('https://github.com/FNSKtZH/ae2/issues')
     setAnchorEl(null)
   }, [])
-  const onClickFelderAlt = useCallback(() => {
-    navigate('/artenlistentool/waehlen')
-    setAnchorEl(null)
-  }, [])
   const onClickGqlQuery = useCallback(() => {
     navigate('/graphiql')
     setAnchorEl(null)
@@ -118,9 +114,6 @@ const MoreMenu = () => {
         <MenuItem key="melden" onClick={onClickMelden}>
           Fehler oder Wünsche melden
         </MenuItem>
-        <MenuItem key="alt" onClick={onClickFelderAlt}>
-          Felder für das Artenlistentool wählen
-        </MenuItem>
         <TwoLineMenuItem key="graphiql" onClick={onClickGqlQuery}>
           GrahpQL-Abfragetool
           <br />
@@ -129,7 +122,7 @@ const MoreMenu = () => {
         <MenuItem onClick={onClickUptime}>
           {`Verfügbarkeit der Server von ${hostname}`}
         </MenuItem>
-        <Version>Version: 1.5.16 vom 25.10.2021</Version>
+        <Version>Version: 1.6.1 vom 27.10.2021</Version>
       </Menu>
     </div>
   )
