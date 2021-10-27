@@ -283,6 +283,7 @@ select id,
 from ae.object
 where taxonomy_id = '69d34753-445b-4c55-b3b7-e570f7dc1819'
 order by label;
+-- v_apflora_taxonomies
 drop view if exists ae.v_apflora_taxonomies cascade;
 create or replace view ae.v_apflora_taxonomies as with objartwert as (
     select *
@@ -295,7 +296,6 @@ select distinct tax.id as taxonomie_id,
   cast(ae.object.properties->>'Taxonomie ID' as INTEGER) as taxid,
   ae.object.properties->>'Familie' as familie,
   ae.object.name as artname,
-  ae.object.properties->>'Status' as status,
   coalesce(
     cast(objartwert.properties->>'Artwert' as INTEGER),
     cast(synobjartwert.properties->>'Artwert' as INTEGER),
