@@ -17,25 +17,25 @@ const Container = styled.div`
 `
 
 const Layout = ({ children }) => (
-    <Container>
-      <Helmet
-        title="arteigenschaften"
-        meta={[
-          {
-            name: 'description',
-            content: 'Arteigenschaften sammeln',
-          },
-          {
-            name: 'keywords',
-            content: 'Naturschutz, Artenschutz, Flora, Pflanzen, Pilze, Moose',
-          },
-        ]}
-      >
-        <html lang="de" />
-      </Helmet>
-      <AppBar />
-      {children}
-    </Container>
-  )
+  <Container>
+    <Helmet
+      title="arteigenschaften v1.6.2"
+      meta={[
+        {
+          name: 'description',
+          content: 'Arteigenschaften sammeln',
+        },
+        {
+          name: 'keywords',
+          content: 'Naturschutz, Artenschutz, Flora, Pflanzen, Pilze, Moose',
+        },
+      ]}
+    >
+      <html lang="de" />
+    </Helmet>
+    <AppBar />
+    {children}
+  </Container>
+)
 
 export default Layout
