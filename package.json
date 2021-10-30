@@ -1,7 +1,7 @@
 {
   "name": "artdaten",
   "description": "Eigenschaften von Flora, Fauna, Moosen und Lebensräumen: Sichten, exportieren, importieren",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "author": {
     "name": "Alexander Gabriel",
     "email": "alex@gabriel-software.ch",
@@ -20,9 +20,9 @@
     "@fontsource/roboto": "4.5.1",
     "@loadable/component": "5.15.0",
     "@mui/icons-material": "5.0.5",
-    "@mui/material": "5.0.5",
+    "@mui/material": "5.0.6",
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest",
-    "@mui/styled-engine-sc": "5.0.3",
+    "@mui/styled-engine-sc": "5.0.4",
     "@mui/styles": "5.0.2",
     "autosuggest-highlight": "3.2.0",
     "copy-to-clipboard": "3.3.1",
@@ -30,13 +30,13 @@
     "dexie": "3.0.3",
     "exceljs": "4.3.0",
     "file-saver": "2.0.5",
-    "gatsby": "4.0.1",
+    "gatsby": "4.0.2",
     "gatsby-plugin-create-client-paths": "4.0.0",
     "gatsby-plugin-image": "2.0.0",
     "gatsby-plugin-manifest": "4.0.0",
     "gatsby-plugin-offline": "5.0.0",
     "gatsby-plugin-react-helmet": "5.0.0",
-    "gatsby-plugin-sharp": "4.0.0",
+    "gatsby-plugin-sharp": "4.0.1",
     "gatsby-plugin-styled-components": "5.0.0",
     "gatsby-plugin-typography": "4.0.0",
     "gatsby-remark-autolink-headers": "5.0.0",
@@ -48,7 +48,7 @@
     "gatsby-source-filesystem": "4.0.0",
     "gatsby-transformer-remark": "5.0.0",
     "gatsby-transformer-sharp": "4.0.0",
-    "graphiql": "1.4.2",
+    "graphiql": "1.4.6",
     "is-uuid": "1.0.2",
     "isomorphic-fetch": "3.0.0",
     "js-file-download": "0.4.12",
@@ -63,7 +63,7 @@
     "react-data-grid": "6.1.0",
     "react-dom": "17.0.2",
     "react-dropzone": "11.4.2",
-    "react-error-boundary": "3.1.3",
+    "react-error-boundary": "3.1.4",
     "react-helmet": "6.1.0",
     "react-highlight-words": "0.17.0",
     "react-icons": "4.3.1",
@@ -86,7 +86,7 @@
     "react-spinners-kit": "forked because it added dependencies via non-peer-dependencies. See: https://github.com/dmitrymorozoff/react-spinners-kit/pull/18. Wait for release > 1.9.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.15.8",
+    "@babel/eslint-parser": "7.16.0",
     "@graphile-contrib/pg-order-by-related": "1.0.0-beta.6",
     "@hot-loader/react-dom": "17.0.1",
     "@typescript-eslint/eslint-plugin": "5.2.0",
@@ -95,7 +95,7 @@
     "eslint": "8.1.0",
     "eslint-config-react-app": "6.0.0",
     "eslint-loader": "4.0.2",
-    "eslint-plugin-flowtype": "8.0.2",
+    "eslint-plugin-flowtype": "8.0.3",
     "eslint-plugin-import": "2.x",
     "eslint-plugin-jsx-a11y": "6.x",
     "eslint-plugin-react": "7.x",
@@ -109,13 +109,13 @@
   "peerDependencies": {
     "babel-plugin-styled-components": "1.13.3",
     "create-react-class": "15.7.0",
-    "graphql": "15.6.1",
+    "graphql": "16.0.0",
     "graphql-tag": "2.12.5",
     "polished": "1.x",
     "prop-types": "15.7.2",
     "react-is": "17.0.2",
     "typescript": "4.4.4",
-    "webpack": "5.60.0"
+    "webpack": "5.61.0"
   },
   "resolutions": {
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest"
