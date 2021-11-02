@@ -1,7 +1,7 @@
 # see: https://hub.docker.com/_/postgres
 # DANGER: artdaten.ch rund on postgres:12.8, arteigenschaften.ch on 14.0
-#FROM postgres:12.8
-FROM postgres:14.0
+FROM postgres:12.8
+#FROM postgres:14.0
 
 # init db from ae.backup (only runs when no db detected)
 COPY ./init/ /docker-entrypoint-initdb.d/
