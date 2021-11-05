@@ -1,6 +1,6 @@
 ---
 path: '/Dokumentation/Neue-Art-erfassen'
-date: '2021-10-27'
+date: '2021-11-02'
 title: 'Neue Art erfassen'
 sort1: 4
 ---
@@ -10,6 +10,8 @@ Grundsätzlich sind die Autoren einer Taxonomie für deren Nachführung zuständ
 Das Ergänzen von Arten ist daher keine Kern-Funktionalität von arteigenschaften.ch. Man kann aber taxonomische Einheiten erfassen. Das wurde schon immer ermöglicht, um Lebensräume zu erfassen. Denn diese sind hierarchisch aufgebaut sind und es ist schwierig, hierarchische Systeme logisch schlüssig in flachen Tabellen aufzubauen. <br/><br/>
 
 Diese Funktionalität kann auch genutzt werden, um Arten zu ergänzen.<br/><br/>
+
+Wer den Vorgang zuerst testen will, kann das auf https://artdaten.ch machen.<br/><br/>
 
 Sollte etwas völlig misslingen, können die Daten von arteigenschaften.ch im schlimmsten Fall aus der täglichen Sicherung wiederhergestellt werden.<br/><br/>
 

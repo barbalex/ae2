@@ -13,12 +13,14 @@ import CardContent from '@mui/material/CardContent'
 import Collapse from '@mui/material/Collapse'
 import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import EditIcon from '@mui/icons-material/Edit'
-import ViewIcon from '@mui/icons-material/Visibility'
-import SynonymIcon from '@mui/icons-material/Forward'
-import InfoOutlineIcon from '@mui/icons-material/Info'
-import InfoIcon from '@mui/icons-material/Info'
+import {
+  MdExpandMore as ExpandMoreIcon,
+  MdEdit as EditIcon,
+  MdVisibility as ViewIcon,
+  MdForward as SynonymIcon,
+  MdInfoOutline as InfoOutlineIcon,
+  MdInfo as InfoIcon,
+} from 'react-icons/md'
 import get from 'lodash/get'
 import styled from 'styled-components'
 import { useQuery, gql } from '@apollo/client'
@@ -229,7 +231,8 @@ const TaxonomyObject = ({ objekt, showLink, stacked }) => {
                     : 'Taxonomie-Beschreibung öffnen'
                 }
                 onClick={onClickToggleTaxDescription}
-                size="large">
+                size="large"
+              >
                 <Icon>
                   {!taxExpanded && <InfoOutlineIcon />}
                   {taxExpanded && <InfoIcon />}
@@ -303,7 +306,7 @@ const TaxonomyObject = ({ objekt, showLink, stacked }) => {
         </StyledCard>
       </Container>
     </ErrorBoundary>
-  );
+  )
 }
 
 export default observer(TaxonomyObject)
