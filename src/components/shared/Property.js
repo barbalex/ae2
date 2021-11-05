@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react'
 import TextField from '@mui/material/TextField'
 import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
-import ClearIcon from '@mui/icons-material/Clear'
+import { MdClear } from 'react-icons/md'
 import styled from 'styled-components'
 import omit from 'lodash/omit'
 import { useApolloClient } from '@apollo/client'
@@ -94,7 +94,7 @@ const Property = ({ id, properties: propertiesPrevious, field: key }) => {
           onClick={onDelete}
         >
           <Icon>
-            <ClearIcon color="error" />
+            <MdClear color="error" />
           </Icon>
         </DeleteButton>
       </Container>

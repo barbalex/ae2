@@ -8,8 +8,10 @@ import Input from '@mui/material/Input'
 import InputLabel from '@mui/material/InputLabel'
 import InputAdornment from '@mui/material/InputAdornment'
 import IconButton from '@mui/material/IconButton'
-import Visibility from '@mui/icons-material/Visibility'
-import VisibilityOff from '@mui/icons-material/VisibilityOff'
+import {
+  MdVisibility as VisibilityIcon,
+  MdVisibilityOff as VisibilityOffIcon,
+} from 'react-icons/md'
 import styled from 'styled-components'
 import { useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -162,7 +164,7 @@ const Login = () => {
                     title={showPass ? 'verstecken' : 'anzeigen'}
                     size="large"
                   >
-                    {showPass ? <VisibilityOff /> : <Visibility />}
+                    {showPass ? <VisibilityOffIcon /> : <VisibilityIcon />}
                   </IconButton>
                 </InputAdornment>
               }

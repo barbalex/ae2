@@ -7,9 +7,11 @@ import flatten from 'lodash/flatten'
 import some from 'lodash/some'
 import uniq from 'lodash/uniq'
 import Icon from '@mui/material/Icon'
-import DoneIcon from '@mui/icons-material/Done'
-import ErrorIcon from '@mui/icons-material/Error'
-import InfoOutlineIcon from '@mui/icons-material/Info'
+import {
+  MdDone as DoneIcon,
+  MdError as ErrorIcon,
+  MdInfoOutline as InfoOutlineIcon,
+} from 'react-icons/md'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import Dropzone from 'react-dropzone'

@@ -5,7 +5,7 @@ import CardContent from '@mui/material/CardContent'
 import Collapse from '@mui/material/Collapse'
 import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from 'styled-components'
 
 const StyledCard = styled(Card)`
@@ -18,7 +18,7 @@ const StyledCardActions = styled(CardActions)`
   height: auto !important;
 `
 const CardActionIconButton = styled(IconButton)`
-  transform: ${props => (props['data-expanded'] ? 'rotate(180deg)' : 'none')};
+  transform: ${(props) => (props['data-expanded'] ? 'rotate(180deg)' : 'none')};
 `
 const CardActionTitle = styled.div`
   padding-left: 8px;

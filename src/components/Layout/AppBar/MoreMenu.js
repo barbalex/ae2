@@ -3,7 +3,7 @@ import Icon from '@mui/material/Icon'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { MdMoreVert as MoreVertIcon } from 'react-icons/md'
 import styled from 'styled-components'
 import { navigate } from 'gatsby'
 
@@ -122,7 +122,7 @@ const MoreMenu = () => {
         <MenuItem onClick={onClickUptime}>
           {`Verfügbarkeit der Server von ${hostname}`}
         </MenuItem>
-        <Version>Version: 1.6.3 vom 30.10.2021</Version>
+        <Version>Version: 1.6.4 vom 5.11.2021</Version>
       </Menu>
     </div>
   )

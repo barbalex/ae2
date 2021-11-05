@@ -4,11 +4,11 @@ import CardActions from '@mui/material/CardActions'
 import Collapse from '@mui/material/Collapse'
 import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-// seemst that InfoOutline does not exist any more????
-// TODO: revert to InfoOutline when google has added that again
-import InfoOutlineIcon from '@mui/icons-material/Info'
-import InfoIcon from '@mui/icons-material/Info'
+import {
+  MdExpandMore as ExpandMoreIcon,
+  MdInfo as InfoIcon,
+  MdInfoOutline as InfoOutlineIcon,
+} from 'react-icons/md'
 import get from 'lodash/get'
 import sortBy from 'lodash/sortBy'
 import styled from 'styled-components'
@@ -99,7 +99,8 @@ const PCO = ({ pCO, relations, stacked }) => {
                 aria-label="über diese Eigenschaften-Sammlung"
                 title={iconTitle}
                 onClick={onClickIcon}
-                size="large">
+                size="large"
+              >
                 <Icon>
                   {!pCDescriptionExpanded && <InfoOutlineIcon />}
                   {pCDescriptionExpanded && <InfoIcon />}
@@ -132,7 +133,7 @@ const PCO = ({ pCO, relations, stacked }) => {
         </StyledCard>
       </Container>
     </ErrorBoundary>
-  );
+  )
 }
 
 export default PCO

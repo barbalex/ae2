@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import get from 'lodash/get'
 import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
-import ClearIcon from '@mui/icons-material/Clear'
+import { MdClear } from 'react-icons/md'
 import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import FormControl from '@mui/material/FormControl'
@@ -284,7 +284,7 @@ const OrgUser = ({ orgUser }) => {
           onClick={onClickDelete}
         >
           <Icon>
-            <ClearIcon color="error" />
+            <MdClear color="error" />
           </Icon>
         </DeleteButton>
       </OrgUserDiv>
