@@ -1,8 +1,10 @@
 import React, { useCallback, useContext } from 'react'
 import styled from 'styled-components'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
+import {
+  MdExpandMore as ExpandMoreIcon,
+  MdMoreHoriz as MoreHorizIcon,
+  MdChevronRight as ChevronRightIcon,
+} from 'react-icons/md'
 import Icon from '@mui/material/Icon'
 import isEqual from 'lodash/isEqual'
 import { useApolloClient } from '@apollo/client'

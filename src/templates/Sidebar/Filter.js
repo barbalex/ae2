@@ -3,7 +3,7 @@ import Input from '@mui/material/Input'
 import InputLabel from '@mui/material/InputLabel'
 import FormControl from '@mui/material/FormControl'
 import InputAdornment from '@mui/material/InputAdornment'
-import DeleteFilterIcon from '@mui/icons-material/DeleteSweep'
+import { MdDeleteSweep } from 'react-icons/md'
 import styled from 'styled-components'
 
 import storeContext from '../../mobxStoreContext'
@@ -16,7 +16,7 @@ const StyledInput = styled(Input)`
     border-bottom-color: rgba(0, 0, 0, 0.1) !important;
   }
 `
-const StyledDeleteFilterIcon = styled(DeleteFilterIcon)`
+const StyledDeleteFilterIcon = styled(MdDeleteSweep)`
   cursor: pointer;
   pointer-events: auto;
   padding-top: 5px;
