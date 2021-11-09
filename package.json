@@ -112,7 +112,6 @@
     "eslint": "8.2.0",
     "eslint-config-react-app": "6.0.0",
     "eslint-loader": "4.0.2",
-    "eslint-plugin-flowtype": "8.0.3",
     "eslint-plugin-import": "2.x",
     "eslint-plugin-jsx-a11y": "6.x",
     "eslint-plugin-react": "7.x",
