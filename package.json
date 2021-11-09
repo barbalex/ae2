@@ -23,11 +23,8 @@
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest",
     "@mui/styled-engine-sc": "5.1.0",
     "@mui/styles": "5.1.0",
-    "@mui/system": "^5.1.0",
     "autosuggest-highlight": "3.2.0",
-    "babel-plugin-styled-components": "^1.13.3",
     "copy-to-clipboard": "3.3.1",
-    "create-react-class": "^15.7.0",
     "date-fns": "2.25.0",
     "dexie": "3.0.3",
     "exceljs": "4.3.0",
@@ -51,9 +48,6 @@
     "gatsby-transformer-remark": "5.1.1",
     "gatsby-transformer-sharp": "4.1.0",
     "graphiql": "1.5.1",
-    "graphql": "^16.0.1",
-    "graphql-language-service-utils": "^2.6.0",
-    "graphql-tag": "^2.12.6",
     "is-uuid": "1.0.2",
     "isomorphic-fetch": "3.0.0",
     "js-file-download": "0.4.12",
@@ -63,8 +57,6 @@
     "mobx": "6.3.6",
     "mobx-react-lite": "3.2.2",
     "mobx-state-tree": "5.0.5",
-    "polished": "1.x",
-    "prop-types": "^15.7.2",
     "react": "17.0.2",
     "react-autosuggest": "10.1.0",
     "react-data-grid": "6.1.0",
@@ -74,35 +66,24 @@
     "react-helmet": "6.1.0",
     "react-highlight-words": "0.17.0",
     "react-icons": "4.3.1",
-    "react-is": "^17.0.2",
     "react-linkify": "0.x",
     "react-reflex": "4.0.3",
     "react-resize-detector": "6.7.6",
     "react-select": "5.2.1",
+    "react-spinners-kit": "git://github.com/barbalex/react-spinners-kit",
     "react-swipeable-views": "0.14.0",
     "react-typography": "0.16.20",
     "react-window": "1.8.6",
     "simplebar-react": "2.3.6",
     "styled-components": "5.3.3",
-    "typescript": "^4.4.4",
     "typography": "0.16.21",
     "use-debounce": "7.0.1",
     "use-subscription": "1.5.1",
-    "webpack": "^5.62.2",
     "xlsx": "0.17.3"
   },
   "dependenciesComments": {
-    "babel-plugin-styled-components": "is needed by styled-components",
-    "create-react-class": "is peer",
-    "graphql": "is peer",
-    "graphql-tag": "is peer",
-    "polished": "is peer",
-    "prop-types": "is peer",
-    "react-is": "is peer",
-    "typescript": "is peer",
-    "webpack": "is peer",
-    "@mui/system": "is peer",
-    "graphql-language-service-utils": "is peer"
+    "react-spinners-kit": "forked because it added dependencies via non-peer-dependencies. See: https://github.com/dmitrymorozoff/react-spinners-kit/pull/18. Wait for release > 1.9.1",
+    "coa": "2.0.2: fixed because of malware attack, see https://github.com/veged/coa/issues/99"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.16.0",
@@ -125,8 +106,20 @@
     "rimraf": "3.0.2",
     "vercel": "23.1.2"
   },
+  "peerDependencies": {
+    "babel-plugin-styled-components": "1.13.3",
+    "create-react-class": "15.7.0",
+    "graphql": "16.0.1",
+    "graphql-tag": "2.12.6",
+    "polished": "1.x",
+    "prop-types": "15.7.2",
+    "react-is": "17.0.2",
+    "typescript": "4.4.4",
+    "webpack": "5.62.1"
+  },
   "resolutions": {
-    "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest"
+    "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest",
+    "coa": "2.0.2"
   },
   "license": "ISC",
   "eslintConfig": {
@@ -137,6 +130,5 @@
     "not dead",
     "not ie > 0",
     "not op_mini all"
-  ],
-  "packageManager": "yarn@3.1.0"
+  ]
 }
