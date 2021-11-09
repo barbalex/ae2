@@ -101,7 +101,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.15.5":
+"@babel/core@npm:^7.15.5, @babel/core@npm:^7.16.0":
   version: 7.16.0
   resolution: "@babel/core@npm:7.16.0"
   dependencies:
@@ -4351,6 +4351,7 @@ __metadata:
   resolution: "artdaten@workspace:."
   dependencies:
     "@apollo/client": 3.4.17
+    "@babel/core": ^7.16.0
     "@babel/eslint-parser": 7.16.0
     "@fontsource/roboto": 4.5.1
     "@graphile-contrib/pg-order-by-related": 1.0.0-beta.6
@@ -4363,9 +4364,10 @@ __metadata:
     "@typescript-eslint/eslint-plugin": 5.3.1
     "@typescript-eslint/parser": 5.3.1
     autosuggest-highlight: 3.2.0
+    babel-plugin-styled-components: 1.13.3
     copy-to-clipboard: 3.3.1
     copyfiles: 2.4.1
-    create-react-class: ^15.7.0
+    create-react-class: 15.7.0
     date-fns: 2.25.0
     dexie: 3.0.3
     eslint: 8.2.0
@@ -4398,8 +4400,8 @@ __metadata:
     gatsby-transformer-remark: 5.1.1
     gatsby-transformer-sharp: 4.1.0
     graphiql: 1.5.1
-    graphql: ^16.0.1
-    graphql-tag: ^2.12.6
+    graphql: 16.0.1
+    graphql-tag: 2.12.6
     is-uuid: 1.0.2
     isomorphic-fetch: 3.0.0
     js-file-download: 0.4.12
@@ -4412,7 +4414,7 @@ __metadata:
     polished: 1.x
     postgraphile: 4.12.5
     postgraphile-plugin-connection-filter: 2.2.2
-    prop-types: ^15.7.2
+    prop-types: 15.7.2
     react: 17.0.2
     react-autosuggest: 10.1.0
     react-data-grid: 6.1.0
@@ -4422,7 +4424,7 @@ __metadata:
     react-helmet: 6.1.0
     react-highlight-words: 0.17.0
     react-icons: 4.3.1
-    react-is: ^17.0.2
+    react-is: 17.0.2
     react-linkify: 0.x
     react-reflex: 4.0.3
     react-resize-detector: 6.7.6
@@ -4433,12 +4435,12 @@ __metadata:
     rimraf: 3.0.2
     simplebar-react: 2.3.6
     styled-components: 5.3.3
-    typescript: ^4.4.4
+    typescript: 4.4.4
     typography: 0.16.21
     use-debounce: 7.0.1
     use-subscription: 1.5.1
     vercel: 23.1.2
-    webpack: ^5.62.2
+    webpack: 5.62.2
     xlsx: 0.17.3
   languageName: unknown
   linkType: soft
@@ -4687,7 +4689,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"babel-plugin-styled-components@npm:>= 1.12.0":
+"babel-plugin-styled-components@npm:1.13.3, babel-plugin-styled-components@npm:>= 1.12.0":
   version: 1.13.3
   resolution: "babel-plugin-styled-components@npm:1.13.3"
   dependencies:
@@ -6157,7 +6159,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"create-react-class@npm:^15.7.0":
+"create-react-class@npm:15.7.0":
   version: 15.7.0
   resolution: "create-react-class@npm:15.7.0"
   dependencies:
@@ -9825,7 +9827,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-tag@npm:^2.12.3, graphql-tag@npm:^2.12.6":
+"graphql-tag@npm:2.12.6, graphql-tag@npm:^2.12.3":
   version: 2.12.6
   resolution: "graphql-tag@npm:2.12.6"
   dependencies:
@@ -9863,17 +9865,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graphql@npm:16.0.1":
+  version: 16.0.1
+  resolution: "graphql@npm:16.0.1"
+  checksum: e2fbddc78ac93b84af5b1871cdced5ce796102373b91f888983e8bae26856788833aa641f5da15b9e4da05cef2edcc82b744a86a27e7e1ef6c9ce422571ab16c
+  languageName: node
+  linkType: hard
+
 "graphql@npm:>=0.9 <0.14 || ^14.0.2 || ^15.4.0, graphql@npm:^0.6.0 || ^0.7.0 || ^0.8.0-b || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.2 || ^15.0.0, graphql@npm:^15.4.0, graphql@npm:^15.6.1":
   version: 15.7.2
   resolution: "graphql@npm:15.7.2"
   checksum: eacb746e2981d0c346ef7365601873963af5356f64ce4d890ab89d213c67bf5bc1ae957b93c3902198798774c842b55dff219f38bad858691765e4debc265750
-  languageName: node
-  linkType: hard
-
-"graphql@npm:^16.0.1":
-  version: 16.0.1
-  resolution: "graphql@npm:16.0.1"
-  checksum: e2fbddc78ac93b84af5b1871cdced5ce796102373b91f888983e8bae26856788833aa641f5da15b9e4da05cef2edcc82b744a86a27e7e1ef6c9ce422571ab16c
   languageName: node
   linkType: hard
 
@@ -15571,7 +15573,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:^15.5.4, prop-types@npm:^15.5.8, prop-types@npm:^15.6.0, prop-types@npm:^15.6.1, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2":
+"prop-types@npm:15.7.2, prop-types@npm:^15.5.4, prop-types@npm:^15.5.8, prop-types@npm:^15.6.0, prop-types@npm:^15.6.1, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2":
   version: 15.7.2
   resolution: "prop-types@npm:15.7.2"
   dependencies:
@@ -15942,17 +15944,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-is@npm:17.0.2, react-is@npm:^17.0.2":
+  version: 17.0.2
+  resolution: "react-is@npm:17.0.2"
+  checksum: 9d6d111d8990dc98bc5402c1266a808b0459b5d54830bbea24c12d908b536df7883f268a7868cfaedde3dd9d4e0d574db456f84d2e6df9c4526f99bb4b5344d8
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^16.12.0, react-is@npm:^16.7.0, react-is@npm:^16.8.1":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: f7a19ac3496de32ca9ae12aa030f00f14a3d45374f1ceca0af707c831b2a6098ef0d6bdae51bd437b0a306d7f01d4677fcc8de7c0d331eb47ad0f46130e53c5f
-  languageName: node
-  linkType: hard
-
-"react-is@npm:^17.0.2":
-  version: 17.0.2
-  resolution: "react-is@npm:17.0.2"
-  checksum: 9d6d111d8990dc98bc5402c1266a808b0459b5d54830bbea24c12d908b536df7883f268a7868cfaedde3dd9d4e0d574db456f84d2e6df9c4526f99bb4b5344d8
   languageName: node
   linkType: hard
 
@@ -18520,7 +18522,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.4.4":
+"typescript@npm:4.4.4":
   version: 4.4.4
   resolution: "typescript@npm:4.4.4"
   bin:
@@ -18540,7 +18542,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.4.4#~builtin<compat/typescript>":
+"typescript@patch:typescript@4.4.4#~builtin<compat/typescript>":
   version: 4.4.4
   resolution: "typescript@patch:typescript@npm%3A4.4.4#~builtin<compat/typescript>::version=4.4.4&hash=ddd1e8"
   bin:
@@ -19397,7 +19399,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.58.1, webpack@npm:^5.62.2":
+"webpack@npm:5.62.2, webpack@npm:^5.58.1":
   version: 5.62.2
   resolution: "webpack@npm:5.62.2"
   dependencies:
