@@ -5,6 +5,9 @@ services:
     container_name: ae_db
     restart: always
     image: db
+    # ensure enough shared memory - docker only allows 64mb
+    # https://stackoverflow.com/a/56754077/712005
+    shm_size: 1g
     build:
       context: ./db
     env_file:
