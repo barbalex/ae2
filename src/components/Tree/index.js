@@ -33,6 +33,7 @@ const Container = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   ul {
     margin: 0;
     list-style: none;
@@ -217,7 +218,9 @@ const Tree = ({ dimensions }) => {
     <ErrorBoundary>
       <Container>
         <Filter dimensions={dimensions} />
-        <SimpleBar style={{ maxHeight: height, height: '100%' }}>
+        <SimpleBar
+          style={{ height: '100%', flex: '1 1 auto', overflowY: 'auto' }}
+        >
           {({ scrollableNodeRef, contentNodeRef }) => {
             return (
               <AutoSizerContainer>
