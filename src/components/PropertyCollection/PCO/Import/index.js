@@ -19,7 +19,6 @@ import ReactDataGrid from 'react-data-grid'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
-import { withResizeDetector } from 'react-resize-detector'
 import { getSnapshot } from 'mobx-state-tree'
 
 import createPCOMutation from './createPCOMutation'
@@ -200,7 +199,7 @@ const importPcoQuery = gql`
   }
 `
 
-const ImportPco = ({ setImport, pCO, height }) => {
+const ImportPco = ({ setImport, pCO }) => {
   const client = useApolloClient()
   const mobxStore = useContext(mobxStoreContext)
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
@@ -503,7 +502,7 @@ const ImportPco = ({ setImport, pCO, height }) => {
   const rowGetter = useCallback((i) => importData[i], [importData])
 
   return (
-    <SimpleBar style={{ maxHeight: height, height: '100%' }}>
+    <SimpleBar style={{ maxHeight: '100%', height: '100%' }}>
       <Container>
         <FirstTitle>Anforderungen an zu importierende Eigenschaften</FirstTitle>
         <HowToImportContainer>
@@ -1025,4 +1024,4 @@ const ImportPco = ({ setImport, pCO, height }) => {
   )
 }
 
-export default withResizeDetector(observer(ImportPco))
+export default observer(ImportPco)
