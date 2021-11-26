@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import omit from 'lodash/omit'
 import union from 'lodash/union'
 import flatten from 'lodash/flatten'
@@ -278,7 +277,7 @@ const ImportPco = ({ setImport, pCO, height }) => {
     }
   }
   const objectIdsUnreal = useMemo(() => {
-    const realObjectIds = get(importPcoData, 'allObjects.nodes', []).map(
+    const realObjectIds = (importPcoData?.allObjects?.nodes ?? []).map(
       (o) => o.id,
     )
     return objectIds.filter((i) => !realObjectIds.includes(i))
@@ -290,11 +289,8 @@ const ImportPco = ({ setImport, pCO, height }) => {
         : undefined,
     [importPcoLoading, objectIds.length, objectIdsUnreal.length],
   )
-  const pCOfOriginsCheckData = get(
-    importPcoData,
-    'allPropertyCollections.nodes',
-    [],
-  )
+  const pCOfOriginsCheckData =
+    importPcoData?.allPropertyCollections?.nodes ?? []
   const pCOfOriginIdsAreReal = useMemo(
     () =>
       !importPcoLoading && pCOfOriginIds.length > 0
@@ -358,7 +354,7 @@ const ImportPco = ({ setImport, pCO, height }) => {
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0]
-    if (!!file) {
+    if (file) {
       const reader = new FileReader()
       reader.onload = async () => {
         const fileAsBinaryString = reader.result
@@ -858,7 +854,7 @@ const ImportPco = ({ setImport, pCO, height }) => {
               <ul>
                 <li>
                   <LiContainer>
-                    <div>"</div>
+                    <div>{'"'}</div>
                     {propertyKeysDontContainApostroph && (
                       <div>
                         <InlineIcon>
@@ -901,7 +897,7 @@ const ImportPco = ({ setImport, pCO, height }) => {
               <ul>
                 <li>
                   <LiContainer>
-                    <div>"</div>
+                    <div>{'"'}</div>
                     {propertyValuesDontContainApostroph && (
                       <div>
                         <InlineIcon>
@@ -965,7 +961,6 @@ const ImportPco = ({ setImport, pCO, height }) => {
                 getInputProps,
                 isDragActive,
                 isDragReject,
-                acceptedFiles,
               }) => {
                 if (isDragActive)
                   return (

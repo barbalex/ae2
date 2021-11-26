@@ -1,5 +1,4 @@
 import React, { useContext } from 'react'
-import get from 'lodash/get'
 import sortBy from 'lodash/sortBy'
 import styled from 'styled-components'
 import { useQuery, gql } from '@apollo/client'
@@ -50,21 +49,19 @@ const PCs = () => {
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
   const name = activeNodeArray.length > 1 ? activeNodeArray[1] : 'none'
 
-  const { data: pcsData, loading: pcsLoading, error: pcsError } = useQuery(
-    pcsQuery,
-    {
-      variables: {
-        name,
-      },
+  const {
+    data: pcsData,
+    loading: pcsLoading,
+    error: pcsError,
+  } = useQuery(pcsQuery, {
+    variables: {
+      name,
     },
-  )
+  })
 
   const pcs = sortBy(
-    get(
-      pcsData,
-      'organizationByName.propertyCollectionsByOrganizationId.nodes',
+    pcsData?.organizationByName?.propertyCollectionsByOrganizationId?.nodes ??
       [],
-    ),
     'name',
   )
 
