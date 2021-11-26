@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useContext } from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import Paper from '@mui/material/Paper'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
@@ -71,14 +70,15 @@ const Organization = () => {
   const mobxStore = useContext(mobxStoreContext)
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
 
-  const { data: orgData, loading: orgLoading, error: orgError } = useQuery(
-    orgQuery,
-    {
-      variables: {
-        orgName: activeNodeArray[1],
-      },
+  const {
+    data: orgData,
+    loading: orgLoading,
+    error: orgError,
+  } = useQuery(orgQuery, {
+    variables: {
+      orgName: activeNodeArray[1],
     },
-  )
+  })
 
   const [tab, setTab] = useState(0)
 
@@ -86,7 +86,7 @@ const Organization = () => {
     setTab(value)
   }, [])
 
-  const org = get(orgData, 'organizationByName', {})
+  const org = orgData?.organizationByName ?? {}
 
   if (orgLoading) {
     return <Spinner />

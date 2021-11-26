@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import omit from 'lodash/omit'
 import union from 'lodash/union'
 import flatten from 'lodash/flatten'
@@ -306,7 +305,7 @@ const ImportRco = ({ setImport, pCO, height }) => {
   }
 
   const objectIdsUnreal = useMemo(() => {
-    const realIds = get(importRcoData, 'allObjects.nodes', []).map((o) => o.id)
+    const realIds = (importRcoData?.allObjects?.nodes ?? []).map((o) => o.id)
     return objectIds.filter((i) => !realIds.includes(i))
   }, [importRcoData, objectIds])
   const objectIdsAreReal = useMemo(
@@ -317,7 +316,7 @@ const ImportRco = ({ setImport, pCO, height }) => {
     [importRcoLoading, objectIds.length, objectIdsUnreal.length],
   )
   const objectRelationIdsUnreal = useMemo(() => {
-    const realIds = get(importRcoData, 'allObjectRelations.nodes', []).map(
+    const realIds = (importRcoData?.allObjectRelations?.nodes ?? []).map(
       (o) => o.id,
     )
     return objectIds.filter((i) => !realIds.includes(i))
@@ -334,7 +333,7 @@ const ImportRco = ({ setImport, pCO, height }) => {
     ],
   )
   const pCOfOriginIdsUnreal = useMemo(() => {
-    const realIds = get(importRcoData, 'allPropertyCollections.nodes', []).map(
+    const realIds = (importRcoData?.allPropertyCollections?.nodes ?? []).map(
       (o) => o.id,
     )
     return pCOfOriginIds.filter((i) => !realIds.includes(i))
@@ -414,7 +413,7 @@ const ImportRco = ({ setImport, pCO, height }) => {
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0]
-    if (!!file) {
+    if (file) {
       const reader = new FileReader()
       reader.onload = () => {
         const fileAsBinaryString = reader.result
@@ -1069,7 +1068,7 @@ const ImportRco = ({ setImport, pCO, height }) => {
               <ul>
                 <li>
                   <LiContainer>
-                    <div>"</div>
+                    <div>{'"'}</div>
                     {propertyKeysDontContainApostroph && (
                       <div>
                         <InlineIcon>
@@ -1112,7 +1111,7 @@ const ImportRco = ({ setImport, pCO, height }) => {
               <ul>
                 <li>
                   <LiContainer>
-                    <div>"</div>
+                    <div>{'"'}</div>
                     {propertyValuesDontContainApostroph && (
                       <div>
                         <InlineIcon>
@@ -1176,7 +1175,6 @@ const ImportRco = ({ setImport, pCO, height }) => {
                 getInputProps,
                 isDragActive,
                 isDragReject,
-                acceptedFiles,
               }) => {
                 if (isDragActive)
                   return (
