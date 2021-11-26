@@ -1,5 +1,6 @@
 const constants = () => ({
   appBarHeight: 63,
+  columnWidth: 600,
   export: { properties: { columnWidth: 400 }, maxFields: 35 },
   altTaxonomies: ['CSCF (2009)', 'NISM (2010)', 'SISF (2005)'],
   sidebar: {

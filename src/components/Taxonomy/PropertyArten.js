@@ -7,6 +7,7 @@ import format from 'date-fns/format'
 import { useApolloClient } from '@apollo/client'
 
 import updateTaxonomyMutationArten from './updateTaxonomyMutationArten'
+import onBlurArten from './onBlurArten'
 
 const Container = styled.div`
   margin: 5px 0;
@@ -25,53 +26,18 @@ const Property = ({ taxonomy, field, label, type = 'text', disabled }) => {
   const onChange = useCallback((event) => setValue(event.target.value), [])
 
   const [fieldError, setFieldError] = useState()
-  const onBlur = useCallback(() => {
-    if (value !== taxonomy[field]) {
-      const variables = {
-        id: taxonomy.id,
-        name: field === 'name' ? value : taxonomy.name,
-        description: field === 'description' ? value : taxonomy.description,
-        links: field === 'links' ? value.split(',') : taxonomy.links,
-        organizationId:
-          field === 'organizationId' ? value : taxonomy.organizationId,
-        lastUpdated: field === 'lastUpdated' ? value : taxonomy.lastUpdated,
-        importedBy: field === 'importedBy' ? value : taxonomy.importedBy,
-        termsOfUse: field === 'termsOfUse' ? value : taxonomy.termsOfUse,
-        type: taxonomy.type,
-      }
-      try {
-        client.mutate({
-          mutation: updateTaxonomyMutationArten,
-          variables,
-          optimisticResponse: {
-            updateTaxonomyById: {
-              taxonomy: {
-                id: taxonomy.id,
-                name: field === 'name' ? value : taxonomy.name,
-                description:
-                  field === 'description' ? value : taxonomy.description,
-                links: field === 'links' ? value.split(',') : taxonomy.links,
-                organizationId:
-                  field === 'organizationId' ? value : taxonomy.organizationId,
-                lastUpdated:
-                  field === 'lastUpdated' ? value : taxonomy.lastUpdated,
-                importedBy:
-                  field === 'importedBy' ? value : taxonomy.importedBy,
-                termsOfUse:
-                  field === 'termsOfUse' ? value : taxonomy.termsOfUse,
-                type: taxonomy.type,
-                __typename: 'Taxonomy',
-              },
-              __typename: 'Taxonomy',
-            },
-            __typename: 'Mutation',
-          },
-        })
-      } catch (error) {
-        setFieldError(error)
-      }
-    }
-  }, [client, field, taxonomy, value])
+  const onBlur = useCallback(
+    () =>
+      onBlurArten({
+        client,
+        field,
+        taxonomy,
+        value,
+        prevValue: taxonomy[field],
+        setFieldError,
+      }),
+    [client, field, taxonomy, value],
+  )
 
   return (
     <Container>
@@ -103,7 +69,9 @@ const Property = ({ taxonomy, field, label, type = 'text', disabled }) => {
           variant="standard"
         />
         {!!fieldError && (
-          <FormHelperText id={`${label}ErrorText`}>{fieldError}</FormHelperText>
+          <FormHelperText id={`${label}ErrorText`}>
+            {fieldError?.message}
+          </FormHelperText>
         )}
       </StyledFormControl>
     </Container>
