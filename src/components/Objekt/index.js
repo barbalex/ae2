@@ -1,6 +1,5 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import uniqBy from 'lodash/uniqBy'
 import { useQuery } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -54,15 +53,12 @@ const Objekt = ({ stacked = false, height }) => {
     },
   })
 
-  const objekt = get(objectData, 'objectById')
+  const objekt = objectData?.objectById
   if (!objekt) return <div />
-  const propertyCollectionObjects = get(
-    objekt,
-    'propertyCollectionObjectsByObjectId.nodes',
-    [],
-  )
-  const relations = get(objekt, 'relationsByObjectId.nodes', [])
-  const synonyms = get(objekt, 'synonymsByObjectId.nodes', [])
+  const propertyCollectionObjects =
+    objekt?.propertyCollectionObjectsByObjectId?.nodes ?? []
+  const relations = objekt?.relationsByObjectId?.nodes ?? []
+  const synonyms = objekt?.synonymsByObjectId?.nodes ?? []
   const synonymObjects = synonyms.map((s) => s.objectByObjectIdSynonym)
   const propertyCollectionIds = propertyCollectionObjects.map(
     (pco) => pco.propertyCollectionId,
@@ -71,16 +67,17 @@ const Objekt = ({ stacked = false, height }) => {
   synonymObjects.forEach((synonym) => {
     propertyCollectionObjectsOfSynonyms = [
       ...propertyCollectionObjectsOfSynonyms,
-      ...get(synonym, 'propertyCollectionObjectsByObjectId.nodes', []),
+      ...(synonym?.propertyCollectionObjectsByObjectId?.nodes ?? []),
     ]
   })
   propertyCollectionObjectsOfSynonyms = uniqBy(
     propertyCollectionObjectsOfSynonyms,
     (pco) => pco.propertyCollectionId,
   )
-  propertyCollectionObjectsOfSynonyms = propertyCollectionObjectsOfSynonyms.filter(
-    (pco) => !propertyCollectionIds.includes(pco.propertyCollectionId),
-  )
+  propertyCollectionObjectsOfSynonyms =
+    propertyCollectionObjectsOfSynonyms.filter(
+      (pco) => !propertyCollectionIds.includes(pco.propertyCollectionId),
+    )
 
   if (objectLoading) return <Spinner />
   if (objectError) {

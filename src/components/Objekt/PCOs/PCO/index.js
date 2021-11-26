@@ -9,7 +9,6 @@ import {
   MdInfo as InfoIcon,
   MdInfoOutline as InfoOutlineIcon,
 } from 'react-icons/md'
-import get from 'lodash/get'
 import sortBy from 'lodash/sortBy'
 import styled from 'styled-components'
 
@@ -57,8 +56,8 @@ const PCO = ({ pCO, relations, stacked }) => {
   const [expanded, setExpanded] = useState(false)
   const [pCDescriptionExpanded, setPCDescriptionExpanded] = useState(false)
 
-  const pC = get(pCO, 'propertyCollectionByPropertyCollectionId', {})
-  const pcname = get(pC, 'name', '(Name fehlt)')
+  const pC = pCO?.propertyCollectionByPropertyCollectionId ?? {}
+  const pcname = pC?.name ?? '(Name fehlt)'
   // never pass null to object.entries!!!
   const properties = JSON.parse(pCO.properties) || {}
 
@@ -67,6 +66,7 @@ const PCO = ({ pCO, relations, stacked }) => {
     (o) => o[1] || o[1] === 0 || o[1] === false,
   )
   propertiesArray = sortBy(propertiesArray, (e) => e[0]).filter(
+    // eslint-disable-next-line no-unused-vars
     ([key, value]) => value || value === 0 || value === false,
   )
   const relationsTitleText =

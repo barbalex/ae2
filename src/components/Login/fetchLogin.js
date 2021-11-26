@@ -1,7 +1,6 @@
 import { navigate } from 'gatsby'
 
 import jwtDecode from 'jwt-decode'
-import get from 'lodash/get'
 
 import loginDbMutation from './loginDbMutation'
 
@@ -62,7 +61,7 @@ const fetchLogin = async ({
     }
     return console.log(error)
   }
-  const jwtToken = get(result, 'data.login.jwtToken')
+  const jwtToken = result?.data?.login?.jwtToken
   if (jwtToken) {
     const tokenDecoded = jwtDecode(jwtToken)
     const { username } = tokenDecoded
@@ -87,7 +86,7 @@ const fetchLogin = async ({
       changeName('')
       changePass('')
       changeLoginSuccessfull(false)
-      if (!!historyAfterLogin) {
+      if (historyAfterLogin) {
         navigate(historyAfterLogin)
         setHistoryAfterLogin('')
       } else {
