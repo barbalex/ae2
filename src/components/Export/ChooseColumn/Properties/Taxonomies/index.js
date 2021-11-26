@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import groupBy from 'lodash/groupBy'
 import sumBy from 'lodash/sumBy'
 import { useQuery, gql } from '@apollo/client'
@@ -73,11 +72,8 @@ const Properties = ({ taxonomiesExpanded, onToggleTaxonomies }) => {
     },
   )
 
-  const taxProperties = get(
-    propsByTaxData,
-    'taxPropertiesByTaxonomiesFunction.nodes',
-    [],
-  )
+  const taxProperties =
+    propsByTaxData?.taxPropertiesByTaxonomiesFunction?.nodes ?? []
 
   const taxPropertiesByTaxonomy = groupBy(taxProperties, 'taxonomyName')
   const taxPropertiesFields = groupBy(taxProperties, 'propertyName')
