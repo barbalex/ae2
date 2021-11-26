@@ -1,38 +1,87 @@
 import React, { useState, useCallback } from 'react'
 import TextField from '@mui/material/TextField'
+import FormControl from '@mui/material/FormControl'
+import FormHelperText from '@mui/material/FormHelperText'
 import styled from 'styled-components'
 import format from 'date-fns/format'
 import { useApolloClient } from '@apollo/client'
 
-import onBlurArten from './onBlurArten'
-import ErrorBoundary from '../shared/ErrorBoundary'
+import updateTaxonomyMutationArten from './updateTaxonomyMutationArten'
 
 const Container = styled.div`
   margin: 5px 0;
 `
+const StyledFormControl = styled(FormControl)`
+  padding-bottom: 19px !important;
+  > div:before {
+    border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+  }
+`
 
 const Property = ({ taxonomy, field, label, type = 'text', disabled }) => {
   const client = useApolloClient()
-  const [value, setValue] = useState(taxonomy[field] || '')
 
-  const onChange = useCallback((event) => {
-    setValue(event.target.value)
-  }, [])
-  const onBlur = useCallback(
-    (event) =>
-      onBlurArten({
-        client,
-        field,
-        taxonomy,
-        value: event.target.value,
-        prevValue: taxonomy[field],
-      }),
-    [client, field, taxonomy],
-  )
+  const [value, setValue] = useState(taxonomy[field] || '')
+  const onChange = useCallback((event) => setValue(event.target.value), [])
+
+  const [fieldError, setFieldError] = useState()
+  const onBlur = useCallback(() => {
+    if (value !== taxonomy[field]) {
+      const variables = {
+        id: taxonomy.id,
+        name: field === 'name' ? value : taxonomy.name,
+        description: field === 'description' ? value : taxonomy.description,
+        links: field === 'links' ? value.split(',') : taxonomy.links,
+        organizationId:
+          field === 'organizationId' ? value : taxonomy.organizationId,
+        lastUpdated: field === 'lastUpdated' ? value : taxonomy.lastUpdated,
+        importedBy: field === 'importedBy' ? value : taxonomy.importedBy,
+        termsOfUse: field === 'termsOfUse' ? value : taxonomy.termsOfUse,
+        type: taxonomy.type,
+      }
+      try {
+        client.mutate({
+          mutation: updateTaxonomyMutationArten,
+          variables,
+          optimisticResponse: {
+            updateTaxonomyById: {
+              taxonomy: {
+                id: taxonomy.id,
+                name: field === 'name' ? value : taxonomy.name,
+                description:
+                  field === 'description' ? value : taxonomy.description,
+                links: field === 'links' ? value.split(',') : taxonomy.links,
+                organizationId:
+                  field === 'organizationId' ? value : taxonomy.organizationId,
+                lastUpdated:
+                  field === 'lastUpdated' ? value : taxonomy.lastUpdated,
+                importedBy:
+                  field === 'importedBy' ? value : taxonomy.importedBy,
+                termsOfUse:
+                  field === 'termsOfUse' ? value : taxonomy.termsOfUse,
+                type: taxonomy.type,
+                __typename: 'Taxonomy',
+              },
+              __typename: 'Taxonomy',
+            },
+            __typename: 'Mutation',
+          },
+        })
+      } catch (error) {
+        setFieldError(error)
+      }
+    }
+  }, [client, field, taxonomy, value])
 
   return (
-    <ErrorBoundary>
-      <Container>
+    <Container>
+      <StyledFormControl
+        fullWidth
+        disabled={disabled}
+        error={fieldError}
+        aria-describedby={`${label}ErrorText`}
+        variant="standard"
+      >
         <TextField
           autoFocus={label === 'Name' && !value}
           label={label}
@@ -53,8 +102,11 @@ const Property = ({ taxonomy, field, label, type = 'text', disabled }) => {
           type={type}
           variant="standard"
         />
-      </Container>
-    </ErrorBoundary>
+        {!!fieldError && (
+          <FormHelperText id={`${label}ErrorText`}>{fieldError}</FormHelperText>
+        )}
+      </StyledFormControl>
+    </Container>
   )
 }
 
