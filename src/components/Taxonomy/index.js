@@ -8,7 +8,6 @@ import Input from '@mui/material/Input'
 import InputLabel from '@mui/material/InputLabel'
 import FormControl from '@mui/material/FormControl'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import format from 'date-fns/format'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -135,13 +134,13 @@ const Taxonomy = () => {
   const editingArten = editing && tax?.type === 'ART'
   const editingLr = editing && tax?.type === 'LEBENSRAUM'
   const { username } = login
-  const allUsers = get(allUsersData, 'allUsers.nodes', [])
+  const allUsers = allUsersData?.allUsers?.nodes ?? []
   const user = allUsers.find((u) => u.name === username)
-  const orgsUserIsTaxWriter = get(user, 'organizationUsersByUserId.nodes', [])
+  const orgsUserIsTaxWriter = (user?.organizationUsersByUserId?.nodes ?? [])
     .filter((o) => ['orgTaxonomyWriter', 'orgAdmin'].includes(o.role))
     .map((o) => ({
       id: o.organizationId,
-      name: get(o, 'organizationByOrganizationId.name', ''),
+      name: o?.organizationByOrganizationId?.name ?? '',
     }))
   const userIsTaxWriter = orgsUserIsTaxWriter.length > 0
   const userIsThisTaxWriter =

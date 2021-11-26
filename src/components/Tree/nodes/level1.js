@@ -1,11 +1,10 @@
-import get from 'lodash/get'
 import union from 'lodash/union'
 import jwtDecode from 'jwt-decode'
 
-const level1 = ({ treeData, activeNodeArray, treeDataLoading, mobxStore }) => {
+const level1 = ({ treeData, treeDataLoading, mobxStore }) => {
   if (!treeData) return []
   const loading = treeDataLoading
-  const pcCount = get(treeData, 'allPropertyCollections.totalCount', 0)
+  const pcCount = treeData?.allPropertyCollections?.totalCount ?? 0
   const artTaxonomiesCount = treeData?.artTaxonomies?.totalCount
   const lrTaxonomiesCount = treeData?.lrTaxonomies?.totalCount
   const artenInfo =
@@ -20,7 +19,7 @@ const level1 = ({ treeData, activeNodeArray, treeDataLoading, mobxStore }) => {
       : `(${lrTaxonomiesCount} Taxonomie${lrTaxonomiesCount !== 1 ? 'n' : ''})`
   const pcInfo = loading && pcCount === 0 ? '(...)' : `(${pcCount})`
   const { token } = mobxStore.login
-  const userCount = get(treeData, 'allUsers.totalCount', 0)
+  const userCount = treeData?.allUsers?.totalCount ?? 0
   const userInfo = loading && userCount === 0 ? '(...)' : `(${userCount})`
   const nodes = [
     {
@@ -50,7 +49,7 @@ const level1 = ({ treeData, activeNodeArray, treeDataLoading, mobxStore }) => {
       childrenCount: pcCount,
       menuType: 'CmPCFolder',
     },
-    ...(!!token
+    ...(token
       ? [
           {
             id: 'Benutzer',
@@ -64,17 +63,17 @@ const level1 = ({ treeData, activeNodeArray, treeDataLoading, mobxStore }) => {
         ]
       : []),
   ]
-  if (!!token) {
+  if (token) {
     const tokenDecoded = jwtDecode(token)
     const { username } = tokenDecoded
-    const user = get(treeData, 'allUsers.nodes', []).find(
+    const user = (treeData?.allUsers?.nodes ?? []).find(
       (u) => u.name === username,
     )
-    const orgUsers = get(user, 'organizationUsersByUserId.nodes', [])
+    const orgUsers = user?.organizationUsersByUserId?.nodes ?? []
     const orgsUserIsAdminIn = union(
       orgUsers
         .filter((o) => o.role === 'orgAdmin')
-        .map((u) => get(u, 'organizationByOrganizationId.name')),
+        .map((u) => u?.organizationByOrganizationId?.name),
     )
     const orgInfo =
       loading && orgsUserIsAdminIn.length === 0
