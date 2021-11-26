@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import groupBy from 'lodash/groupBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -67,11 +66,8 @@ const PcoList = ({ pcoExpanded, onTogglePco }) => {
       queryExportTaxonomies: exportTaxonomies.length > 0,
     },
   })
-  const pcoProperties = get(
-    propsData,
-    'pcoPropertiesByTaxonomiesFunction.nodes',
-    [],
-  )
+  const pcoProperties =
+    propsData?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
   const pcoPropertiesByPropertyCollection = groupBy(
     pcoProperties,
     'propertyCollectionName',

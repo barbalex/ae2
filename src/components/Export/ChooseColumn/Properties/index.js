@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useContext } from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
@@ -91,16 +90,10 @@ const Properties = () => {
     }
   }, [rcoExpanded])
 
-  const pcoProperties = get(
-    propsByTaxData,
-    'pcoPropertiesByTaxonomiesFunction.nodes',
-    [],
-  )
-  const rcoProperties = get(
-    propsByTaxData,
-    'rcoPropertiesByTaxonomiesFunction.nodes',
-    [],
-  )
+  const pcoProperties =
+    propsByTaxData?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
+  const rcoProperties =
+    propsByTaxData?.rcoPropertiesByTaxonomiesFunction?.nodes ?? []
 
   if (propsByTaxError) return `Error fetching data: ${propsByTaxError.message}`
 
