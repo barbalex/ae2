@@ -315,7 +315,7 @@ const PropertyCollection = () => {
                     Literaturzitats entsprechen. Aber möglichst kurz.
                   </span>
                   <br />
-                  <span>Beispiel: "Artwert (2000)".</span>
+                  <span>{'Beispiel: "Artwert (2000)".'}</span>
                   <br />
                   <br />
                   <span>
@@ -325,7 +325,7 @@ const PropertyCollection = () => {
                     Dann bitte das entsprechende Kürzel voranstellen.
                   </span>
                   <br />
-                  <span>Beispiel: "ZH Artwert (2000)".</span>
+                  <span>{'Beispiel: "ZH Artwert (2000)".'}</span>
                 </>
               }
             />
@@ -348,11 +348,9 @@ const PropertyCollection = () => {
                   </span>
                   <br />
                   <span>
-                    Beispiel: "Gigon A. et al. (1998): Blaue Listen der
-                    erfolgreich erhaltenen oder geförderten Tier- und
-                    Pflanzenarten der Roten Listen. Methodik und Anwendung in
-                    der nördlichen Schweiz. Veröff. Geobot. Inst. ETH, Stiftung
-                    Rübel, Zürich 129: 1-137 + 180 pp. Appendicesn".
+                    {
+                      'Beispiel: "Gigon A. et al. (1998): Blaue Listen der erfolgreich erhaltenen oder geförderten Tier- und Pflanzenarten der Roten Listen. Methodik und Anwendung in der nördlichen Schweiz. Veröff. Geobot. Inst. ETH, Stiftung Rübel, Zürich 129: 1-137 + 180 pp. Appendicesn".'
+                    }
                   </span>
                   <br />
                   <br />
@@ -362,8 +360,9 @@ const PropertyCollection = () => {
                   </span>
                   <br />
                   <span>
-                    Beispiel: "Eigenschaften von 207 Tier- und 885
-                    Pflanzenarten".
+                    {
+                      'Beispiel: "Eigenschaften von 207 Tier- und 885 Pflanzenarten".'
+                    }
                   </span>
                   <br />
                   <br />
@@ -482,22 +481,18 @@ const PropertyCollection = () => {
                   </span>
                   <br />
                   <span>
-                    "Importiert mit Einverständnis des Autors. Eine allfällige
-                    Weiterverbreitung ist nur mit dessen Zustimmung möglich"
+                    {
+                      '"Importiert mit Einverständnis des Autors. Eine allfällige Weiterverbreitung ist nur mit dessen Zustimmung möglich"'
+                    }
                   </span>
                   <br />
                   <br />
                   <span>Beispiel, wenn eigene Daten importiert werden:</span>
                   <br />
                   <span>
-                    "Open Data: Die veröffentlichten Daten dürfen mit Hinweis
-                    auf die Quelle vervielfältigt, verbreitet und weiter
-                    zugänglich gemacht, angereichert und bearbeitet sowie
-                    kommerziell genutzt werden. Für die Richtigkeit,
-                    Genauigkeit, Zuverlässigkeit und Vollständigkeit der
-                    bezogenen, ebenso wie der daraus erzeugten Daten und anderer
-                    mit Hilfe dieser Daten hergestellten Produkte wird indessen
-                    keine Haftung übernommen.
+                    {
+                      '"Open Data: Die veröffentlichten Daten dürfen mit Hinweis auf die Quelle vervielfältigt, verbreitet und weiter zugänglich gemacht, angereichert und bearbeitet sowie kommerziell genutzt werden. Für die Richtigkeit, Genauigkeit, Zuverlässigkeit und Vollständigkeit der bezogenen, ebenso wie der daraus erzeugten Daten und anderer mit Hilfe dieser Daten hergestellten Produkte wird indessen keine Haftung übernommen.'
+                    }
                   </span>
                 </>
               }
