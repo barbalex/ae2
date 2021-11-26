@@ -4,7 +4,6 @@ import uniqBy from 'lodash/uniqBy'
 import { useQuery } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
-import { withResizeDetector } from 'react-resize-detector'
 import { getSnapshot } from 'mobx-state-tree'
 
 import TaxonomyObjects from './TaxonomyObjects'
@@ -18,6 +17,7 @@ import ErrorBoundary from '../shared/ErrorBoundary'
 
 const Container = styled.div`
   height: 100%;
+  overflow: hidden;
 `
 const Container2 = styled.div`
   padding: 10px;
@@ -38,7 +38,7 @@ const SynonymTitle = styled(Title)`
   margin-bottom: 5px;
 `
 
-const Objekt = ({ stacked = false, height }) => {
+const Objekt = ({ stacked = false }) => {
   const mobxStore = useContext(mobxStoreContext)
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
 
@@ -87,7 +87,7 @@ const Objekt = ({ stacked = false, height }) => {
   return (
     <ErrorBoundary>
       <Container>
-        <SimpleBar style={{ maxHeight: height }}>
+        <SimpleBar style={{ maxHeight: '100%' }}>
           <FirstTitle>Taxonomie</FirstTitle>
           <TaxonomyObject objekt={objekt} stacked={stacked} />
           {synonymObjects.length > 0 && (
@@ -135,4 +135,4 @@ const Objekt = ({ stacked = false, height }) => {
   )
 }
 
-export default withResizeDetector(observer(Objekt))
+export default observer(Objekt)
