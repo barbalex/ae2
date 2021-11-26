@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import groupBy from 'lodash/groupBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -88,11 +87,8 @@ const RCOs = ({ rcoExpanded, onToggleRco }) => {
     },
   )
 
-  const rcoProperties = get(
-    propsByTaxData,
-    'rcoPropertiesByTaxonomiesFunction.nodes',
-    [],
-  )
+  const rcoProperties =
+    propsByTaxData?.rcoPropertiesByTaxonomiesFunction?.nodes ?? []
 
   const rcoPropertiesByPropertyCollection = groupBy(rcoProperties, (x) => {
     if (x.propertyCollectionName.includes(x.relationType)) {
@@ -101,11 +97,8 @@ const RCOs = ({ rcoExpanded, onToggleRco }) => {
     return `${x.propertyCollectionName}: ${x.relationType}`
   })
   // need to add BeziehungsPartnerId and BeziehungsPartnerName
-  const rcoCountByTaxonomyRelationType = get(
-    data,
-    'rcoCountByTaxonomyRelationTypeFunction.nodes',
-    [],
-  )
+  const rcoCountByTaxonomyRelationType =
+    data?.rcoCountByTaxonomyRelationTypeFunction?.nodes ?? []
   // in every key of rcoPropertiesByPropertyCollection
   // add id and name of Beziehungspartner
 

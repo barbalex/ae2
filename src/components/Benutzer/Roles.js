@@ -1,5 +1,4 @@
 import React from 'react'
-import get from 'lodash/get'
 import styled from 'styled-components'
 
 const Container = styled.div`
@@ -19,9 +18,9 @@ const Roles = ({ orgUsers }) => (
   <Container>
     <List>
       <ul>
-        {orgUsers.map(u => {
-          const orgName = get(u, 'organizationByOrganizationId.name', '')
-          const role = get(u, 'role', '')
+        {orgUsers.map((u) => {
+          const orgName = u?.organizationByOrganizationId?.name ?? ''
+          const role = u?.role ?? ''
           const val = `${orgName}: ${role}`
 
           return <li key={val}>{val}</li>
