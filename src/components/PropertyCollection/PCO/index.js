@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import omit from 'lodash/omit'
 import forOwn from 'lodash/forOwn'
 import union from 'lodash/union'
@@ -135,15 +134,14 @@ const PCO = ({ dimensions }) => {
     let pCO = []
     // collect all keys
     const allKeys = []
-    const pCORaw = get(
-      pcoData,
-      'propertyCollectionById.propertyCollectionObjectsByPropertyCollectionId.nodes',
-      [],
+    const pCORaw = (
+      pcoData?.propertyCollectionById
+        ?.propertyCollectionObjectsByPropertyCollectionId?.nodes ?? []
     ).map((p) => omit(p, ['__typename']))
     pCORaw.forEach((p) => {
       let nP = {}
       nP['Objekt ID'] = p.objectId
-      nP['Objekt Name'] = get(p, 'objectByObjectId.name', null)
+      nP['Objekt Name'] = p?.objectByObjectId?.name ?? null
       if (p.properties) {
         const props = JSON.parse(p.properties)
         forOwn(props, (value, key) => {
@@ -169,10 +167,9 @@ const PCO = ({ dimensions }) => {
     resizable: true,
     sortable: true,
   }))
-  const pCOWriters = get(
-    pcoData,
-    'propertyCollectionById.organizationByOrganizationId.organizationUsersByOrganizationId.nodes',
-    [],
+  const pCOWriters = (
+    pcoData?.propertyCollectionById?.organizationByOrganizationId
+      ?.organizationUsersByOrganizationId?.nodes ?? []
   ).filter((u) => ['orgAdmin', 'orgCollectionWriter'].includes(u.role))
   const writerNames = union(pCOWriters.map((w) => w.userByUserId.name))
   const { username } = login

@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import omit from 'lodash/omit'
 import forOwn from 'lodash/forOwn'
 import union from 'lodash/union'
@@ -140,17 +139,16 @@ const RCO = ({ dimensions }) => {
     let rCO = []
     // collect all keys
     const allKeys = []
-    const rCORaw = get(
-      rcoData,
-      'propertyCollectionById.relationsByPropertyCollectionId.nodes',
-      [],
+    const rCORaw = (
+      rcoData?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes ??
+      []
     ).map((p) => omit(p, ['__typename']))
     rCORaw.forEach((p) => {
       let nP = {}
       nP['Objekt ID'] = p.objectId
-      nP['Objekt Name'] = get(p, 'objectByObjectId.name', null)
+      nP['Objekt Name'] = p?.objectByObjectId?.name ?? null
       nP['Beziehung ID'] = p.objectIdRelation
-      nP['Beziehung Name'] = get(p, 'objectByObjectIdRelation.name', null)
+      nP['Beziehung Name'] = p?.objectByObjectIdRelation?.name ?? null
       nP['Art der Beziehung'] = p.relationType
       if (p.properties) {
         const props = JSON.parse(p.properties)
@@ -184,10 +182,9 @@ const RCO = ({ dimensions }) => {
     resizable: true,
     sortable: true,
   }))
-  const rCOWriters = get(
-    rcoData,
-    'propertyCollectionById.organizationByOrganizationId.organizationUsersByOrganizationId.nodes',
-    [],
+  const rCOWriters = (
+    rcoData?.propertyCollectionById?.organizationByOrganizationId
+      ?.organizationUsersByOrganizationId?.nodes ?? []
   ).filter((u) => ['orgAdmin', 'orgCollectionWriter'].includes(u.role))
   const writerNames = union(rCOWriters.map((w) => w.userByUserId.name))
   const { username } = login

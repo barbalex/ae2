@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdEdit as EditIcon, MdVisibility as ViewIcon } from 'react-icons/md'
@@ -11,7 +11,6 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import FormHelperText from '@mui/material/FormHelperText'
 import Checkbox from '@mui/material/Checkbox'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import format from 'date-fns/format'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -129,31 +128,31 @@ const PropertyCollection = () => {
     },
   })
 
-  const pC = get(pcData, 'propertyCollectionById', {})
-  const org = get(pC, 'organizationByOrganizationId.name', '')
+  const pC = useMemo(
+    () => pcData?.propertyCollectionById ?? {},
+    [pcData?.propertyCollectionById],
+  )
+  const org = pC?.organizationByOrganizationId?.name ?? ''
   const { username } = login
-  const allUsers = get(allUsersData, 'allUsers.nodes', [])
+  const allUsers = allUsersData?.allUsers?.nodes ?? []
   const user = allUsers.find((u) => u.name === username)
-  const orgsUserIsPCWriter = get(user, 'organizationUsersByUserId.nodes', [])
+  const orgsUserIsPCWriter = (user?.organizationUsersByUserId?.nodes ?? [])
     .filter((o) => ['orgCollectionWriter', 'orgAdmin'].includes(o.role))
     .map((o) => ({
       id: o.organizationId,
-      name: get(o, 'organizationByOrganizationId.name', ''),
+      name: o?.organizationByOrganizationId?.name ?? '',
     }))
   const userIsPCWriter = orgsUserIsPCWriter.length > 0
   const userIsThisPCWriter =
     !!orgsUserIsPCWriter.find((o) => o.id === pC.organizationId) ||
     (userIsPCWriter && !pC.organizationId)
   const idIsReferenced =
-    get(pC, 'propertyCollectionObjectsByPropertyCollectionId.totalCount', 0) >
+    (pC?.propertyCollectionObjectsByPropertyCollectionId?.totalCount ?? 0) >
       0 ||
-    get(pC, 'relationsByPropertyCollectionId.totalCount', 0) > 0 ||
-    get(
-      pC,
-      'propertyCollectionObjectsByPropertyCollectionOfOrigin.totalCount',
-      0,
-    ) > 0 ||
-    get(pC, 'relationsByPropertyCollectionOfOrigin.totalCount', 0) > 0
+    (pC?.relationsByPropertyCollectionId?.totalCount ?? 0) > 0 ||
+    (pC?.propertyCollectionObjectsByPropertyCollectionOfOrigin?.totalCount ??
+      0) > 0 ||
+    (pC?.relationsByPropertyCollectionOfOrigin?.totalCount ?? 0) > 0
   const importedBy = pC.importedBy
   const importedByUser = allUsers.find((u) => u.id === importedBy)
 
