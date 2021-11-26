@@ -1,9 +1,7 @@
-import get from 'lodash/get'
-
 const level2Taxonomy = ({ type, taxonomySort, taxonomies }) =>
   taxonomies.map((taxonomy) => {
     const level1Count = taxonomy?.topLevelObjects?.totalCount
-    const allObjectsCount = get(taxonomy, 'objectsByTaxonomyId.totalCount', 0)
+    const allObjectsCount = taxonomy?.objectsByTaxonomyId?.totalCount ?? 0
 
     return {
       id: taxonomy.id,

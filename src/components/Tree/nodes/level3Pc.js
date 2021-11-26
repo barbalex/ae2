@@ -1,20 +1,13 @@
-import get from 'lodash/get'
-
 const level3Pc = ({ treeData }) => {
   if (!treeData) return []
-  const pCId = get(treeData, 'level3Pc.id', null)
-  const pCName = get(treeData, 'level3Pc.name', null)
+  const pCId = treeData?.level3Pc?.id ?? null
+  const pCName = treeData?.level3Pc?.name ?? null
   if (!pCId) return []
-  const pCCount = get(
-    treeData,
-    'level3Pc.propertyCollectionObjectsByPropertyCollectionId.totalCount',
-    0,
-  )
-  const rCCount = get(
-    treeData,
-    'level3Pc.relationsByPropertyCollectionId.totalCount',
-    0,
-  )
+  const pCCount =
+    treeData?.level3Pc?.propertyCollectionObjectsByPropertyCollectionId
+      ?.totalCount ?? 0
+  const rCCount =
+    treeData?.level3Pc?.relationsByPropertyCollectionId?.totalCount ?? 0
 
   return [
     {

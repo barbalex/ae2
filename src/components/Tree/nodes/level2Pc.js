@@ -1,16 +1,11 @@
-import get from 'lodash/get'
-
 const level2Pc = ({ treeData }) => {
   if (!treeData) return []
-  const nodes = get(treeData, 'allPropertyCollections.nodes', [])
+  const nodes = treeData?.allPropertyCollections?.nodes ?? []
 
   return nodes.map((node) => {
-    const pCCount = get(
-      node,
-      'propertyCollectionObjectsByPropertyCollectionId.totalCount',
-      0,
-    )
-    const rCCount = get(node, 'relationsByPropertyCollectionId.totalCount', 0)
+    const pCCount =
+      node?.propertyCollectionObjectsByPropertyCollectionId?.totalCount ?? 0
+    const rCCount = node?.relationsByPropertyCollectionId?.totalCount ?? 0
     const count = pCCount + rCCount
 
     return {
