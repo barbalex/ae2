@@ -7,7 +7,6 @@ import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import groupBy from 'lodash/groupBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -88,11 +87,8 @@ const Taxonomy = ({ initiallyExpanded, tax, width = 500 }) => {
   const [expanded, setExpanded] = useState(initiallyExpanded)
   const onClickActions = useCallback(() => setExpanded(!expanded), [expanded])
 
-  const taxProperties = get(
-    propsByTaxData,
-    'taxPropertiesByTaxonomiesFunction.nodes',
-    [],
-  )
+  const taxProperties =
+    propsByTaxData?.taxPropertiesByTaxonomiesFunction?.nodes ?? []
   const taxPropertiesByTaxonomy = groupBy(taxProperties, 'taxonomyName')
 
   const columns = Math.floor(width / constants.export.properties.columnWidth)

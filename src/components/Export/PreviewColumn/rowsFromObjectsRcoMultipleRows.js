@@ -8,7 +8,6 @@
  * 2. add fields to that
  * 3. add row to additional rows
  */
-import get from 'lodash/get'
 import clone from 'lodash/clone'
 
 import booleanToJaNein from '../../../modules/booleanToJaNein'
@@ -39,11 +38,8 @@ const rowsFromObjectsRcoMultipleRows = ({
         p.relationtype === rco.relationType,
     )
     if (rcoP_id) {
-      const bezPartnerId = get(
-        thisObjectsRco[index],
-        'objectByObjectIdRelation.id',
-        null,
-      )
+      const bezPartnerId =
+        thisObjectsRco[index]?.objectByObjectIdRelation?.id ?? null
       rowToUse[
         `${conv(rcoP_id.pcname)}__${conv(
           rcoP_id.relationtype,
@@ -57,16 +53,11 @@ const rowsFromObjectsRcoMultipleRows = ({
         p.relationtype === rco.relationType,
     )
     if (rcoP_name) {
-      const bezPartnerTaxonomyName = get(
-        thisObjectsRco[index],
-        'objectByObjectIdRelation.taxonomyByTaxonomyId.name',
-        '',
-      )
-      const bezPartnerName = get(
-        thisObjectsRco[index],
-        'objectByObjectIdRelation.name',
-        '',
-      )
+      const bezPartnerTaxonomyName =
+        thisObjectsRco[index]?.objectByObjectIdRelation?.taxonomyByTaxonomyId
+          ?.name ?? ''
+      const bezPartnerName =
+        thisObjectsRco[index]?.objectByObjectIdRelation?.name ?? ''
       rowToUse[
         `${conv(rcoP_name.pcname)}__${conv(
           rcoP_name.relationtype,
@@ -95,9 +86,8 @@ const rowsFromObjectsRcoMultipleRows = ({
         `${conv(p.pcname)}__${conv(p.relationtype)}__${conv(p.pname)}`
       ] === undefined
     ) {
-      rowToUse[
-        `${conv(p.pcname)}__${conv(p.relationtype)}__${conv(p.pname)}`
-      ] = null
+      rowToUse[`${conv(p.pcname)}__${conv(p.relationtype)}__${conv(p.pname)}`] =
+        null
     }
   })
 }
