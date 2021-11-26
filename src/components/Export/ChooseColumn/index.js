@@ -174,10 +174,10 @@ const Export = ({ height }) => {
     },
   )
   /*
-  const rcoFilters = get(storeData, 'exportRcoFilters', []).map(d =>
+  const rcoFilters = (storeData?.exportRcoFilters ?? []).map(d =>
     omit(d, ['__typename']),
   )
-  const rcoProperties = get(storeData, 'exportRcoProperties', []).map(d =>
+  const rcoProperties = (storeData?.exportRcoProperties ?? []).map(d =>
     omit(d, ['__typename']),
   )
   const fetchRcoProperties = rcoProperties.length > 0
@@ -200,7 +200,7 @@ const Export = ({ height }) => {
 
   const onSetMessage = useCallback((message) => {
     setMessage(message)
-    if (!!message) {
+    if (message) {
       setTimeout(() => setMessage(''), 5000)
     }
   }, [])

@@ -111,6 +111,7 @@ const User = () => {
       await client.mutate({
         mutation,
         variables,
+        refetchQueries: ['TreeDataQuery'],
       })
     } catch (error) {
       const messages = error.graphQLErrors.map((x) => x.message).toString()

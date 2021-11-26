@@ -5,7 +5,7 @@ import { navigate } from 'gatsby'
 // otherwise apollo errors during the build
 // see: https://github.com/gatsbyjs/gatsby/issues/11225#issuecomment-457211628
 import 'isomorphic-fetch'
-import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles'
 
 import 'simplebar/dist/simplebar.min.css'
 
@@ -42,8 +42,7 @@ const App = ({ element }) => {
 
   const { setActiveNodeArray } = mobxStore
 
-  typeof window !== 'undefined' &&
-    setLoginFromIdb({ client: myClient, idb, mobxStore })
+  typeof window !== 'undefined' && setLoginFromIdb({ idb, mobxStore })
 
   // initiate activeNodeArray
   setActiveNodeArray(getActiveNodeArrayFromPathname())
@@ -58,7 +57,7 @@ const App = ({ element }) => {
         </ApolloProvider>
       </MobxProvider>
     </IdbProvider>
-  );
+  )
 }
 
 export default App

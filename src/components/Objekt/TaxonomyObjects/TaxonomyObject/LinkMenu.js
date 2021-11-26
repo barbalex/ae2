@@ -29,7 +29,7 @@ const ITEM_HEIGHT = 48
 const LinkMenu = ({ objekt }) => {
   const [anchorEl, setAnchorEl] = useState(null)
 
-  const props = JSON.parse(objekt?.properties ?? {}) || {}
+  const props = objekt?.properties ? JSON.parse(objekt?.properties) : {}
   const nameDeutsch = props?.['Name Deutsch'] ?? null
   const einheit = props?.Einheit ?? null
   const gattung = props?.Gattung
