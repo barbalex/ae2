@@ -3,7 +3,6 @@ import FormGroup from '@mui/material/FormGroup'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
@@ -80,22 +79,13 @@ const Filter = () => {
     },
   )
 
-  const [jointTaxonomiesExpanded, setJointTaxonomiesExpanded] = useState(false)
   const [taxonomiesExpanded, setTaxonomiesExpanded] = useState(false)
   const [pcoExpanded, setFilterExpanded] = useState(false)
   const [rcoExpanded, setPropertiesExpanded] = useState(false)
 
-  const onToggleJointTaxonomies = useCallback(() => {
-    setJointTaxonomiesExpanded(!jointTaxonomiesExpanded)
-    // close all others
-    setTaxonomiesExpanded(false)
-    setFilterExpanded(false)
-    setPropertiesExpanded(false)
-  }, [jointTaxonomiesExpanded])
   const onToggleTaxonomies = useCallback(() => {
     setTaxonomiesExpanded(!taxonomiesExpanded)
     // close all others
-    setJointTaxonomiesExpanded(false)
     setFilterExpanded(false)
     setPropertiesExpanded(false)
   }, [taxonomiesExpanded])
@@ -103,7 +93,6 @@ const Filter = () => {
     if (!pcoExpanded) {
       setFilterExpanded(true)
       // close all others
-      setJointTaxonomiesExpanded(false)
       setTaxonomiesExpanded(false)
       setPropertiesExpanded(false)
     } else {
@@ -114,7 +103,6 @@ const Filter = () => {
     if (!rcoExpanded) {
       setPropertiesExpanded(true)
       // close all others
-      setJointTaxonomiesExpanded(false)
       setTaxonomiesExpanded(false)
       setFilterExpanded(false)
     } else {
@@ -122,16 +110,10 @@ const Filter = () => {
     }
   }, [rcoExpanded])
 
-  const pcoProperties = get(
-    propsByTaxData,
-    'pcoPropertiesByTaxonomiesFunction.nodes',
-    [],
-  )
-  const rcoProperties = get(
-    propsByTaxData,
-    'rcoPropertiesByTaxonomiesFunction.nodes',
-    [],
-  )
+  const pcoProperties =
+    propsByTaxData?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
+  const rcoProperties =
+    propsByTaxData?.rcoPropertiesByTaxonomiesFunction?.nodes ?? []
 
   if (propsByTaxDataError) {
     return (
@@ -183,9 +165,7 @@ const Filter = () => {
         <Id />
         <Taxonomies
           taxonomiesExpanded={taxonomiesExpanded}
-          jointTaxonomiesExpanded={jointTaxonomiesExpanded}
           onToggleTaxonomies={onToggleTaxonomies}
-          onToggleJointTaxonomies={onToggleJointTaxonomies}
         />
         {pcoProperties.length > 0 && (
           <PCOs pcoExpanded={pcoExpanded} onTogglePco={onTogglePco} />
