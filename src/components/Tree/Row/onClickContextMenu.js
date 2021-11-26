@@ -1,7 +1,4 @@
-import get from 'lodash/get'
-import set from 'lodash/set'
 import { navigate } from 'gatsby'
-import { getSnapshot } from 'mobx-state-tree'
 
 import createUserMutation from '../../Benutzer/createUserMutation'
 import deleteUserMutation from '../../Benutzer/deleteUserMutation'
@@ -12,11 +9,8 @@ import createTaxonomyMutation from '../../Taxonomy/createTaxonomyMutation'
 import createPCMutation from '../../PropertyCollection/createPCMutation'
 import deletePCMutation from '../../PropertyCollection/deletePCMutation'
 import deleteTaxonomyMutation from '../../Taxonomy/deleteTaxonomyMutation'
-import treeQuery from '../treeQuery'
-import treeQueryVariables from '../treeQueryVariables'
 
 const onClickContextMenu = async ({
-  e,
   data,
   target,
   client,
@@ -25,7 +19,6 @@ const onClickContextMenu = async ({
   mobxStore,
 }) => {
   const { setEditingTaxonomies, setEditingPCs, editingTaxonomies } = mobxStore
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
   if (!data) return console.log('no data passed with click')
   if (!target) {
     return console.log('no target passed with click')
@@ -33,14 +26,14 @@ const onClickContextMenu = async ({
   const { table, action } = data
   const id = target.firstElementChild.getAttribute('data-id')
   const url = target.firstElementChild.getAttribute('data-url').split(',')
-  console.log('onClickContextMenu', {
-    data,
-    table,
-    action,
-    id,
-    url,
-    activeNodeArray,
-  })
+  // console.log('onClickContextMenu', {
+  //   data,
+  //   table,
+  //   action,
+  //   id,
+  //   url,
+  //   activeNodeArray: getSnapshot(mobxStore.activeNodeArray),
+  // })
   const actions = {
     insert: async () => {
       if (table === 'user') {
@@ -52,8 +45,7 @@ const onClickContextMenu = async ({
         } catch (error) {
           console.log(error)
         }
-        const newUserId = get(newUser, 'data.createUser.user.id')
-        treeRefetch()
+        const newUserId = newUser?.data?.createUser?.user?.id
         !!newUserId && navigate(`/Benutzer/${newUserId}`)
       }
       if (table === 'object') {
@@ -71,13 +63,12 @@ const onClickContextMenu = async ({
             variables: { taxonomyId: url[1], parentId: id },
           })
         }
-        const newId = get(newObjectData, 'data.createObject.object.id', null)
+        const newId = newObjectData?.data?.createObject?.object?.id ?? null
         navigate(`/${[...url, newId].join('/')}`)
         // if not editing, set editing true
         if (!editingTaxonomies) {
           setEditingTaxonomies(true)
         }
-        treeRefetch()
       }
       if (table === 'taxonomy') {
         const typeConverter = {
@@ -92,35 +83,29 @@ const onClickContextMenu = async ({
             lastUpdated: new Date(),
           },
         })
-        const newId = get(
-          newTaxonomyData,
-          'data.createTaxonomy.taxonomy.id',
-          null,
-        )
+        const newId =
+          newTaxonomyData?.data?.createTaxonomy?.taxonomy?.id ?? null
         navigate(`/${[...url, newId].join('/')}`)
         // if not editingTaxonomies, set editingTaxonomies true
         if (!editingTaxonomies) {
           setEditingTaxonomies(true)
         }
-        treeRefetch()
       }
       if (table === 'pc') {
         const newPCData = await client.mutate({
           mutation: createPCMutation,
           variables: { importedBy: userId, lastUpdated: new Date() },
         })
-        const newId = get(
-          newPCData,
-          'data.createPropertyCollection.propertyCollection.id',
-          null,
-        )
+        const newId =
+          newPCData?.data?.createPropertyCollection?.propertyCollection?.id ??
+          null
         navigate(`/${[...url, newId].join('/')}`)
         // if not editing, set editingTaxonomies true
         if (!editingTaxonomies) {
           setEditingPCs(true)
         }
-        treeRefetch()
       }
+      treeRefetch()
     },
     delete: async () => {
       if (table === 'user') {
@@ -137,27 +122,10 @@ const onClickContextMenu = async ({
                 __typename: 'Mutation',
               },
             },
-            update: (proxy, { data: { deleteUserMutation } }) => {
-              const variables = treeQueryVariables({ activeNodeArray })
-              const data = proxy.readQuery({
-                query: treeQuery,
-                variables,
-              })
-              const nodes = get(data, 'allUsers.nodes', []).filter(
-                (u) => u.id !== id,
-              )
-              set(data, 'allUsers.nodes', nodes)
-              proxy.writeQuery({
-                query: treeQuery,
-                variables,
-                data,
-              })
-            },
           })
         } catch (error) {
           console.log(error)
         }
-        treeRefetch()
         navigate('/Benutzer')
       }
       if (table === 'object') {
@@ -172,38 +140,6 @@ const onClickContextMenu = async ({
               },
               __typename: 'Mutation',
             },
-          },
-          update: (proxy, { data: { deleteObjectMutation } }) => {
-            const variables = treeQueryVariables({ activeNodeArray })
-            const data = proxy.readQuery({
-              query: treeQuery,
-              variables,
-            })
-            const nodesPath =
-              url.length === 3
-                ? `level3Object.nodes`
-                : url.length === 4
-                ? `level3Object.objectsByParentId.nodes`
-                : url.length === 5
-                ? `level3Object.objectsByParentId.objectsByParentId.nodes`
-                : url.length === 6
-                ? `level3Object.objectsByParentId.objectsByParentId.objectsByParentId.nodes`
-                : url.length === 7
-                ? `level3Object.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.nodes`
-                : url.length === 8
-                ? `level3Object.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.nodes`
-                : url.length === 9
-                ? `level3Object.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.nodes`
-                : url.length === 10
-                ? `level3Object.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.nodes`
-                : `level3Object.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.objectsByParentId.nodes`
-            const nodes = get(data, nodesPath, []).filter((u) => u.id !== id)
-            set(data, nodesPath, nodes)
-            proxy.writeQuery({
-              query: treeQuery,
-              variables,
-              data,
-            })
           },
         })
         if (url.includes(id)) {
@@ -224,31 +160,6 @@ const onClickContextMenu = async ({
               __typename: 'Mutation',
             },
           },
-          update: (proxy, { data: { deleteTaxonomyMutation } }) => {
-            const variables = treeQueryVariables({ activeNodeArray })
-            const data = proxy.readQuery({
-              query: treeQuery,
-              variables,
-            })
-            // get and set artTaxonomies or lrTaxonomies depending on url
-            const type = url[0]
-            if (type === 'Arten') {
-              const nodes = (data?.artTaxonomies.nodes ?? []).filter(
-                (u) => u.id !== id,
-              )
-              set(data, 'artTaxonomies.nodes', nodes)
-            } else {
-              const nodes = (data?.lrTaxonomies.nodes ?? []).filter(
-                (u) => u.id !== id,
-              )
-              set(data, 'lrTaxonomies.nodes', nodes)
-            }
-            proxy.writeQuery({
-              query: treeQuery,
-              variables,
-              data,
-            })
-          },
         })
         if (url.includes(id)) {
           url.length = url.indexOf(id)
@@ -268,28 +179,13 @@ const onClickContextMenu = async ({
               __typename: 'Mutation',
             },
           },
-          update: (proxy, { data: { deletePCMutation } }) => {
-            const variables = treeQueryVariables({ activeNodeArray })
-            const data = proxy.readQuery({
-              query: treeQuery,
-              variables,
-            })
-            const nodes = get(data, 'allPropertyCollections.nodes', []).filter(
-              (u) => u.id !== id,
-            )
-            set(data, 'allPropertyCollections.nodes', nodes)
-            proxy.writeQuery({
-              query: treeQuery,
-              variables,
-              data,
-            })
-          },
         })
         if (url.includes(id)) {
           url.length = url.indexOf(id)
           navigate(`/${url.join('/')}`)
         }
       }
+      treeRefetch()
     },
   }
   if (Object.keys(actions).includes(action)) {

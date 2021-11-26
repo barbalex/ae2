@@ -1,6 +1,5 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import { Link } from 'gatsby'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
@@ -42,7 +41,7 @@ const Sidebar = ({ title, titleLink, edges, stacked, height }) => {
     .filter((n) => !!n && !!n.node)
     .filter((n) =>
       docFilter
-        ? get(n, 'node.frontmatter.title', '(Titel fehlt)')
+        ? (n?.node?.frontmatter?.title ?? '(Titel fehlt)')
             .toLowerCase()
             .includes(docFilter.toLowerCase())
         : true,
