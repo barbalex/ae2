@@ -9,6 +9,7 @@ import { useQuery } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
 import { getSnapshot } from 'mobx-state-tree'
+import { useResizeDetector } from 'react-resize-detector'
 
 import Row from './Row'
 import Filter from './Filter'
@@ -136,6 +137,9 @@ const StyledList = styled(List)`
     background-color: transparent;
     box-shadow: none;
   }
+  /* &::-webkit-scrollbar-thumb:hover {
+    background: '#6B2500';
+  } */
 `
 const AutoSizerContainer = styled.div`
   height: 100%;
@@ -157,6 +161,16 @@ const Tree = ({ dimensions }) => {
   const mobxStore = useContext(mobxStoreContext)
   const { login } = mobxStore
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+
+  const {
+    height = 250,
+    width = 250,
+    ref: sizeRef,
+  } = useResizeDetector({
+    refreshMode: 'debounce',
+    refreshRate: 500,
+    refreshOptions: { leading: true },
+  })
 
   const {
     data: treeDataFetched,
@@ -203,8 +217,10 @@ const Tree = ({ dimensions }) => {
   const userIsTaxWriter =
     userRoles.includes('orgAdmin') || userRoles.includes('orgTaxonomyWriter')
 
-  const height = isNaN(dimensions.height) ? 250 : dimensions.height - 40
-  const width = isNaN(dimensions.width) ? 250 : dimensions.width
+  console.log('tree', { height, width })
+
+  //const height = isNaN(height) ? 250 : height - 40
+  //const width = isNaN(width) ? 250 : width
 
   const listRef = useRef(null)
 
@@ -216,8 +232,8 @@ const Tree = ({ dimensions }) => {
 
   return (
     <ErrorBoundary>
-      <Container>
-        <Filter dimensions={dimensions} />
+      <Container ref={sizeRef}>
+        <Filter width={width} height={height} />
         <SimpleBar
           style={{ height: '100%', flex: '1 1 auto', overflowY: 'auto' }}
         >

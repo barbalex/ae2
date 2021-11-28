@@ -54,7 +54,7 @@ const StyledSwipeableViews = styled(SwipeableViews)`
   }
 `
 
-const DocTemplate = ({ data, height }) => {
+const DocTemplate = ({ data, height, width }) => {
   const mobxStore = useContext(mobxStoreContext)
   const { windowWidth } = mobxStore
 
@@ -69,21 +69,27 @@ const DocTemplate = ({ data, height }) => {
   const onChangeTab = useCallback(
     (event, value) => {
       setTab(value)
+      console.log('docTemplate, onChangeTab, value:', value)
       if (value === 0) {
         // eslint-disable-next-line no-unused-vars
         const [first, ...rest] = pathElements
+        console.log('docTemplate, onChangeTab:', { first, pathElements })
         navigate(`${first}/`)
       }
     },
     [pathElements],
   )
 
+  console.log('docTemplate', { width, windowWidth })
+
   const [stacked, setStacked] = useState(false)
   useEffect(() => {
     const shouldBeStacked = windowWidth < 700
+    console.log('docTemplate, useEffect1:', { shouldBeStacked })
     setStacked(shouldBeStacked)
   }, [windowWidth])
   useEffect(() => {
+    console.log('docTemplate, useEffect2:', { pathElements, tab })
     pathElements.length > 1 && tab === 0 && setTab(1)
     pathElements.length === 1 && tab === 1 && setTab(0)
   }, [pathElements, tab])
