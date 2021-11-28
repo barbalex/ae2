@@ -157,7 +157,7 @@ const StyledSnackbar = styled(Snackbar)`
   }
 `
 
-const Tree = ({ dimensions }) => {
+const Tree = () => {
   const mobxStore = useContext(mobxStoreContext)
   const { login } = mobxStore
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
@@ -218,9 +218,6 @@ const Tree = ({ dimensions }) => {
     userRoles.includes('orgAdmin') || userRoles.includes('orgTaxonomyWriter')
 
   console.log('tree', { height, width })
-
-  //const height = isNaN(height) ? 250 : height - 40
-  //const width = isNaN(width) ? 250 : width
 
   const listRef = useRef(null)
 
