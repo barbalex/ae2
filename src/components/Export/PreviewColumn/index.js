@@ -2,7 +2,6 @@ import React, { useContext } from 'react'
 import styled from 'styled-components'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
-import { withResizeDetector } from 'react-resize-detector'
 
 import OptionsChoosen from './OptionsChoosen'
 import Preview from './Preview'
@@ -16,13 +15,13 @@ const HowToDiv = styled.div`
   padding: 15px 10px 0 10px;
 `
 
-const Filter = ({ height }) => {
+const Filter = () => {
   const mobxStore = useContext(mobxStoreContext)
   const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
 
   return (
     <ErrorBoundary>
-      <SimpleBar style={{ maxHeight: height, height: '100%' }}>
+      <SimpleBar style={{ maxHeight: '100%', height: '100%' }}>
         <Container>
           <OptionsChoosen />
           <Preview />
@@ -37,4 +36,4 @@ const Filter = ({ height }) => {
   )
 }
 
-export default withResizeDetector(observer(Filter))
+export default observer(Filter)

@@ -1,5 +1,4 @@
 import React from 'react'
-import get from 'lodash/get'
 import styled from 'styled-components'
 
 import PropertyReadOnly from '../../../../../shared/PropertyReadOnly'
@@ -22,10 +21,8 @@ const Container = styled.div`
 const Relation = ({ relation, intermediateRelation }) => {
   // never pass null to Object.entries!!!
   const properties = JSON.parse(relation.properties) || {}
-  const taxType = get(
-    relation,
-    'objectByObjectIdRelation.taxonomyByTaxonomyId.type',
-    'Objekt',
+  const taxType = (
+    relation?.objectByObjectIdRelation?.taxonomyByTaxonomyId?.type ?? 'Objekt'
   )
     .replace('ART', 'Art')
     .replace('LEBENSRAUM', 'Lebensraum')
@@ -34,11 +31,9 @@ const Relation = ({ relation, intermediateRelation }) => {
     <Container data-intermediaterelation={intermediateRelation}>
       <ErrorBoundary>
         <PropertyReadOnly
-          value={`${get(
-            relation,
-            'objectByObjectIdRelation.taxonomyByTaxonomyId.name',
-            '',
-          )}: ${get(relation, 'objectByObjectIdRelation.name', '(kein Name)')}`}
+          value={`${
+            relation?.objectByObjectIdRelation?.taxonomyByTaxonomyId?.name ?? ''
+          }: ${relation?.objectByObjectIdRelation?.name ?? '(kein Name)'}`}
           label={taxType}
         />
         {relation.relationType && (

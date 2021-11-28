@@ -7,7 +7,6 @@ import Paper from '@mui/material/Paper'
 import MenuItem from '@mui/material/MenuItem'
 import withStyles from '@mui/styles/withStyles'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import trimStart from 'lodash/trimStart'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -66,7 +65,7 @@ function getSuggestionValue(suggestion) {
   return suggestion
 }
 
-function shouldRenderSuggestions(value) {
+function shouldRenderSuggestions() {
   return true
 }
 
@@ -149,7 +148,7 @@ const IntegrationAutosuggest = ({
 
   useEffect(() => {
     if (fetchData && !dataFetched) {
-      const propValues = get(propData, 'propValuesFunction.nodes', [])
+      const propValues = (propData?.propValuesFunction?.nodes ?? [])
         .filter((v) => v !== null && v !== undefined)
         .map((v) => v.value)
       if (propValues.length > 0) {
@@ -182,13 +181,10 @@ const IntegrationAutosuggest = ({
     setSuggestions(getSuggestions(' '))
   }, [getSuggestions])
 
-  const onFocus = useCallback(
-    (event) => {
-      // fetch data if not yet happened
-      if (!dataFetched) setFetchData(true)
-    },
-    [dataFetched],
-  )
+  const onFocus = useCallback(() => {
+    // fetch data if not yet happened
+    if (!dataFetched) setFetchData(true)
+  }, [dataFetched])
 
   const handleChange = useCallback((event, { newValue }) => {
     // trim the start to enable entering space
@@ -224,6 +220,7 @@ const IntegrationAutosuggest = ({
   const renderInput = useCallback(
     (inputProps) => {
       const labelText = `${pname} (${readableType(jsontype)})`
+      // eslint-disable-next-line no-unused-vars
       const { autoFocus, ref, ...other } = inputProps
 
       return (

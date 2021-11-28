@@ -1,8 +1,6 @@
-import get from 'lodash/get'
-
 const level2Benutzer = ({ treeData }) => {
   if (!treeData) return []
-  const nodes = get(treeData, 'allUsers.nodes', [])
+  const nodes = treeData?.allUsers?.nodes ?? []
 
   return nodes.map((n) => ({
     id: n.id,

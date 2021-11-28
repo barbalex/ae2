@@ -1,4 +1,3 @@
-import get from 'lodash/get'
 import union from 'lodash/union'
 import jwtDecode from 'jwt-decode'
 
@@ -7,15 +6,15 @@ const level2Organization = ({ treeData, mobxStore }) => {
   const { token } = mobxStore.login
   if (!token) return []
   const tokenDecoded = jwtDecode(token)
-  const username = get(tokenDecoded, 'username')
+  const username = tokenDecoded?.username
   if (!username) return []
-  const user = get(treeData, 'allUsers.nodes', []).find(
+  const user = (treeData?.allUsers?.nodes ?? []).find(
     (u) => u.name === username,
   )
   if (!user) return []
-  const orgUsers = get(user, 'organizationUsersByUserId.nodes', [])
+  const orgUsers = user?.organizationUsersByUserId?.nodes ?? []
   const userOrganizations = union(
-    orgUsers.map((u) => get(u, 'organizationByOrganizationId.name')),
+    orgUsers.map((u) => u?.organizationByOrganizationId?.name),
   )
 
   return userOrganizations.map((org) => ({

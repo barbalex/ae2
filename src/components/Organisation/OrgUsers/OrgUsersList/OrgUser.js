@@ -1,6 +1,5 @@
-import React, { useState, useCallback, useContext } from 'react'
+import React, { useState, useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdClear } from 'react-icons/md'
@@ -9,6 +8,7 @@ import MenuItem from '@mui/material/MenuItem'
 import FormControl from '@mui/material/FormControl'
 import Input from '@mui/material/Input'
 import InputLabel from '@mui/material/InputLabel'
+import FormHelperText from '@mui/material/FormHelperText'
 import set from 'lodash/set'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -114,15 +114,19 @@ const OrgUser = ({ orgUser }) => {
   const [userId, setUserId] = useState(orgUser.userId)
   const [role, setRole] = useState(orgUser.role || null)
 
-  const users = get(allUsersData, 'allUsers.nodes', [])
-  const orgName = get(orgUsersData, 'organizationByName.name', '')
+  const users = useMemo(
+    () => allUsersData?.allUsers?.nodes ?? [],
+    [allUsersData?.allUsers?.nodes],
+  )
+  const orgName = orgUsersData?.organizationByName?.name ?? ''
   const user = users.find((user) => user.id === userId)
   const userName = user ? user.name || '' : ''
   const userNames = users.map((u) => u.name).sort()
-  const roles = get(orgUsersData, 'allRoles.nodes', [])
+  const roles = (orgUsersData?.allRoles?.nodes ?? [])
     .map((role) => role.name)
     .sort()
 
+  const [nameError, setNameError] = useState()
   const onChangeName = useCallback(
     async (e) => {
       const val = e.target.value
@@ -155,12 +159,15 @@ const OrgUser = ({ orgUser }) => {
         } catch (error) {
           console.log(error)
           setUserId('')
+          return setNameError(error.message)
         }
         setUserId(user.id)
+        setNameError(undefined)
       }
     },
     [users, orgUser.nodeId, orgUser.organizationId, orgUser.id, role, client],
   )
+  const [roleError, setRoleError] = useState()
   const onChangeRole = useCallback(
     async (event) => {
       const newRole = event.target.value
@@ -189,11 +196,12 @@ const OrgUser = ({ orgUser }) => {
           },
         })
       } catch (error) {
-        // TODO: surface this message
         console.log('error.message:', error.message)
         setRole('')
+        return setRoleError(error?.message)
       }
       setRole(newRole)
+      setRoleError(undefined)
     },
     [client, orgUser.id, orgUser.nodeId, orgUser.organizationId, userId],
   )
@@ -212,16 +220,15 @@ const OrgUser = ({ orgUser }) => {
           __typename: 'Mutation',
         },
       },
+      // eslint-disable-next-line no-unused-vars
       update: (proxy, { data: { deleteOrgUserMutation } }) => {
         const data = proxy.readQuery({
           query: orgUsersQuery,
           variables: { name: orgName },
         })
-        const orgUsers = get(
-          data,
-          'organizationByName.organizationUsersByOrganizationId.nodes',
-          [],
-        )
+        const orgUsers =
+          data?.organizationByName?.organizationUsersByOrganizationId?.nodes ??
+          []
         const newOrgUsers = orgUsers.filter((u) => u.id !== orgUser.id)
         set(
           data,
@@ -263,6 +270,9 @@ const OrgUser = ({ orgUser }) => {
               </MenuItem>
             ))}
           </Select>
+          {!!nameError && (
+            <FormHelperText id={`RolleErrorText`}>{nameError}</FormHelperText>
+          )}
         </StyledFormControl>
         <StyledFormControl variant="standard">
           <InputLabel htmlFor="Rolle">Rolle</InputLabel>
@@ -277,6 +287,9 @@ const OrgUser = ({ orgUser }) => {
               </MenuItem>
             ))}
           </Select>
+          {!!roleError && (
+            <FormHelperText id={`RolleErrorText`}>{roleError}</FormHelperText>
+          )}
         </StyledFormControl>
         <DeleteButton
           title="löschen"

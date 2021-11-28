@@ -1,6 +1,5 @@
 import React from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import Linkify from 'react-linkify'
 
 import PropertyReadOnly from './PropertyReadOnly'
@@ -27,7 +26,7 @@ const linkifyProperties = {
 }
 
 const TaxonomyDescription = ({ taxonomy }) => {
-  const organizationName = get(taxonomy, 'organizationByOrganizationId.name')
+  const organizationName = taxonomy?.organizationByOrganizationId?.name
 
   return (
     <ErrorBoundary>

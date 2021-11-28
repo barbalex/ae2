@@ -21,7 +21,6 @@ import {
   MdInfoOutline as InfoOutlineIcon,
   MdInfo as InfoIcon,
 } from 'react-icons/md'
-import get from 'lodash/get'
 import styled from 'styled-components'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -113,20 +112,17 @@ const TaxonomyObject = ({ objekt, showLink, stacked }) => {
   const [taxExpanded, setTaxExpanded] = useState(false)
 
   const { username } = login
-  const organizationUsers = get(
-    organizationUsersData,
-    'allOrganizationUsers.nodes',
-    [],
-  )
+  const organizationUsers =
+    organizationUsersData?.allOrganizationUsers?.nodes ?? []
   const editing = editingTaxonomies
   const userRoles = organizationUsers
-    .filter((oU) => username === get(oU, 'userByUserId.name', ''))
+    .filter((oU) => username === (oU?.userByUserId?.name ?? ''))
     .map((oU) => oU.role)
   const userIsTaxWriter =
     userRoles.includes('orgAdmin') || userRoles.includes('orgTaxonomyWriter')
   const userMayWrite = userIsTaxWriter && !showLink
-  const taxonomy = get(objekt, 'taxonomyByTaxonomyId', {})
-  let taxname = get(taxonomy, 'name', '(Name fehlt)')
+  const taxonomy = objekt?.taxonomyByTaxonomyId ?? {}
+  let taxname = taxonomy?.name ?? '(Name fehlt)'
   // never pass null to object.entries!!!
   const properties = JSON.parse(objekt.properties) || {}
   if (properties['Artname vollständig']) {

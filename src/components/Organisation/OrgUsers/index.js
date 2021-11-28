@@ -1,6 +1,5 @@
 import React, { useCallback, useContext } from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import sortBy from 'lodash/sortBy'
 import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
@@ -77,11 +76,9 @@ const OrgUsers = () => {
     },
   })
 
-  const orgUsers = get(
-    orgUsersData,
-    'organizationByName.organizationUsersByOrganizationId.nodes',
-    [],
-  )
+  const orgUsers =
+    orgUsersData?.organizationByName?.organizationUsersByOrganizationId
+      ?.nodes ?? []
   const orgUserSorted = sortBy(
     orgUsers,
     (orgUser) =>
@@ -89,11 +86,9 @@ const OrgUsers = () => {
         orgUser.role ? orgUser.role : 'zzzzz'
       }`,
   )
-  const organizationId = get(
-    orgUsersData,
-    'organizationByName.id',
-    '99999999-9999-9999-9999-999999999999',
-  )
+  const organizationId =
+    orgUsersData?.organizationByName?.id ??
+    '99999999-9999-9999-9999-999999999999'
 
   const onClickNew = useCallback(async () => {
     await client.mutate({

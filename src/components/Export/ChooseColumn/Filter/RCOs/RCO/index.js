@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import groupBy from 'lodash/groupBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -88,11 +87,8 @@ const RcoCard = ({ pc, width = 500 }) => {
   const [expanded, setExpanded] = useState(false)
   const onClickActions = useCallback(() => setExpanded(!expanded), [expanded])
 
-  const rcoProperties = get(
-    propsByTaxData,
-    'rcoPropertiesByTaxonomiesFunction.nodes',
-    [],
-  )
+  const rcoProperties =
+    propsByTaxData?.rcoPropertiesByTaxonomiesFunction?.nodes ?? []
 
   const rcoPropertiesByPropertyCollection = groupBy(rcoProperties, (x) => {
     if (x.propertyCollectionName.includes(x.relationType)) {

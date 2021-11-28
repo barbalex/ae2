@@ -10,7 +10,6 @@ import styled from 'styled-components'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
-import { withResizeDetector } from 'react-resize-detector'
 
 import Taxonomies from './Taxonomies'
 import Properties from './Properties'
@@ -147,7 +146,7 @@ const synonymQuery = gql`
   }
 `
 
-const Export = ({ height }) => {
+const Export = () => {
   const mobxStore = useContext(mobxStoreContext)
   const { taxProperties, taxFilters } = mobxStore.export
   const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
@@ -174,10 +173,10 @@ const Export = ({ height }) => {
     },
   )
   /*
-  const rcoFilters = get(storeData, 'exportRcoFilters', []).map(d =>
+  const rcoFilters = (storeData?.exportRcoFilters ?? []).map(d =>
     omit(d, ['__typename']),
   )
-  const rcoProperties = get(storeData, 'exportRcoProperties', []).map(d =>
+  const rcoProperties = (storeData?.exportRcoProperties ?? []).map(d =>
     omit(d, ['__typename']),
   )
   const fetchRcoProperties = rcoProperties.length > 0
@@ -200,7 +199,7 @@ const Export = ({ height }) => {
 
   const onSetMessage = useCallback((message) => {
     setMessage(message)
-    if (!!message) {
+    if (message) {
       setTimeout(() => setMessage(''), 5000)
     }
   }, [])
@@ -266,7 +265,7 @@ const Export = ({ height }) => {
 
   return (
     <ErrorBoundary>
-      <SimpleBar style={{ maxHeight: height, height: '100%' }}>
+      <SimpleBar style={{ maxHeight: '100%', height: '100%' }}>
         <Container>
           <StyledCard>
             <StyledCardActions disableSpacing onClick={onToggleTaxonomies}>
@@ -326,4 +325,4 @@ const Export = ({ height }) => {
   )
 }
 
-export default withResizeDetector(observer(Export))
+export default observer(Export)

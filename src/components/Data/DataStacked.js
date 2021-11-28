@@ -50,7 +50,7 @@ const DataStacked = () => {
         disabled={false}
         data-height={windowHeight - 103}
       >
-        <Tree dimensions={{ width: windowWidth, height: windowHeight - 103 }} />
+        <Tree />
         <DataType stacked={true} dimensions={{ width: windowWidth }} />
       </StyledSwipeableViews>
     </>

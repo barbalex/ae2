@@ -14,7 +14,8 @@ import ErrorBoundary from '../../shared/ErrorBoundary'
 import buildOptions from './buildOptions'
 
 const Container = styled.div`
-  padding: 5px 13px 0 13px;
+  flex: 0 1 auto;
+  padding: 0;
   display: flex;
   justify-content: space-between;
 `
@@ -78,12 +79,11 @@ const objectUrlQuery = gql`
   }
 `
 
-const TreeFilter = ({ dimensions }) => {
+const TreeFilter = ({ height = 250 }) => {
   // TODO: use local state instead of mobx for label, id
   const client = useApolloClient()
   const mobxStore = useContext(mobxStoreContext)
   const { treeFilter } = mobxStore
-  const treeFilterText = treeFilter.text
   const { setTreeFilter } = treeFilter
 
   const treeFilterId = treeFilter.id ?? '99999999-9999-9999-9999-999999999999'
@@ -96,8 +96,6 @@ const TreeFilter = ({ dimensions }) => {
       },
     },
   )
-
-  const urlObject = objectUrlData?.objectById ?? {}
 
   const onInputChange = useCallback(
     (option) => {
@@ -128,10 +126,11 @@ const TreeFilter = ({ dimensions }) => {
         }
       }
     },
-    [setTreeFilter, treeFilterText],
+    [setTreeFilter],
   )
 
   useEffect(() => {
+    const urlObject = objectUrlData?.objectById ?? {}
     /**
      * check if treeFilterId and urlObject exist
      * if true:
@@ -149,11 +148,7 @@ const TreeFilter = ({ dimensions }) => {
       navigate(`/${url.join('/')}`)
       setTreeFilter({ id: null, text: '' })
     }
-  }, [urlObject, treeFilterId, setTreeFilter])
-
-  // on first render dimensions.width is passed as '100%'
-  // later it is passed as number of pixels
-  const ownWidth = isNaN(dimensions.width) ? 380 : dimensions.width - 29
+  }, [treeFilterId, setTreeFilter, objectUrlData?.objectById])
 
   const renderSectionTitle = useCallback(
     (section) => <strong>{section.title}</strong>,
@@ -219,13 +214,27 @@ const TreeFilter = ({ dimensions }) => {
       }),
       menuList: (provided) => ({
         ...provided,
-        maxHeight: 'calc(100vh - 110px)',
+        maxHeight: height - 39,
+        '::-webkit-scrollbar': {
+          width: '6px',
+        },
+        '::-webkit-scrollbar-thumb': {
+          borderRadius: '4px',
+          boxShadow: 'inset 0 0 7px #e65100',
+          background: 'rgba(85, 85, 85, 0.05)',
+        },
+        '::-webkit-scrollbar-track': {
+          background: 'rgba(0, 0, 0, 0) !important',
+          borderRadius: '1rem',
+        },
+        // '::-webkit-scrollbar-thumb:hover': {
+        //   background: '#6B2500',
+        // },
       }),
       menu: (provided) => ({
         ...provided,
-        maxHeight: 'calc(100vh - 110px)',
         width: 'auto',
-        maxWidth: ownWidth,
+        maxWidth: '100%',
         marginTop: 0,
       }),
       placeholder: (provided) => ({
@@ -245,12 +254,12 @@ const TreeFilter = ({ dimensions }) => {
         color: 'rgba(0,0,0,0.8)',
       }),
     }),
-    [ownWidth, singleColumnView],
+    [singleColumnView, height],
   )
 
   return (
     <ErrorBoundary>
-      <Container data-ownwidth={ownWidth}>
+      <Container>
         <SearchIcon />
         <StyledSelect
           styles={customStyles}

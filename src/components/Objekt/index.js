@@ -1,11 +1,9 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import uniqBy from 'lodash/uniqBy'
 import { useQuery } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
-import { withResizeDetector } from 'react-resize-detector'
 import { getSnapshot } from 'mobx-state-tree'
 
 import TaxonomyObjects from './TaxonomyObjects'
@@ -19,6 +17,7 @@ import ErrorBoundary from '../shared/ErrorBoundary'
 
 const Container = styled.div`
   height: 100%;
+  overflow: hidden;
 `
 const Container2 = styled.div`
   padding: 10px;
@@ -39,7 +38,7 @@ const SynonymTitle = styled(Title)`
   margin-bottom: 5px;
 `
 
-const Objekt = ({ stacked = false, height }) => {
+const Objekt = ({ stacked = false }) => {
   const mobxStore = useContext(mobxStoreContext)
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
 
@@ -54,15 +53,12 @@ const Objekt = ({ stacked = false, height }) => {
     },
   })
 
-  const objekt = get(objectData, 'objectById')
+  const objekt = objectData?.objectById
   if (!objekt) return <div />
-  const propertyCollectionObjects = get(
-    objekt,
-    'propertyCollectionObjectsByObjectId.nodes',
-    [],
-  )
-  const relations = get(objekt, 'relationsByObjectId.nodes', [])
-  const synonyms = get(objekt, 'synonymsByObjectId.nodes', [])
+  const propertyCollectionObjects =
+    objekt?.propertyCollectionObjectsByObjectId?.nodes ?? []
+  const relations = objekt?.relationsByObjectId?.nodes ?? []
+  const synonyms = objekt?.synonymsByObjectId?.nodes ?? []
   const synonymObjects = synonyms.map((s) => s.objectByObjectIdSynonym)
   const propertyCollectionIds = propertyCollectionObjects.map(
     (pco) => pco.propertyCollectionId,
@@ -71,16 +67,17 @@ const Objekt = ({ stacked = false, height }) => {
   synonymObjects.forEach((synonym) => {
     propertyCollectionObjectsOfSynonyms = [
       ...propertyCollectionObjectsOfSynonyms,
-      ...get(synonym, 'propertyCollectionObjectsByObjectId.nodes', []),
+      ...(synonym?.propertyCollectionObjectsByObjectId?.nodes ?? []),
     ]
   })
   propertyCollectionObjectsOfSynonyms = uniqBy(
     propertyCollectionObjectsOfSynonyms,
     (pco) => pco.propertyCollectionId,
   )
-  propertyCollectionObjectsOfSynonyms = propertyCollectionObjectsOfSynonyms.filter(
-    (pco) => !propertyCollectionIds.includes(pco.propertyCollectionId),
-  )
+  propertyCollectionObjectsOfSynonyms =
+    propertyCollectionObjectsOfSynonyms.filter(
+      (pco) => !propertyCollectionIds.includes(pco.propertyCollectionId),
+    )
 
   if (objectLoading) return <Spinner />
   if (objectError) {
@@ -90,7 +87,7 @@ const Objekt = ({ stacked = false, height }) => {
   return (
     <ErrorBoundary>
       <Container>
-        <SimpleBar style={{ maxHeight: height }}>
+        <SimpleBar style={{ maxHeight: '100%' }}>
           <FirstTitle>Taxonomie</FirstTitle>
           <TaxonomyObject objekt={objekt} stacked={stacked} />
           {synonymObjects.length > 0 && (
@@ -138,4 +135,4 @@ const Objekt = ({ stacked = false, height }) => {
   )
 }
 
-export default withResizeDetector(observer(Objekt))
+export default observer(Objekt)

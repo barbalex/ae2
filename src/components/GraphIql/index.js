@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react'
 import GraphiQL from 'graphiql'
-import get from 'lodash/get'
 import 'graphiql/graphiql.css'
 import styled from 'styled-components'
 
@@ -15,7 +14,7 @@ const Container = styled.div`
 // for grahpiQL to work in dev mode: https://github.com/graphql/graphiql/issues/770#issuecomment-560447339
 // but id DOES work in production
 const GraphIql = ({ dataGraphData }) => {
-  const loading = get(dataGraphData, 'loading', false)
+  const loading = dataGraphData?.loading ?? false
 
   const graphQLFetcher = useCallback(
     (graphQLParams) =>

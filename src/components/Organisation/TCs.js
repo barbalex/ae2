@@ -1,5 +1,4 @@
 import React, { useContext } from 'react'
-import get from 'lodash/get'
 import sortBy from 'lodash/sortBy'
 import styled from 'styled-components'
 import { useQuery, gql } from '@apollo/client'
@@ -50,17 +49,18 @@ const TCs = () => {
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
   const name = activeNodeArray.length > 1 ? activeNodeArray[1] : 'none'
 
-  const { data: tcsData, loading: tcsLoading, error: tcsError } = useQuery(
-    tcsQuery,
-    {
-      variables: {
-        name,
-      },
+  const {
+    data: tcsData,
+    loading: tcsLoading,
+    error: tcsError,
+  } = useQuery(tcsQuery, {
+    variables: {
+      name,
     },
-  )
+  })
 
   const tcs = sortBy(
-    get(tcsData, 'organizationByName.taxonomiesByOrganizationId.nodes', []),
+    tcsData?.organizationByName?.taxonomiesByOrganizationId?.nodes ?? [],
     'name',
   )
 

@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useCallback, useContext } from 'react'
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useContext,
+  useMemo,
+} from 'react'
 import TextField from '@mui/material/TextField'
 import FormHelperText from '@mui/material/FormHelperText'
 import FormControl from '@mui/material/FormControl'
@@ -7,7 +13,6 @@ import Paper from '@mui/material/Paper'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import { useQuery, useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
@@ -58,7 +63,7 @@ const User = () => {
       id: activeNodeArray[1] || '99999999-9999-9999-9999-999999999999',
     },
   })
-  const user = get(data, 'userById', {})
+  const user = useMemo(() => data?.userById ?? {}, [data?.userById])
 
   const [name, setName] = useState(user?.name)
   const [nameErrorText, setNameErrorText] = useState('')
@@ -106,6 +111,7 @@ const User = () => {
       await client.mutate({
         mutation,
         variables,
+        refetchQueries: ['TreeDataQuery'],
       })
     } catch (error) {
       const messages = error.graphQLErrors.map((x) => x.message).toString()

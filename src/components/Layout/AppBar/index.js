@@ -5,7 +5,6 @@ import Icon from '@mui/material/Icon'
 import { MdShare as ShareIcon } from 'react-icons/md'
 import Button from '@mui/material/Button'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { navigate, Link } from 'gatsby'
@@ -157,9 +156,9 @@ const Header = () => {
     ? 'Login'
     : 'n.a.'
   const loginTitle = username ? 'abmelden' : 'anmelden'
-  const objektName = get(data, 'objectById.name')
-  const pCName = get(data, 'propertyCollectionById.name')
-  const taxName = get(data, 'taxonomyById.name')
+  const objektName = data?.objectById?.name
+  const pCName = data?.propertyCollectionById?.name
+  const taxName = data?.taxonomyById?.name
 
   const onClickColumnButtonDocs = useCallback(() => {
     navigate('/Dokumentation')
@@ -183,7 +182,7 @@ const Header = () => {
       : url0
       ? url0
       : ''
-    const title = `arteigenschaften.ch${!!name ? ': ' : ''}${name}`
+    const title = `arteigenschaften.ch${name ? ': ' : ''}${name}`
     typeof window !== 'undefined' &&
       navigator.share({
         title,

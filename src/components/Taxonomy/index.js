@@ -8,11 +8,11 @@ import Input from '@mui/material/Input'
 import InputLabel from '@mui/material/InputLabel'
 import FormControl from '@mui/material/FormControl'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import format from 'date-fns/format'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
+import { useResizeDetector } from 'react-resize-detector'
 
 import PropertyReadOnly from '../shared/PropertyReadOnly'
 import ErrorBoundary from '../shared/ErrorBoundary'
@@ -22,11 +22,13 @@ import onBlurArten from './onBlurArten'
 import onBlurLr from './onBlurLr'
 import mobxStoreContext from '../../mobxStoreContext'
 import Spinner from '../shared/Spinner'
+import constants from '../../modules/constants'
 
 const Container = styled.div`
   padding: 10px;
-  display: flex;
-  flex-direction: column;
+  ${(props) =>
+    props['data-column-width'] &&
+    `column-width: ${props['data-column-width']}px;`}
 `
 const CardEditButton = styled(IconButton)`
   align-self: flex-end;
@@ -118,6 +120,7 @@ const Taxonomy = () => {
     data: taxData,
     loading: taxLoading,
     error: taxError,
+    refetch: refetchTaxData,
   } = useQuery(taxQuery, {
     variables: {
       taxId,
@@ -131,13 +134,13 @@ const Taxonomy = () => {
   const editingArten = editing && tax?.type === 'ART'
   const editingLr = editing && tax?.type === 'LEBENSRAUM'
   const { username } = login
-  const allUsers = get(allUsersData, 'allUsers.nodes', [])
+  const allUsers = allUsersData?.allUsers?.nodes ?? []
   const user = allUsers.find((u) => u.name === username)
-  const orgsUserIsTaxWriter = get(user, 'organizationUsersByUserId.nodes', [])
+  const orgsUserIsTaxWriter = (user?.organizationUsersByUserId?.nodes ?? [])
     .filter((o) => ['orgTaxonomyWriter', 'orgAdmin'].includes(o.role))
     .map((o) => ({
       id: o.organizationId,
-      name: get(o, 'organizationByOrganizationId.name', ''),
+      name: o?.organizationByOrganizationId?.name ?? '',
     }))
   const userIsTaxWriter = orgsUserIsTaxWriter.length > 0
   const userIsThisTaxWriter =
@@ -166,8 +169,9 @@ const Taxonomy = () => {
         taxonomy: tax,
         value: event.target.value,
         prevValue: tax.importedBy,
+        refetch: refetchTaxData,
       }),
-    [client, tax],
+    [client, refetchTaxData, tax],
   )
   const onChangeOrganizationArten = useCallback(
     (event) =>
@@ -177,8 +181,9 @@ const Taxonomy = () => {
         taxonomy: tax,
         value: event.target.value,
         prevValue: tax.organizationId,
+        refetch: refetchTaxData,
       }),
-    [client, tax],
+    [client, refetchTaxData, tax],
   )
   const onChangeImportedByLr = useCallback(
     (event) =>
@@ -203,21 +208,42 @@ const Taxonomy = () => {
     [client, tax],
   )
 
+  const {
+    width = 0,
+    //height = 0,
+    ref: resizeRef,
+  } = useResizeDetector({
+    refreshMode: 'debounce',
+    refreshRate: 100,
+    refreshOptions: { leading: true },
+    handleHeight: false,
+  })
+  const columnWidth =
+    width > 2 * constants.columnWidth ? constants.columnWidth : undefined
+
   if (taxLoading || allUsersLoading) {
     return <Spinner />
   }
   if (taxError) {
-    return <Container>{`Fehler: ${taxError.message}`}</Container>
+    return (
+      <Container
+        data-column-width={columnWidth}
+      >{`Fehler: ${taxError.message}`}</Container>
+    )
   }
   if (allUsersError) {
-    return <Container>{`Fehler: ${allUsersError.message}`}</Container>
+    return (
+      <Container
+        data-column-width={columnWidth}
+      >{`Fehler: ${allUsersError.message}`}</Container>
+    )
   }
 
   if (!tax?.id) return null
 
   return (
     <ErrorBoundary>
-      <Container>
+      <Container ref={resizeRef} data-column-width={columnWidth}>
         {userIsThisTaxWriter && editing && (
           <CardEditButton
             aria-label="Daten anzeigen"

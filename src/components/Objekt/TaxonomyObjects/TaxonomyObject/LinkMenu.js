@@ -5,7 +5,6 @@ import Button from '@mui/material/Button'
 import { MdLink as LinkIcon } from 'react-icons/md'
 import Icon from '@mui/material/Icon'
 import styled from 'styled-components'
-import get from 'lodash/get'
 
 const StyledButton = styled(Button)`
   min-width: 54px !important;
@@ -30,12 +29,12 @@ const ITEM_HEIGHT = 48
 const LinkMenu = ({ objekt }) => {
   const [anchorEl, setAnchorEl] = useState(null)
 
-  const props = JSON.parse(get(objekt, 'properties', {})) || {}
-  const nameDeutsch = get(props, 'Name Deutsch', null)
-  const einheit = get(props, 'Einheit', null)
-  const gattung = get(props, 'Gattung')
-  const art = get(props, 'Art')
-  const taxName = get(objekt, 'taxonomyByTaxonomyId.name')
+  const props = objekt?.properties ? JSON.parse(objekt?.properties) : {}
+  const nameDeutsch = props?.['Name Deutsch'] ?? null
+  const einheit = props?.Einheit ?? null
+  const gattung = props?.Gattung
+  const art = props?.Art
+  const taxName = objekt?.taxonomyByTaxonomyId?.name
   const isFlora = taxName.toLowerCase().includes('sisf')
   const paperProps = {
     style: {

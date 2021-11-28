@@ -1,6 +1,5 @@
 import React from 'react'
 import styled from 'styled-components'
-import get from 'lodash/get'
 import Linkify from 'react-linkify'
 
 import PropertyReadOnly from './PropertyReadOnly'
@@ -25,9 +24,9 @@ const linkifyProperties = {
 }
 
 const PCDescription = ({ pC }) => {
-  const userImportedByName = get(pC, 'userByImportedBy.name')
-  const userImportedByEmail = get(pC, 'userByImportedBy.email')
-  const organizationName = get(pC, 'organizationByOrganizationId.name')
+  const userImportedByName = pC?.userByImportedBy?.name
+  const userImportedByEmail = pC?.userByImportedBy?.email
+  const organizationName = pC?.organizationByOrganizationId?.name
 
   return (
     <ErrorBoundary>
