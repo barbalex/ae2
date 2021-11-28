@@ -17,9 +17,6 @@ const linkifyProperties = {
 }
 const Container = styled.div`
   padding: 0 0 5px 0;
-  > span > div > div:before {
-    background-color: rgba(0, 0, 0, 0.1) !important;
-  }
   > span > div > div:after {
     height: 1px !important;
   }
