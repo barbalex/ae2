@@ -70,7 +70,6 @@
     "react-reflex": "4.0.3",
     "react-resize-detector": "6.7.6",
     "react-select": "5.2.1",
-    "react-spinners-kit": "git://github.com/barbalex/react-spinners-kit",
     "react-swipeable-views": "0.14.0",
     "react-typography": "0.16.20",
     "react-window": "1.8.6",
@@ -82,7 +81,6 @@
     "xlsx": "0.17.3"
   },
   "dependenciesComments": {
-    "react-spinners-kit": "forked because it added dependencies via non-peer-dependencies. See: https://github.com/dmitrymorozoff/react-spinners-kit/pull/18. Wait for release > 1.9.1",
     "coa": "2.0.2: fixed because of malware attack, see https://github.com/veged/coa/issues/99"
   },
   "devDependencies": {
