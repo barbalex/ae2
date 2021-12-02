@@ -961,7 +961,7 @@ const ImportRco = ({ setImport, pCO }) => {
                   markieren, aus welcher Eigenschaften-Sammlung diese
                   Beziehungen stammen.{' '}
                   <a
-                    href="https://github.com/barbalex/ae2#zusammenfassende-eigenschaften-sammlungen"
+                    href="http://localhost:8000/Dokumentation/Projektbeschreibung/#zusammenfassende-eigenschaften-sammlungen"
                     target="_blank"
                     rel="noopener noreferrer"
                   >

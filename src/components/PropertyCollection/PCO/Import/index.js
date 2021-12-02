@@ -747,7 +747,7 @@ const ImportPco = ({ setImport, pCO }) => {
                   markieren, aus welcher Eigenschaften-Sammlung diese
                   Eigenschaften stammen.{' '}
                   <a
-                    href="https://github.com/barbalex/ae2#zusammenfassende-eigenschaften-sammlungen"
+                    href="http://localhost:8000/Dokumentation/Projektbeschreibung/#zusammenfassende-eigenschaften-sammlungen"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
