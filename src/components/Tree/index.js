@@ -217,7 +217,7 @@ const Tree = () => {
   const userIsTaxWriter =
     userRoles.includes('orgAdmin') || userRoles.includes('orgTaxonomyWriter')
 
-  console.log('tree', { height, width })
+  //console.log('tree', { height, width })
 
   const listRef = useRef(null)
 
