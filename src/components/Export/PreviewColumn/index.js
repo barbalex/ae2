@@ -5,7 +5,7 @@ import SimpleBar from 'simplebar-react'
 
 import OptionsChoosen from './OptionsChoosen'
 import Preview from './Preview'
-import mobxStoreContext from '../../../mobxStoreContext'
+import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
 
 const Container = styled.div`
@@ -16,7 +16,7 @@ const HowToDiv = styled.div`
 `
 
 const Filter = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
 
   return (

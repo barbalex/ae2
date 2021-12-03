@@ -4,7 +4,7 @@ import Checkbox from '@mui/material/Checkbox'
 import styled from 'styled-components'
 import { observer } from 'mobx-react-lite'
 
-import mobxStoreContext from '../../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../../storeContext'
 
 const Container = styled.div`
   width: ${(props) => `${props['data-width']}%`};
@@ -30,7 +30,7 @@ const RcoChooser = ({
   columns,
   propertiesLength,
 }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { rcoProperties, addRcoProperty, removeRcoProperty } = mobxStore.export
 
   const onCheck = useCallback(

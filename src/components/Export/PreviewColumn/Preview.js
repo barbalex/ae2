@@ -11,7 +11,7 @@ import { getSnapshot } from 'mobx-state-tree'
 import exportXlsx from '../../../modules/exportXlsx'
 import exportCsv from '../../../modules/exportCsv'
 import rowsFromObjects from './rowsFromObjects'
-import mobxStoreContext from '../../../mobxStoreContext'
+import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
 
 const Container = styled.div`
@@ -176,7 +176,7 @@ const synonymQuery = gql`
 `
 
 const Preview = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const {
     onlyRowsWithProperties: exportOnlyRowsWithProperties,
     withSynonymData,

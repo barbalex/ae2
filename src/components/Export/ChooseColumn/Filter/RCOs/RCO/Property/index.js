@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite'
 
 import Comparator from './Comparator'
 import Value from './Value'
-import mobxStoreContext from '../../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../../storeContext'
 
 const Container = styled.div`
   display: flex;
@@ -25,7 +25,7 @@ const RcoField = ({
   columns,
   propertiesLength,
 }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { rcoFilters } = mobxStore.export
 
   const exportRcoFilter = rcoFilters.find(

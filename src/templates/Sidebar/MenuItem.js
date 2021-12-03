@@ -7,7 +7,7 @@ import { Location } from '@reach/router'
 import isEqual from 'lodash/isEqual'
 import styled from 'styled-components'
 
-import storeContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 
 const ListItem = styled(ListItemButton)`
   ${(props) => props.ischild1 === 'true' && 'padding-left: 35px !important;'}

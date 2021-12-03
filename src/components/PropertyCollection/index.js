@@ -20,7 +20,7 @@ import Property from './Property'
 import onBlur from './onBlur'
 import PropertyReadOnly from '../shared/PropertyReadOnly'
 import ErrorBoundary from '../shared/ErrorBoundary'
-import mobxStoreContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 
 const Container = styled.div`
   padding: 10px;
@@ -105,7 +105,7 @@ const pcQuery = gql`
 
 const PropertyCollection = () => {
   const client = useApolloClient()
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { editingPCs, setEditingPCs, login } = mobxStore
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
   const pCId =

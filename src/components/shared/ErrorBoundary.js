@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import Button from '@mui/material/Button'
 
 import idbContext from '../../idbContext'
-import mobxStoreContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 
 const Container = styled.div`
   padding: 15px;
@@ -67,7 +67,7 @@ const ErrorFallback = ({ error, componentStack, resetErrorBoundary }) => {
 
 const MyErrorBoundary = ({ children }) => {
   const idb = useContext(idbContext)
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
 
   const onReset = useCallback(() => {
     const { login } = mobxStore

@@ -5,7 +5,7 @@ import { withResizeDetector } from 'react-resize-detector'
 
 import Comparator from './Comparator'
 import Value from './Value'
-import mobxStoreContext from '../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../storeContext'
 
 const Container = styled.div`
   display: flex;
@@ -25,7 +25,7 @@ const TaxField = ({
   width,
   propertiesLength,
 }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { taxFilters } = mobxStore.export
 
   const exportTaxFilter = taxFilters.find(

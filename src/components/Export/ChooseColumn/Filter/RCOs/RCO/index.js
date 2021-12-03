@@ -12,7 +12,7 @@ import { observer } from 'mobx-react-lite'
 import { withResizeDetector } from 'react-resize-detector'
 
 import Properties from './Properties'
-import mobxStoreContext from '../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../storeContext'
 import ErrorBoundary from '../../../../../shared/ErrorBoundary'
 import getConstants from '../../../../../../modules/constants'
 const constants = getConstants()
@@ -71,7 +71,7 @@ const propsByTaxQuery = gql`
 `
 
 const RcoCard = ({ pc, width = 500 }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
 
   const { data: propsByTaxData, error: propsByTaxDataError } = useQuery(

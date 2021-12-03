@@ -9,7 +9,7 @@ import { navigate } from 'gatsby'
 import { useDebouncedCallback } from 'use-debounce'
 
 import getUrlForObject from '../../../modules/getUrlForObject'
-import mobxStoreContext from '../../../mobxStoreContext'
+import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
 import buildOptions from './buildOptions'
 
@@ -82,7 +82,7 @@ const objectUrlQuery = gql`
 const TreeFilter = ({ height = 250 }) => {
   // TODO: use local state instead of mobx for label, id
   const client = useApolloClient()
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { treeFilter } = mobxStore
   const { setTreeFilter } = treeFilter
 

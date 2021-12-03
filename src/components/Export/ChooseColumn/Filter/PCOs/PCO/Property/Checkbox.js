@@ -7,7 +7,7 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import styled from 'styled-components'
 import { observer } from 'mobx-react-lite'
 
-import mobxStoreContext from '../../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../../storeContext'
 
 const Container = styled.div`
   width: 100%;
@@ -33,7 +33,7 @@ const StyledRadio = styled(Radio)`
 `
 
 const PcoCheckbox = ({ pname, pcname, value }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { addFilterFields, setPcoFilter, addPcoProperty } = mobxStore.export
 
   const onChange = useCallback(

@@ -14,7 +14,7 @@ import ErrorBoundary from '../shared/ErrorBoundary'
 import OrgUsers from './OrgUsers'
 import TCs from './TCs'
 import PCs from './PCs'
-import mobxStoreContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 
 const Container = styled.div``
 const OrgContainer = styled.div`
@@ -67,7 +67,7 @@ const orgQuery = gql`
 `
 
 const Organization = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
 
   const {

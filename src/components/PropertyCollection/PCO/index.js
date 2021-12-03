@@ -17,7 +17,7 @@ import exportCsv from '../../../modules/exportCsv'
 import treeQuery from '../../Tree/treeQuery'
 import treeQueryVariables from '../../Tree/treeQueryVariables'
 import deletePcoOfPcMutation from './deletePcoOfPcMutation'
-import mobxStoreContext from '../../../mobxStoreContext'
+import storeContext from '../../../storeContext'
 import Spinner from '../../shared/Spinner'
 
 const Container = styled.div`
@@ -102,7 +102,7 @@ const pcoQuery = gql`
 
 const PCO = ({ dimensions }) => {
   const client = useApolloClient()
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { login } = mobxStore
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
   const pCId =

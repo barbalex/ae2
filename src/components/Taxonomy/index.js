@@ -20,7 +20,7 @@ import PropertyArten from './PropertyArten'
 import PropertyLr from './PropertyLr'
 import onBlurArten from './onBlurArten'
 import onBlurLr from './onBlurLr'
-import mobxStoreContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 import Spinner from '../shared/Spinner'
 import constants from '../../modules/constants'
 
@@ -106,7 +106,7 @@ const taxQuery = gql`
 
 const Taxonomy = () => {
   const client = useApolloClient()
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { editingTaxonomies, setEditingTaxonomies, login } = mobxStore
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
   const taxId = activeNodeArray?.[1] || '99999999-9999-9999-9999-999999999999'

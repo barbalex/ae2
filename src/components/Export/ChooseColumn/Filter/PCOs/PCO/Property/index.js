@@ -6,7 +6,7 @@ import { getSnapshot } from 'mobx-state-tree'
 import Comparator from './Comparator'
 import Value from './Value'
 import Checkbox from './Checkbox'
-import mobxStoreContext from '../../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../../storeContext'
 
 const Container = styled.div`
   display: flex;
@@ -26,7 +26,7 @@ const PcoProperty = ({
   columns,
   propertiesLength,
 }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { pcoFilters: pcoFiltersPassed } = mobxStore.export
   const pcoFilters = getSnapshot(pcoFiltersPassed)
 

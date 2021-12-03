@@ -25,7 +25,7 @@ import PCs from './PCs'
 import TCs from './TCs'
 import updateUserMutation from './updateUserMutation'
 import updateUserMutationWithPass from './updateUserMutationWithPass'
-import mobxStoreContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 import Spinner from '../shared/Spinner'
 import ErrorBoundary from '../shared/ErrorBoundary'
 
@@ -46,7 +46,7 @@ const StyledPaper = styled(Paper)`
 
 const User = () => {
   const client = useApolloClient()
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { login } = mobxStore
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
 

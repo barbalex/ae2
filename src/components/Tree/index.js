@@ -23,7 +23,7 @@ import CmTaxonomy from './contextmenu/Taxonomy'
 import CmType from './contextmenu/Type'
 import CmPCFolder from './contextmenu/PCFolder'
 import CmPC from './contextmenu/PC'
-import mobxStoreContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 import ErrorBoundary from '../shared/ErrorBoundary'
 
 const singleRowHeight = 23
@@ -158,7 +158,7 @@ const StyledSnackbar = styled(Snackbar)`
 `
 
 const Tree = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { login } = mobxStore
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
 

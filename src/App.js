@@ -22,7 +22,7 @@ import setLoginFromIdb from './modules/setLoginFromIdb'
 import detectIE from './modules/detectIE'
 import client from './client'
 import { Provider as IdbProvider } from './idbContext'
-import { Provider as MobxProvider } from './mobxStoreContext'
+import { Provider as MobxProvider } from './storeContext'
 import MobxStore from './mobxStore'
 import setUserFromIdb from './modules/setUserFromIdb'
 

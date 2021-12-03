@@ -24,7 +24,7 @@ import { getSnapshot } from 'mobx-state-tree'
 
 import createRCOMutation from './createRCOMutation'
 import updateRCOMutation from './updateRCOMutation'
-import mobxStoreContext from '../../../../mobxStoreContext'
+import storeContext from '../../../../storeContext'
 //import importWorker from './import.worker.js'
 
 const Container = styled.div`
@@ -216,7 +216,7 @@ const importRcoQuery = gql`
 
 const ImportRco = ({ setImport, pCO }) => {
   const client = useApolloClient()
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
   const pCId =
     activeNodeArray.length > 0

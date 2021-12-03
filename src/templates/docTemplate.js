@@ -13,7 +13,7 @@ import Layout from '../components/Layout'
 import ErrorBoundary from '../components/shared/ErrorBoundary'
 import Sidebar from './Sidebar'
 import useLocation from '../modules/useLocation'
-import mobxStoreContext from '../mobxStoreContext'
+import storeContext from '../storeContext'
 
 const Container = styled.div`
   height: calc(100vh - 64px);
@@ -55,7 +55,7 @@ const StyledSwipeableViews = styled(SwipeableViews)`
 `
 
 const DocTemplate = ({ data, height, width }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { windowWidth } = mobxStore
 
   const { markdownRemark, allMarkdownRemark } = data

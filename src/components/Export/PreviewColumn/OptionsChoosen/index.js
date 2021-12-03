@@ -10,7 +10,7 @@ import RcoFilterItems from './RcoFilterItems'
 import TaxPropertiesItems from './TaxPropertiesItems'
 import PcoPropertiesItems from './PcoPropertiesItems'
 import RcoPropertiesItems from './RcoPropertiesItems'
-import mobxStoreContext from '../../../../mobxStoreContext'
+import storeContext from '../../../../storeContext'
 
 const Container = styled.div`
   margin: 0;
@@ -44,7 +44,7 @@ const StyledButton = styled(Button)`
 `
 
 const OptionsChoosen = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const {
     setType,
     type: exportType,

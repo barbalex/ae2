@@ -7,7 +7,7 @@ import { observer } from 'mobx-react-lite'
 import App from './App'
 import getUrlForObject from '../modules/getUrlForObject'
 import getUrlParamByName from '../modules/getUrlParamByName'
-import mobxStoreContext from '../mobxStoreContext'
+import storeContext from '../storeContext'
 import getActiveNodeArrayFromPathname from '../modules/getActiveNodeArrayFromPathname'
 
 const objectQuery = gql`
@@ -50,7 +50,7 @@ const objectQuery = gql`
 `
 
 const Router = ({ location }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   // set activeNodeArray when pathname changes
   const { setActiveNodeArray } = mobxStore
   useEffect(() => {

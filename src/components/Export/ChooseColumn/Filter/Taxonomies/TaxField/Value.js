@@ -18,7 +18,7 @@ import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
 import readableType from '../../../../../../modules/readableType'
-import mobxStoreContext from '../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../storeContext'
 
 const StyledAutosuggest = styled(Autosuggest)`
   .react-autosuggest__suggestion {
@@ -134,7 +134,7 @@ const IntegrationAutosuggest = ({
   classes,
   width,
 }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { addFilterFields, addTaxProperty, setTaxFilters } = mobxStore.export
 
   const [fetchData, setFetchData] = useState(false)

@@ -35,7 +35,7 @@ import Property from './Property'
 import LinkMenu from './LinkMenu'
 import Properties from './Properties'
 import getUrlForObject from '../../../../modules/getUrlForObject'
-import mobxStoreContext from '../../../../mobxStoreContext'
+import storeContext from '../../../../storeContext'
 
 const LoadingContainer = styled.div`
   margin: 10px;
@@ -99,7 +99,7 @@ const organizationUsersQuery = gql`
 `
 
 const TaxonomyObject = ({ objekt, showLink, stacked }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { editingTaxonomies, setEditingTaxonomies, login } = mobxStore
 
   const {

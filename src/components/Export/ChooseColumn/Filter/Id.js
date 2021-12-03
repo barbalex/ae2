@@ -3,14 +3,14 @@ import TextField from '@mui/material/TextField'
 import styled from 'styled-components'
 import { observer } from 'mobx-react-lite'
 
-import mobxStoreContext from '../../../../mobxStoreContext'
+import storeContext from '../../../../storeContext'
 
 const IdField = styled(TextField)`
   margin-top: 2px !important;
 `
 
 const IdFilterField = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { setIds } = mobxStore.export
 
   const [value, setValue] = useState('')

@@ -6,7 +6,7 @@ import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
 
 import appBaseUrl from '../../modules/appBaseUrl'
-import mobxStoreContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 import Spinner from '../shared/Spinner'
 import ErrorBoundary from '../shared/ErrorBoundary'
 
@@ -45,7 +45,7 @@ const pcsQuery = gql`
 `
 
 const PCs = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
   const name = activeNodeArray.length > 1 ? activeNodeArray[1] : 'none'
 

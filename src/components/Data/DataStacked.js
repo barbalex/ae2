@@ -8,7 +8,7 @@ import { observer } from 'mobx-react-lite'
 
 import Tree from '../Tree'
 import DataType from '../DataType'
-import mobxStoreContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 
 const StyledPaper = styled(Paper)`
   background-color: #ffcc80 !important;
@@ -22,7 +22,7 @@ const StyledSwipeableViews = styled(SwipeableViews)`
 `
 
 const DataStacked = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { windowWidth, windowHeight } = mobxStore
 
   const [tab, setTab] = useState(0)

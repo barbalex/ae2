@@ -13,7 +13,7 @@ import { Location } from '@reach/router'
 import { getSnapshot } from 'mobx-state-tree'
 
 import getActiveObjectIdFromNodeArray from '../../../modules/getActiveObjectIdFromNodeArray'
-import mobxStoreContext from '../../../mobxStoreContext'
+import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
 
 // ReactDOMServer does not yet support Suspense
@@ -107,7 +107,7 @@ const query = gql`
 `
 
 const Header = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { login, singleColumnView } = mobxStore
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
 

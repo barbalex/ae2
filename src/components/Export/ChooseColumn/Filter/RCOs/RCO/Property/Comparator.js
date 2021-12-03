@@ -6,7 +6,7 @@ import styled from 'styled-components'
 import { observer } from 'mobx-react-lite'
 
 import ComparatorSelect from '../../../ComparatorSelect'
-import mobxStoreContext from '../../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../../storeContext'
 
 const Container = styled.div`
   flex-basis: 150px;
@@ -42,7 +42,7 @@ const RcoComparator = ({
   comparator,
   classes,
 }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { setRcoFilters } = mobxStore.export
 
   const onChange = useCallback(

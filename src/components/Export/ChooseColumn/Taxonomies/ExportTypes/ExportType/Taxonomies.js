@@ -4,7 +4,7 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react-lite'
 
-import mobxStoreContext from '../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../storeContext'
 
 const TaxonomyLabel = styled(FormControlLabel)`
   height: 33px;
@@ -17,7 +17,7 @@ const TaxonomyLabel = styled(FormControlLabel)`
 `
 
 const Taxonomies = ({ taxonomies }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { setType, setTaxonomies } = mobxStore.export
   const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
 

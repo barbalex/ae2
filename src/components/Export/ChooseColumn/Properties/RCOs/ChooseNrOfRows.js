@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography'
 import uniq from 'lodash/uniq'
 import { observer } from 'mobx-react-lite'
 
-import mobxStoreContext from '../../../../../mobxStoreContext'
+import storeContext from '../../../../../storeContext'
 
 const StyledFormLabel = styled(FormLabel)`
   color: rgba(0, 0, 0, 0.87) !important;
@@ -36,7 +36,7 @@ const StyledUl = styled.ul`
 `
 
 const ChooseNrOfRows = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { setRcoInOneRow, rcoInOneRow, rcoProperties } = mobxStore.export
 
   const multipleRowsDisabled =

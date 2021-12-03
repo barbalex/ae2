@@ -18,7 +18,7 @@ import { observer } from 'mobx-react-lite'
 
 import fetchLoginModule from './fetchLogin'
 import idbContext from '../../idbContext'
-import mobxStoreContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 import ErrorBoundary from '../shared/ErrorBoundary'
 
 const Container = styled.div`
@@ -38,7 +38,7 @@ const StyledSnackbar = styled(Snackbar)`
 const Login = () => {
   const client = useApolloClient()
   const idb = useContext(idbContext)
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { login } = mobxStore
   const { token, setLogin } = login
 

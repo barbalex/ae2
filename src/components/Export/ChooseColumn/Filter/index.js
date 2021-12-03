@@ -12,7 +12,7 @@ import Id from './Id'
 import Taxonomies from './Taxonomies'
 import PCOs from './PCOs'
 import RCOs from './RCOs'
-import mobxStoreContext from '../../../../mobxStoreContext'
+import storeContext from '../../../../storeContext'
 import ErrorBoundary from '../../../shared/ErrorBoundary'
 
 const Container = styled.div`
@@ -58,7 +58,7 @@ const propsByTaxQuery = gql`
 `
 
 const Filter = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
   const {
     onlyRowsWithProperties: exportOnlyRowsWithProperties,

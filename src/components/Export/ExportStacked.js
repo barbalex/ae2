@@ -8,7 +8,7 @@ import { observer } from 'mobx-react-lite'
 
 import ChooseColumn from './ChooseColumn'
 import PreviewColumn from './PreviewColumn'
-import mobxStoreContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 
 const StyledPaper = styled(Paper)`
   background-color: #ffcc80 !important;
@@ -21,7 +21,7 @@ const StyledSwipeableViews = styled(SwipeableViews)`
 `
 
 const ExportStacked = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const { windowWidth } = mobxStore
   const [tab, setTab] = useState(0)
 

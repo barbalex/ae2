@@ -11,7 +11,7 @@ import TaxonomyObject from './TaxonomyObjects/TaxonomyObject'
 import PCOs from './PCOs'
 import getActiveObjectIdFromNodeArray from '../../modules/getActiveObjectIdFromNodeArray'
 import objectDataQuery from './objectDataQuery'
-import mobxStoreContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 import Spinner from '../shared/Spinner'
 import ErrorBoundary from '../shared/ErrorBoundary'
 
@@ -39,7 +39,7 @@ const SynonymTitle = styled(Title)`
 `
 
 const Objekt = ({ stacked = false }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const mobxStore = useContext(storeContext)
   const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
 
   const objectId = getActiveObjectIdFromNodeArray(activeNodeArray)
