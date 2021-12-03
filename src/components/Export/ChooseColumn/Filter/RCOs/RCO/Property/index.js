@@ -25,8 +25,8 @@ const RcoField = ({
   columns,
   propertiesLength,
 }) => {
-  const mobxStore = useContext(storeContext)
-  const { rcoFilters } = mobxStore.export
+  const store = useContext(storeContext)
+  const { rcoFilters } = store.export
 
   const exportRcoFilter = rcoFilters.find(
     (x) =>

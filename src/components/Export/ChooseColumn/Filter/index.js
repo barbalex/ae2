@@ -58,8 +58,8 @@ const propsByTaxQuery = gql`
 `
 
 const Filter = () => {
-  const mobxStore = useContext(storeContext)
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const exportTaxonomies = store.export.taxonomies.toJSON()
   const {
     onlyRowsWithProperties: exportOnlyRowsWithProperties,
     setOnlyRowsWithProperties,
@@ -67,7 +67,7 @@ const Filter = () => {
     withSynonymData,
     addFilterFields,
     setAddFilterFields,
-  } = mobxStore.export
+  } = store.export
 
   const { data: propsByTaxData, error: propsByTaxDataError } = useQuery(
     propsByTaxQuery,

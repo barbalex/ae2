@@ -31,10 +31,10 @@ const FourOhFour = loadable(() => import('./FourOhFour'))
 const GraphIql = loadable(() => import('./GraphIql'))
 
 const App = () => {
-  const mobxStore = useContext(storeContext)
+  const store = useContext(storeContext)
   const { updateAvailable, setWindowWidth, setWindowHeight, singleColumnView } =
-    mobxStore
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+    store
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const [stacked, setStacked] = useState(false)
 

@@ -25,8 +25,8 @@ const TaxField = ({
   width,
   propertiesLength,
 }) => {
-  const mobxStore = useContext(storeContext)
-  const { taxFilters } = mobxStore.export
+  const store = useContext(storeContext)
+  const { taxFilters } = store.export
 
   const exportTaxFilter = taxFilters.find(
     (x) => x.taxname === taxname && x.pname === pname,

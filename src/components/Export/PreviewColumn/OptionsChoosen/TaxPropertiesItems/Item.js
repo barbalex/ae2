@@ -13,8 +13,8 @@ const ResetSpan = styled.span`
 `
 
 const ExportTaxPropertiesListItem = ({ properties }) => {
-  const mobxStore = useContext(storeContext)
-  const { removeTaxProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { removeTaxProperty } = store.export
 
   const { taxname, pname } = properties
   const onClick = useCallback(

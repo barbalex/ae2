@@ -102,9 +102,9 @@ const pcoQuery = gql`
 
 const PCO = ({ dimensions }) => {
   const client = useApolloClient()
-  const mobxStore = useContext(storeContext)
-  const { login } = mobxStore
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const { login } = store
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
   const pCId =
     activeNodeArray.length > 0
       ? activeNodeArray[1]

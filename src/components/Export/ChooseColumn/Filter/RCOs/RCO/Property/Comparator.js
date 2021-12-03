@@ -42,8 +42,8 @@ const RcoComparator = ({
   comparator,
   classes,
 }) => {
-  const mobxStore = useContext(storeContext)
-  const { setRcoFilters } = mobxStore.export
+  const store = useContext(storeContext)
+  const { setRcoFilters } = store.export
 
   const onChange = useCallback(
     (event) =>

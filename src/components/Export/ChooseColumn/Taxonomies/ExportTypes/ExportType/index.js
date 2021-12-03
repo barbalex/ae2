@@ -34,13 +34,13 @@ const TypeLabel = styled(FormControlLabel)`
 `
 
 const ExportTypes = ({ type, taxonomies }) => {
-  const mobxStore = useContext(storeContext)
+  const store = useContext(storeContext)
   const {
     type: exportType,
     setType: setExportType,
     setTaxonomies,
-  } = mobxStore.export
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  } = store.export
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const onCheckType = useCallback(
     async (event, isChecked) => {

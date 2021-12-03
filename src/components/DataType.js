@@ -23,8 +23,8 @@ const Organisation = loadable(() => import('./Organisation'))
 const Home = loadable(() => import('./Home'))
 
 const DataType = ({ dimensions, stacked = false }) => {
-  const mobxStore = useContext(storeContext)
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const showObjekt =
     ['Arten', 'Lebensräume'].includes(activeNodeArray[0]) &&

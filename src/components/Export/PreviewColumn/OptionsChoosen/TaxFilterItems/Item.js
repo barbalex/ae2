@@ -20,8 +20,8 @@ const ResetSpan = styled.span`
 `
 
 const ExportTaxFilterListItem = ({ filter }) => {
-  const mobxStore = useContext(storeContext)
-  const { setTaxFilters } = mobxStore.export
+  const store = useContext(storeContext)
+  const { setTaxFilters } = store.export
 
   const { taxname, pname, comparator, value } = filter
   const onClick = useCallback(

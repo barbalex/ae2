@@ -176,7 +176,7 @@ const synonymQuery = gql`
 `
 
 const Preview = () => {
-  const mobxStore = useContext(storeContext)
+  const store = useContext(storeContext)
   const {
     onlyRowsWithProperties: exportOnlyRowsWithProperties,
     withSynonymData,
@@ -187,7 +187,7 @@ const Preview = () => {
     pcoProperties: pcoPropertiesPassed,
     taxProperties: taxPropertiesPassed,
     rcoInOneRow,
-  } = mobxStore.export
+  } = store.export
   // 2019 08 20: No idea why suddenly need to getSnapshot
   // because without changes are not detected????
   const pcoFilters = getSnapshot(pcoFiltersPassed)
@@ -196,8 +196,8 @@ const Preview = () => {
   const rcoProperties = getSnapshot(rcoPropertiesPassed)
   const pcoProperties = getSnapshot(pcoPropertiesPassed)
   const taxProperties = getSnapshot(taxPropertiesPassed)
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
-  const exportIds = mobxStore.export.ids.toJSON()
+  const exportTaxonomies = store.export.taxonomies.toJSON()
+  const exportIds = store.export.ids.toJSON()
 
   const { loading: propsByTaxLoading, error: propsByTaxError } = useQuery(
     propsByTaxQuery,

@@ -6,7 +6,7 @@ import TreeFilter, { defaultValue as defaultTreeFilter } from './TreeFilter'
 import Login, { defaultValue as defaultLogin } from './Login'
 import getActiveNodeArrayFromPathname from '../modules/getActiveNodeArrayFromPathname'
 
-const mobxStore = ({ navigate }) =>
+const store = ({ navigate }) =>
   types
     .model({
       export: types.optional(Export, defaultExport),
@@ -68,4 +68,4 @@ const mobxStore = ({ navigate }) =>
       },
     }))
 
-export default mobxStore
+export default store

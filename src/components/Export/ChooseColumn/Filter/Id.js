@@ -10,8 +10,8 @@ const IdField = styled(TextField)`
 `
 
 const IdFilterField = () => {
-  const mobxStore = useContext(storeContext)
-  const { setIds } = mobxStore.export
+  const store = useContext(storeContext)
+  const { setIds } = store.export
 
   const [value, setValue] = useState('')
 

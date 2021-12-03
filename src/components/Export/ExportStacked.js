@@ -21,8 +21,8 @@ const StyledSwipeableViews = styled(SwipeableViews)`
 `
 
 const ExportStacked = () => {
-  const mobxStore = useContext(storeContext)
-  const { windowWidth } = mobxStore
+  const store = useContext(storeContext)
+  const { windowWidth } = store
   const [tab, setTab] = useState(0)
 
   const onChangeTab = useCallback((event, value) => {

@@ -1,7 +1,7 @@
 import union from 'lodash/union'
 import jwtDecode from 'jwt-decode'
 
-const level1 = ({ treeData, treeDataLoading, mobxStore }) => {
+const level1 = ({ treeData, treeDataLoading, store }) => {
   if (!treeData) return []
   const loading = treeDataLoading
   const pcCount = treeData?.allPropertyCollections?.totalCount ?? 0
@@ -18,7 +18,7 @@ const level1 = ({ treeData, treeDataLoading, mobxStore }) => {
       ? '(...)'
       : `(${lrTaxonomiesCount} Taxonomie${lrTaxonomiesCount !== 1 ? 'n' : ''})`
   const pcInfo = loading && pcCount === 0 ? '(...)' : `(${pcCount})`
-  const { token } = mobxStore.login
+  const { token } = store.login
   const userCount = treeData?.allUsers?.totalCount ?? 0
   const userInfo = loading && userCount === 0 ? '(...)' : `(${userCount})`
   const nodes = [

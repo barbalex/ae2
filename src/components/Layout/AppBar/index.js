@@ -107,9 +107,9 @@ const query = gql`
 `
 
 const Header = () => {
-  const mobxStore = useContext(storeContext)
-  const { login, singleColumnView } = mobxStore
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const { login, singleColumnView } = store
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const objectId = getActiveObjectIdFromNodeArray(activeNodeArray)
   let pCId = '99999999-9999-9999-9999-999999999999'

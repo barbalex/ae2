@@ -57,8 +57,8 @@ const propsByTaxQuery = gql`
 `
 
 const PcoList = ({ pcoExpanded, onTogglePco }) => {
-  const mobxStore = useContext(storeContext)
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const { data: propsData, error: propsDataError } = useQuery(propsByTaxQuery, {
     variables: {

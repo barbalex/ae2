@@ -1,9 +1,9 @@
 import union from 'lodash/union'
 import jwtDecode from 'jwt-decode'
 
-const level2Organization = ({ treeData, mobxStore }) => {
+const level2Organization = ({ treeData, store }) => {
   if (!treeData) return []
-  const { token } = mobxStore.login
+  const { token } = store.login
   if (!token) return []
   const tokenDecoded = jwtDecode(token)
   const username = tokenDecoded?.username

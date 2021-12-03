@@ -16,9 +16,9 @@ const onClickContextMenu = async ({
   client,
   treeRefetch,
   userId,
-  mobxStore,
+  store,
 }) => {
-  const { setEditingTaxonomies, setEditingPCs, editingTaxonomies } = mobxStore
+  const { setEditingTaxonomies, setEditingPCs, editingTaxonomies } = store
   if (!data) return console.log('no data passed with click')
   if (!target) {
     return console.log('no target passed with click')
@@ -32,7 +32,7 @@ const onClickContextMenu = async ({
   //   action,
   //   id,
   //   url,
-  //   activeNodeArray: getSnapshot(mobxStore.activeNodeArray),
+  //   activeNodeArray: getSnapshot(store.activeNodeArray),
   // })
   const actions = {
     insert: async () => {

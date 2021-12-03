@@ -95,8 +95,8 @@ const bgImageStyle = {
 
 const Home = ({ data }) => {
   // trick to prevent with from being reset on routing
-  const mobxStore = useContext(storeContext)
-  const { homeWidth, setHomeWidth } = mobxStore
+  const store = useContext(storeContext)
+  const { homeWidth, setHomeWidth } = store
   const { width, ref } = useResizeDetector({
     refreshMode: 'debounce',
     refreshRate: 100,

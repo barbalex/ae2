@@ -134,8 +134,8 @@ const IntegrationAutosuggest = ({
   classes,
   width,
 }) => {
-  const mobxStore = useContext(storeContext)
-  const { addFilterFields, addTaxProperty, setTaxFilters } = mobxStore.export
+  const store = useContext(storeContext)
+  const { addFilterFields, addTaxProperty, setTaxFilters } = store.export
 
   const [fetchData, setFetchData] = useState(false)
   const [dataFetched, setDataFetched] = useState(false)

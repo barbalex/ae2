@@ -17,9 +17,9 @@ const TaxonomyLabel = styled(FormControlLabel)`
 `
 
 const Taxonomies = ({ taxonomies }) => {
-  const mobxStore = useContext(storeContext)
-  const { setType, setTaxonomies } = mobxStore.export
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const { setType, setTaxonomies } = store.export
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const onCheckTaxonomy = useCallback(
     async (event, isChecked) => {

@@ -21,8 +21,8 @@ const ResetSpan = styled.span`
 
 const ExportRcoFilterListItem = ({ filter }) => {
   const { pcname, relationtype, pname, comparator, value } = filter
-  const mobxStore = useContext(storeContext)
-  const { setRcoFilters } = mobxStore.export
+  const store = useContext(storeContext)
+  const { setRcoFilters } = store.export
 
   const onClick = useCallback(
     () =>

@@ -42,8 +42,8 @@ const PropertiesTitleValue = styled.p`
 `
 
 const Properties = ({ id, properties, objectData, stacked }) => {
-  const mobxStore = useContext(storeContext)
-  const { editingTaxonomies } = mobxStore
+  const store = useContext(storeContext)
+  const { editingTaxonomies } = store
 
   const propertiesArray = Object.entries(properties)
 

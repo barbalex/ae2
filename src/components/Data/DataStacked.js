@@ -22,8 +22,8 @@ const StyledSwipeableViews = styled(SwipeableViews)`
 `
 
 const DataStacked = () => {
-  const mobxStore = useContext(storeContext)
-  const { windowWidth, windowHeight } = mobxStore
+  const store = useContext(storeContext)
+  const { windowWidth, windowHeight } = store
 
   const [tab, setTab] = useState(0)
   const onChangeTab = useCallback((event, value) => setTab(value), [])

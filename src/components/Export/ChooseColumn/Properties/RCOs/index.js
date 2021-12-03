@@ -71,8 +71,8 @@ const propsByTaxQuery = gql`
 `
 
 const RCOs = ({ rcoExpanded, onToggleRco }) => {
-  const mobxStore = useContext(storeContext)
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const { data, error: dataError } = useQuery(
     rcoCountByTaxonomyRelationTypeQuery,

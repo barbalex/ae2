@@ -55,8 +55,8 @@ const StyledSwipeableViews = styled(SwipeableViews)`
 `
 
 const DocTemplate = ({ data, height, width }) => {
-  const mobxStore = useContext(storeContext)
-  const { windowWidth } = mobxStore
+  const store = useContext(storeContext)
+  const { windowWidth } = store
 
   const { markdownRemark, allMarkdownRemark } = data
   const { frontmatter, html } = markdownRemark

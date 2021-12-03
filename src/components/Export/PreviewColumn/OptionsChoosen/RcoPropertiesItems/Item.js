@@ -14,8 +14,8 @@ const ResetSpan = styled.span`
 
 const ExportRcoPropertiesListItem = ({ properties }) => {
   const { pcname, relationtype, pname } = properties
-  const mobxStore = useContext(storeContext)
-  const { removeRcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { removeRcoProperty } = store.export
 
   const onClick = useCallback(
     () =>

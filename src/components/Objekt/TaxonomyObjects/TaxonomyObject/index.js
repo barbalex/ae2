@@ -99,8 +99,8 @@ const organizationUsersQuery = gql`
 `
 
 const TaxonomyObject = ({ objekt, showLink, stacked }) => {
-  const mobxStore = useContext(storeContext)
-  const { editingTaxonomies, setEditingTaxonomies, login } = mobxStore
+  const store = useContext(storeContext)
+  const { editingTaxonomies, setEditingTaxonomies, login } = store
 
   const {
     data: organizationUsersData,

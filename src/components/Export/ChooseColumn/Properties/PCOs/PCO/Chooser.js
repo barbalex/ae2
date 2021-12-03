@@ -29,8 +29,8 @@ const PcoChooser = ({
   columns,
   propertiesLength,
 }) => {
-  const mobxStore = useContext(storeContext)
-  const { pcoProperties, addPcoProperty, removePcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { pcoProperties, addPcoProperty, removePcoProperty } = store.export
 
   const onCheck = useCallback(
     (event, isChecked) => {

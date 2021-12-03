@@ -105,9 +105,9 @@ const pcQuery = gql`
 
 const PropertyCollection = () => {
   const client = useApolloClient()
-  const mobxStore = useContext(storeContext)
-  const { editingPCs, setEditingPCs, login } = mobxStore
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const { editingPCs, setEditingPCs, login } = store
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
   const pCId =
     activeNodeArray.length > 0
       ? activeNodeArray[1]

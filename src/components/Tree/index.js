@@ -158,9 +158,9 @@ const StyledSnackbar = styled(Snackbar)`
 `
 
 const Tree = () => {
-  const mobxStore = useContext(storeContext)
-  const { login } = mobxStore
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const { login } = store
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const {
     height = 250,
@@ -199,7 +199,7 @@ const Tree = () => {
     treeData,
     activeNodeArray,
     treeDataLoading,
-    mobxStore,
+    store,
   })
 
   useEffect(() => {

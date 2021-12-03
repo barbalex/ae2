@@ -63,9 +63,9 @@ const propsByTaxQuery = gql`
 `
 
 const Taxonomies = () => {
-  const mobxStore = useContext(storeContext)
-  const { type: exportType } = mobxStore.export
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const { type: exportType } = store.export
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const { loading: propsByTaxLoading, error: propsByTaxError } = useQuery(
     propsByTaxQuery,

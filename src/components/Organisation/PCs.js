@@ -45,8 +45,8 @@ const pcsQuery = gql`
 `
 
 const PCs = () => {
-  const mobxStore = useContext(storeContext)
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
   const name = activeNodeArray.length > 1 ? activeNodeArray[1] : 'none'
 
   const {

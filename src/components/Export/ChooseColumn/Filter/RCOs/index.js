@@ -61,8 +61,8 @@ const propsByTaxQuery = gql`
 `
 
 const RcosCard = ({ rcoExpanded, onToggleRco }) => {
-  const mobxStore = useContext(storeContext)
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const { data: propsByTaxData, error: propsByTaxDataError } = useQuery(
     propsByTaxQuery,

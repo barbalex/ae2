@@ -39,8 +39,8 @@ const SynonymTitle = styled(Title)`
 `
 
 const Objekt = ({ stacked = false }) => {
-  const mobxStore = useContext(storeContext)
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const objectId = getActiveObjectIdFromNodeArray(activeNodeArray)
   const {

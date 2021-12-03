@@ -33,8 +33,8 @@ const StyledRadio = styled(Radio)`
 `
 
 const PcoCheckbox = ({ pname, pcname, value }) => {
-  const mobxStore = useContext(storeContext)
-  const { addFilterFields, setPcoFilter, addPcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { addFilterFields, setPcoFilter, addPcoProperty } = store.export
 
   const onChange = useCallback(
     (e, val) => {

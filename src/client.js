@@ -7,14 +7,14 @@ import './index.css'
 import 'react-reflex/styles.css'
 import graphQlUri from './modules/graphQlUri'
 
-const client = ({ idb, mobxStore }) => {
+const client = ({ idb, store }) => {
   /**
    * On the next line Firefox 45.3.0 errors out with:
    * Unhandled Rejection (OpenFailedError): UnknownError The operation failed
    * for reasons unrelated to the database itself and not covered by any other error code
    */
   const authLink = setContext(async () => {
-    const { token } = mobxStore.login
+    const { token } = store.login
     if (token) {
       const tokenDecoded = jwtDecode(token)
       // for unknown reason, date.now returns three more after comma
@@ -27,7 +27,7 @@ const client = ({ idb, mobxStore }) => {
           },
         }
       } else {
-        const { setLogin } = mobxStore
+        const { setLogin } = store
         // token is not valid any more > remove it
         idb.users.clear()
         setLogin({

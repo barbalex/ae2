@@ -82,8 +82,8 @@ const objectUrlQuery = gql`
 const TreeFilter = ({ height = 250 }) => {
   // TODO: use local state instead of mobx for label, id
   const client = useApolloClient()
-  const mobxStore = useContext(storeContext)
-  const { treeFilter } = mobxStore
+  const store = useContext(storeContext)
+  const { treeFilter } = store
   const { setTreeFilter } = treeFilter
 
   const treeFilterId = treeFilter.id ?? '99999999-9999-9999-9999-999999999999'

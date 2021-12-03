@@ -20,8 +20,8 @@ const ResetSpan = styled.span`
 `
 
 const ExportPcoFilterListItem = ({ filter }) => {
-  const mobxStore = useContext(storeContext)
-  const { setPcoFilter } = mobxStore.export
+  const store = useContext(storeContext)
+  const { setPcoFilter } = store.export
 
   const { pcname, pname, comparator, value } = filter
 

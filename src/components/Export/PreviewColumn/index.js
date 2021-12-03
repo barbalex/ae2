@@ -16,8 +16,8 @@ const HowToDiv = styled.div`
 `
 
 const Filter = () => {
-  const mobxStore = useContext(storeContext)
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   return (
     <ErrorBoundary>

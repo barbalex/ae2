@@ -36,8 +36,8 @@ const StyledUl = styled.ul`
 `
 
 const ChooseNrOfRows = () => {
-  const mobxStore = useContext(storeContext)
-  const { setRcoInOneRow, rcoInOneRow, rcoProperties } = mobxStore.export
+  const store = useContext(storeContext)
+  const { setRcoInOneRow, rcoInOneRow, rcoProperties } = store.export
 
   const multipleRowsDisabled =
     uniq(rcoProperties.map((e) => `${e.pcname}/${e.relationtype}`)).length > 1

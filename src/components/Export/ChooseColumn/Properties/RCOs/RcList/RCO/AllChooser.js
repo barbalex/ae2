@@ -19,8 +19,8 @@ const Label = styled(FormControlLabel)`
 `
 
 const AllRcoChooser = ({ properties }) => {
-  const mobxStore = useContext(storeContext)
-  const { rcoProperties, addRcoProperty, removeRcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { rcoProperties, addRcoProperty, removeRcoProperty } = store.export
 
   const onCheck = useCallback(
     (event, isChecked) => {

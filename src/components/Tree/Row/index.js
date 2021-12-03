@@ -85,8 +85,8 @@ function collect(props) {
 
 const Row = ({ index, style, node, treeRefetch, userId }) => {
   const client = useApolloClient()
-  const mobxStore = useContext(storeContext)
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const nodeIsInActiveNodePath = isUrlInActiveNodePath(
     node.url,
@@ -144,10 +144,10 @@ const Row = ({ index, style, node, treeRefetch, userId }) => {
         client,
         treeRefetch,
         userId,
-        mobxStore,
+        store,
       })
     },
-    [client, treeRefetch, userId, mobxStore],
+    [client, treeRefetch, userId, store],
   )
 
   return (

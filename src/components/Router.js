@@ -50,9 +50,9 @@ const objectQuery = gql`
 `
 
 const Router = ({ location }) => {
-  const mobxStore = useContext(storeContext)
+  const store = useContext(storeContext)
   // set activeNodeArray when pathname changes
-  const { setActiveNodeArray } = mobxStore
+  const { setActiveNodeArray } = store
   useEffect(() => {
     setActiveNodeArray(getActiveNodeArrayFromPathname())
   }, [location.pathname, setActiveNodeArray])

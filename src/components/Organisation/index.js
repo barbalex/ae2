@@ -67,8 +67,8 @@ const orgQuery = gql`
 `
 
 const Organization = () => {
-  const mobxStore = useContext(storeContext)
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const {
     data: orgData,

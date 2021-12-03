@@ -126,8 +126,8 @@ const IntegrationAutosuggest = ({
   value: propsValue,
   classes,
 }) => {
-  const mobxStore = useContext(storeContext)
-  const { addFilterFields, setPcoFilter, addPcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { addFilterFields, setPcoFilter, addPcoProperty } = store.export
 
   const [suggestions, setSuggestions] = useState([])
   const [propValues, setPropValues] = useState([])

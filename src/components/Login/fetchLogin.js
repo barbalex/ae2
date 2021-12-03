@@ -16,11 +16,11 @@ const fetchLogin = async ({
   namePassed,
   passPassed,
   idb,
-  mobxStore,
+  store,
   nameInput,
   passwordInput,
 }) => {
-  const { historyAfterLogin, setHistoryAfterLogin, login } = mobxStore
+  const { historyAfterLogin, setHistoryAfterLogin, login } = store
   const { setLogin } = login
   // when bluring fields need to pass event value
   // on the other hand when clicking on Anmelden button,

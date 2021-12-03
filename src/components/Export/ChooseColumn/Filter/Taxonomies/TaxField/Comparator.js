@@ -35,8 +35,8 @@ const styles = (theme) => ({
 })
 
 const Comparator = ({ comparator, classes, taxname, pname, value }) => {
-  const mobxStore = useContext(storeContext)
-  const { setTaxFilters } = mobxStore.export
+  const store = useContext(storeContext)
+  const { setTaxFilters } = store.export
 
   const onChange = useCallback(
     (event) =>

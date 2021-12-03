@@ -23,7 +23,7 @@ import detectIE from './modules/detectIE'
 import client from './client'
 import { Provider as IdbProvider } from './idbContext'
 import { Provider as MobxProvider } from './storeContext'
-import MobxStore from './mobxStore'
+import MobxStore from './store'
 import setUserFromIdb from './modules/setUserFromIdb'
 
 const App = ({ element }) => {
@@ -35,21 +35,21 @@ const App = ({ element }) => {
 
   const idb = initializeIdb()
 
-  const mobxStore = MobxStore({ navigate }).create()
-  typeof window !== 'undefined' && setUserFromIdb({ idb, mobxStore })
+  const store = MobxStore({ navigate }).create()
+  typeof window !== 'undefined' && setUserFromIdb({ idb, store })
 
-  const myClient = client({ idb, mobxStore })
+  const myClient = client({ idb, store })
 
-  const { setActiveNodeArray } = mobxStore
+  const { setActiveNodeArray } = store
 
-  typeof window !== 'undefined' && setLoginFromIdb({ idb, mobxStore })
+  typeof window !== 'undefined' && setLoginFromIdb({ idb, store })
 
   // initiate activeNodeArray
   setActiveNodeArray(getActiveNodeArrayFromPathname())
 
   return (
     <IdbProvider value={idb}>
-      <MobxProvider value={mobxStore}>
+      <MobxProvider value={store}>
         <ApolloProvider client={myClient}>
           <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>{element}</ThemeProvider>

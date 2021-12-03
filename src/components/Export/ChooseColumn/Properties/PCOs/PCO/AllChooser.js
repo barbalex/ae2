@@ -19,8 +19,8 @@ const Label = styled(FormControlLabel)`
 `
 
 const AllPcoChooser = ({ properties }) => {
-  const mobxStore = useContext(storeContext)
-  const { pcoProperties, addPcoProperty, removePcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { pcoProperties, addPcoProperty, removePcoProperty } = store.export
 
   const onCheck = useCallback(
     (event, isChecked) => {

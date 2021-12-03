@@ -26,8 +26,8 @@ const PcoProperty = ({
   columns,
   propertiesLength,
 }) => {
-  const mobxStore = useContext(storeContext)
-  const { pcoFilters: pcoFiltersPassed } = mobxStore.export
+  const store = useContext(storeContext)
+  const { pcoFilters: pcoFiltersPassed } = store.export
   const pcoFilters = getSnapshot(pcoFiltersPassed)
 
   const pcoFilter = pcoFilters.find(

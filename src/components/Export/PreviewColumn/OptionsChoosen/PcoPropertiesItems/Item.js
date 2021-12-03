@@ -13,8 +13,8 @@ const ResetSpan = styled.span`
 `
 
 const ExportPcoPropertiesListItem = ({ properties }) => {
-  const mobxStore = useContext(storeContext)
-  const { removePcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { removePcoProperty } = store.export
   const { pcname, pname } = properties
 
   const onClick = useCallback(

@@ -30,8 +30,8 @@ const RcoChooser = ({
   columns,
   propertiesLength,
 }) => {
-  const mobxStore = useContext(storeContext)
-  const { rcoProperties, addRcoProperty, removeRcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { rcoProperties, addRcoProperty, removeRcoProperty } = store.export
 
   const onCheck = useCallback(
     (event, isChecked) => {

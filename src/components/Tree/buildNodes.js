@@ -18,17 +18,12 @@ import buildLevel9Objects from './nodes/level9Object'
 import buildLevel10Objects from './nodes/level10Object'
 import sort from './nodes/sort'
 
-const buildNodes = ({
-  treeData,
-  activeNodeArray,
-  treeDataLoading,
-  mobxStore,
-}) => {
+const buildNodes = ({ treeData, activeNodeArray, treeDataLoading, store }) => {
   let nodes = buildLevel1Nodes({
     treeData,
     activeNodeArray,
     treeDataLoading,
-    mobxStore,
+    store,
   })
   if (activeNodeArray.length > 0) {
     if (activeNodeArray[0] === 'Eigenschaften-Sammlungen') {
@@ -40,13 +35,10 @@ const buildNodes = ({
           }),
         )
       }
-    } else if (activeNodeArray[0] === 'Benutzer' && !!mobxStore.login.token) {
+    } else if (activeNodeArray[0] === 'Benutzer' && !!store.login.token) {
       nodes = [...nodes, ...buildLevel2BenutzerNodes({ treeData })]
     } else if (activeNodeArray[0] === 'Organisationen') {
-      nodes = [
-        ...nodes,
-        ...buildLevel2OrganizationNodes({ treeData, mobxStore }),
-      ]
+      nodes = [...nodes, ...buildLevel2OrganizationNodes({ treeData, store })]
     } else if (['Arten', 'Lebensräume'].includes(activeNodeArray[0])) {
       const type = activeNodeArray[0]
       const taxonomies =

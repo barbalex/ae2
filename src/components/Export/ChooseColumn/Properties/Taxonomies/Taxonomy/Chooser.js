@@ -29,8 +29,8 @@ const TaxChooser = ({
   columns,
   propertiesLength,
 }) => {
-  const mobxStore = useContext(storeContext)
-  const { taxProperties, addTaxProperty, removeTaxProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { taxProperties, addTaxProperty, removeTaxProperty } = store.export
 
   const onCheck = useCallback(
     (event, isChecked) => {

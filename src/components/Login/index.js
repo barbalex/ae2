@@ -38,8 +38,8 @@ const StyledSnackbar = styled(Snackbar)`
 const Login = () => {
   const client = useApolloClient()
   const idb = useContext(idbContext)
-  const mobxStore = useContext(storeContext)
-  const { login } = mobxStore
+  const store = useContext(storeContext)
+  const { login } = store
   const { token, setLogin } = login
 
   const [name, changeName] = useState('')
@@ -66,11 +66,11 @@ const Login = () => {
         namePassed,
         passPassed,
         idb,
-        mobxStore,
+        store,
         nameInput,
         passwordInput,
       }),
-    [client, name, pass, idb, mobxStore],
+    [client, name, pass, idb, store],
   )
   const onLogout = useCallback(() => {
     idb.users.clear()

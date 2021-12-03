@@ -35,8 +35,8 @@ const styles = (theme) => ({
 })
 
 const PcoComparator = ({ pcname, pname, value, comparator, classes }) => {
-  const mobxStore = useContext(storeContext)
-  const { setPcoFilter } = mobxStore.export
+  const store = useContext(storeContext)
+  const { setPcoFilter } = store.export
 
   const onChange = useCallback(
     (event) => {

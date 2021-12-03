@@ -201,8 +201,8 @@ const importPcoQuery = gql`
 
 const ImportPco = ({ setImport, pCO }) => {
   const client = useApolloClient()
-  const mobxStore = useContext(storeContext)
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
   const pCId =
     activeNodeArray.length > 0
       ? activeNodeArray[1]
