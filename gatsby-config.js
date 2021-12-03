@@ -56,6 +56,8 @@ module.exports = {
         display: 'minimal-ui',
         icon: 'src/images/favicon256.png',
         include_favicon: true,
+        lang: 'de-CH',
+        orientation: 'portrait',
         description:
           'Eigenschaften von Flora, Fauna, Moosen und Lebensräumen: Sichten, exportieren, importieren',
       },
