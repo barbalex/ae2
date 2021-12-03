@@ -1,6 +1,5 @@
 const level10Object = ({
   type,
-  treeData,
   taxonomy,
   taxonomySort,
   level3Object,
@@ -10,10 +9,9 @@ const level10Object = ({
   level7Object,
   level8Object,
   level9Object,
-}) => {
-  const nodes = treeData?.level10Object?.objectsByParentId?.nodes ?? []
-
-  return nodes.map((node) => {
+  level10Objects,
+}) =>
+  level10Objects.map((node) => {
     const childrenCount = node?.childrenCount?.totalCount ?? 0
     // give nodeName a value if it does not yet exist
     // otherwise empty nodes are sorted before its parent
@@ -52,6 +50,5 @@ const level10Object = ({
       menuType: 'CmObject',
     }
   })
-}
 
 export default level10Object

@@ -1,6 +1,5 @@
 const level8Object = ({
   type,
-  treeData,
   taxonomy,
   taxonomySort,
   level3Object,

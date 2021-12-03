@@ -1,10 +1,4 @@
-const level3Object = ({
-  type,
-  treeData,
-  taxonomy,
-  taxonomySort,
-  level3Objects,
-}) =>
+const level3Object = ({ type, taxonomy, taxonomySort, level3Objects }) =>
   level3Objects.map((node) => {
     const childrenCount = node?.childrenCount?.totalCount ?? 0
     // give nodeName a value if it does not yet exist
