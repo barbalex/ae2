@@ -23,7 +23,7 @@ import detectIE from './modules/detectIE'
 import client from './client'
 import { Provider as IdbProvider } from './idbContext'
 import { Provider as MobxProvider } from './storeContext'
-import MobxStore from './store'
+import Store from './store'
 import setUserFromIdb from './modules/setUserFromIdb'
 
 const App = ({ element }) => {
@@ -35,7 +35,7 @@ const App = ({ element }) => {
 
   const idb = initializeIdb()
 
-  const store = MobxStore({ navigate }).create()
+  const store = Store({ navigate }).create()
   typeof window !== 'undefined' && setUserFromIdb({ idb, store })
 
   const myClient = client({ idb, store })
