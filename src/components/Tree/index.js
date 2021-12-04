@@ -145,7 +145,6 @@ const getNodeData = ({ node, nestingLevel, client, nodes, setNodes }) => ({
       console.log('node, fetch:', node)
       switch (node.id) {
         case 'Arten': {
-          console.log('TODO:')
           const result = await client.query({
             query: gql`
               query TreeDataQueryForTaxonomyLevel2 {
@@ -196,14 +195,13 @@ const getNodeData = ({ node, nestingLevel, client, nodes, setNodes }) => ({
 })
 
 const Node = (props) => {
-  const { data, isOpen, style, setOpen, treeRefetch, userId } = props
+  const { data, isOpen, style, setOpen, userId } = props
   const [isLoading, setLoading] = useState(false)
 
   return (
     <Row
       style={style}
       data={data}
-      treeRefetch={treeRefetch}
       userId={userId}
       loading={isLoading}
       setLoading={setLoading}
@@ -220,36 +218,38 @@ const TreeComponent = () => {
 
   const client = useApolloClient()
 
-  const {
-    data: treeData,
-    loading,
-    error: treeError,
-    refetch: treeRefetch,
-  } = useQuery(treeQuery, {
-    variables: {
-      ...treeQueryVariables({ activeNodeArray }),
-      username: login.username,
-    },
-  })
+  const [treeData, setTreeData] = useState()
+  const [treeError, setTreeError] = useState()
+  const [loading, setLoading] = useState(true)
+  const [nodes, setNodes] = useState([])
 
   const userId = treeData?.userByName?.id
 
-  const [nodes, setNodes] = useState([])
-
   useEffect(() => {
-    if (loading === false) {
-      console.log('Tree, useEffect setting level 1 nodes')
-      setNodes(
-        buildLevel1Nodes({
-          treeData: treeData ?? {},
-          loading,
-          store,
-        }),
-      )
-    }
-  }, [loading])
+    client
+      .query({
+        query: treeQuery,
+        variables: {
+          ...treeQueryVariables({ activeNodeArray }),
+          username: login.username,
+        },
+      })
+      .then(({ data, loading, error }) => {
+        console.log('effect setting data', { data, loading, error })
+        setTreeData(data)
+        setLoading(loading)
+        setTreeError(error)
+        setNodes(
+          buildLevel1Nodes({
+            treeData: data,
+            loading,
+            store,
+          }),
+        )
+      })
+  }, [])
 
-  console.log('Tree', { nodes, loading, treeData, activeNodeArray })
+  console.log('Tree', { nodes, loading })
 
   const treeWalker = useCallback(
     function* treeWalker() {
@@ -322,7 +322,6 @@ const TreeComponent = () => {
                   setOpen: props.setOpen,
                   style: props.style,
                   userId,
-                  treeRefetch,
                 })
               }
             </Tree>

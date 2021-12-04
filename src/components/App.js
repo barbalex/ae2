@@ -32,8 +32,7 @@ const GraphIql = loadable(() => import('./GraphIql'))
 
 const App = () => {
   const store = useContext(storeContext)
-  const { updateAvailable, setWindowWidth, setWindowHeight, singleColumnView } =
-    store
+  const { updateAvailable, setWindowWidth, setWindowHeight } = store
   const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const [stacked, setStacked] = useState(false)

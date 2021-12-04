@@ -89,7 +89,6 @@ const Row = ({
   index = 0,
   style,
   data,
-  treeRefetch,
   userId,
   loading,
   setLoading,
@@ -131,7 +130,8 @@ const Row = ({
       await data.fetch()
       await setOpen(true)
       setLoading(false)
-      navigate(`/${url.join('/')}`)
+      // TODO: navigate makes Tree rerender and loose it's state
+      //navigate(`/${url.join('/')}`)
     }
   }, [loading, url, activeNodeArray, setLoading, data, setOpen])
   const onClickExpandMore = useCallback(
@@ -156,12 +156,13 @@ const Row = ({
         data,
         target,
         client,
-        treeRefetch,
+        // TODO: check this behaviour
+        treeRefetch: () => {},
         userId,
         store,
       })
     },
-    [client, treeRefetch, userId, store],
+    [client, userId, store],
   )
 
   //console.log('Row, node:', node)
