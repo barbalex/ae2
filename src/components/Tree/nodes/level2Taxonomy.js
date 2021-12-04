@@ -10,6 +10,7 @@ const level2Taxonomy = ({ type, taxonomySort, taxonomies }) =>
       label: taxonomy.name,
       info: `(${level1Count})`,
       childrenCount: allObjectsCount,
+      children: [],
       menuType: 'CmTaxonomy',
     }
   })

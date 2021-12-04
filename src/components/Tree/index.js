@@ -1,21 +1,15 @@
 import React, {
-  useRef,
-  useEffect,
   useState,
   useContext,
   useCallback,
+  useMemo,
+  useEffect,
 } from 'react'
-// if observer is active, forceUpdate during rendering happens
-import { FixedSizeList as List } from 'react-window'
 import styled from 'styled-components'
-import findIndex from 'lodash/findIndex'
-import isEqual from 'lodash/isEqual'
 import Snackbar from '@mui/material/Snackbar'
-import { useQuery } from '@apollo/client'
+import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
-import SimpleBar from 'simplebar-react'
 import { getSnapshot } from 'mobx-state-tree'
-import { useResizeDetector } from 'react-resize-detector'
 import { FixedSizeTree as Tree } from 'react-vtree'
 
 import Row from './Row'
@@ -33,6 +27,7 @@ import CmPC from './contextmenu/PC'
 import storeContext from '../../storeContext'
 import ErrorBoundary from '../shared/ErrorBoundary'
 import buildLevel1Nodes from './nodes/level1'
+import buildLevel2TaxonomyNodes from './nodes/level2Taxonomy'
 
 const singleRowHeight = 23
 const ErrorContainer = styled.div`
@@ -40,9 +35,9 @@ const ErrorContainer = styled.div`
 `
 const Container = styled.div`
   height: 100%;
-  display: flex;
+  /*display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden;*/
   ul {
     margin: 0;
     list-style: none;
@@ -139,26 +134,97 @@ const StyledSnackbar = styled(Snackbar)`
     flex-grow: 0;
   }
 `
+const AutoSizerContainer = styled.div`
+  height: 100%;
+  padding: 5px 0;
+`
+
+const getNodeData = ({ node, nestingLevel, client, nodes, setNodes }) => ({
+  data: {
+    fetch: async () => {
+      console.log('node, fetch:', node)
+      switch (node.id) {
+        case 'Arten': {
+          console.log('TODO:')
+          const result = await client.query({
+            query: gql`
+              query TreeDataQueryForTaxonomyLevel2 {
+                allTaxonomies(filter: { type: { equalTo: ART } }) {
+                  totalCount
+                  nodes {
+                    id
+                    name
+                    type
+                    objectsByTaxonomyId {
+                      totalCount
+                    }
+                    topLevelObjects: objectsByTaxonomyId(
+                      filter: { parentId: { isNull: true } }
+                    ) {
+                      totalCount
+                    }
+                  }
+                }
+              }
+            `,
+          })
+          console.log('Tree, fetch, Arten, result:', result)
+          const children = buildLevel2TaxonomyNodes({
+            type: 'Arten',
+            taxonomies: result?.data?.allTaxonomies?.nodes ?? [],
+            taxonomySort: 1,
+          })
+          console.log('Tree, fetch, Arten, children:', children)
+          const newNodes = [...nodes]
+          const myNode = newNodes.find((n) => n.id === node.id)
+          console.log('Tree, fetch, Arten, myNode:', myNode)
+          myNode.children = children
+          setNodes(newNodes)
+          break
+        }
+        default:
+          console.log('default, TODO:')
+      }
+      return
+    },
+    ...node,
+    id: node.id.toString(), // mandatory
+    isLeaf: node?.childrenCount === 0,
+    isOpenByDefault: true, // mandatory
+    nestingLevel,
+  },
+  nestingLevel,
+  node,
+})
+
+const Node = (props) => {
+  const { data, isOpen, style, setOpen, treeRefetch, userId } = props
+  const [isLoading, setLoading] = useState(false)
+
+  return (
+    <Row
+      style={style}
+      data={data}
+      treeRefetch={treeRefetch}
+      userId={userId}
+      loading={isLoading}
+      setLoading={setLoading}
+      setOpen={setOpen}
+    />
+  )
+}
 
 const TreeComponent = () => {
-  console.log('TreeComponent rendering')
+  //console.log('TreeComponent rendering')
   const store = useContext(storeContext)
   const { login } = store
   const activeNodeArray = getSnapshot(store.activeNodeArray)
 
-  const {
-    height = 250,
-    width = 250,
-    ref: sizeRef,
-  } = useResizeDetector({
-    refreshMode: 'debounce',
-    refreshRate: 500,
-    refreshOptions: { leading: true },
-  })
+  const client = useApolloClient()
 
   const {
-    data: treeDataFetched,
-    loading: treeLoading,
+    data: treeData = {},
+    loading,
     error: treeError,
     refetch: treeRefetch,
   } = useQuery(treeQuery, {
@@ -168,55 +234,61 @@ const TreeComponent = () => {
     },
   })
 
-  // prevent tree from rebuilding from the top
-  // every time a new branch is clicked
-  const [treeData, setTreeData] = useState({})
-  useEffect(() => {
-    if (!treeLoading && treeDataFetched) {
-      setTreeData(treeDataFetched)
-    }
-  }, [treeDataFetched, treeLoading])
-
-  const treeDataLoading = treeLoading
   const userId = treeData?.userByName?.id
-  const treeNodes = buildLevel1Nodes({
-    treeData,
-    activeNodeArray,
-    treeDataLoading,
-    store,
-  })
-  console.log('Tree, treeNodes:', treeNodes)
-  const getNodeData = (node, nestingLevel) => ({
-    data: {
-      ...node,
-      id: node.id.toString(), // mandatory
-      isLeaf: node?.childrenCount === 0,
-      isOpenByDefault: true, // mandatory
-      nestingLevel,
-    },
-    nestingLevel,
-    node,
-  })
 
-  function* treeWalker() {
-    // Step [1]: Define the root node of our tree. There can be one or
-    // multiple nodes.
-    for (let i = 0; i < treeNodes.length; i++) {
-      yield getNodeData(treeNodes[i], 0)
+  const [nodes, setNodes] = useState([])
+
+  useEffect(() => {
+    if (loading === false) {
+      console.log('Tree, useEffect setting level 1 nodes')
+      setNodes(
+        buildLevel1Nodes({
+          treeData,
+          activeNodeArray,
+          loading,
+          store,
+          client,
+        }),
+      )
     }
+  }, [loading])
 
-    while (true) {
-      // Step [2]: Get the parent component back. It will be the object
-      // the `getNodeData` function constructed, so you can read any data from it.
-      const parent = yield
+  console.log('Tree, nodes:', { nodes, loading, treeData, activeNodeArray })
 
-      for (let i = 0; i < parent.node.children.length; i++) {
-        // Step [3]: Yielding all the children of the provided component. Then we
-        // will return for the step [2] with the first children.
-        yield getNodeData(parent.node.children[i], parent.nestingLevel + 1)
+  const treeWalker = useCallback(
+    function* treeWalker() {
+      // Step [1]: Define the root node of our tree. There can be one or
+      // multiple nodes.
+      for (let i = 0; i < nodes.length; i++) {
+        yield getNodeData({
+          node: nodes[i],
+          nestingLevel: 0,
+          client,
+          nodes,
+          setNodes,
+        })
       }
-    }
-  }
+
+      while (true) {
+        // Step [2]: Get the parent component back. It will be the object
+        // the `getNodeData` function constructed, so you can read any data from it.
+        const parent = yield
+
+        for (let i = 0; i < parent.node.children.length; i++) {
+          // Step [3]: Yielding all the children of the provided component. Then we
+          // will return for the step [2] with the first children.
+          yield getNodeData({
+            node: parent.node.children[i],
+            nestingLevel: parent.nestingLevel + 1,
+            client,
+            nodes,
+            setNodes,
+          })
+        }
+      }
+    },
+    [nodes],
+  )
 
   const { username } = login
   const organizationUsers = treeData?.allOrganizationUsers?.nodes ?? []
@@ -236,48 +308,37 @@ const TreeComponent = () => {
     )
   }
 
-  const Node = (props) => {
-    const { data, isOpen, style, setOpen } = props
-    const { isLeaf, name } = data
-    console.log('Node, name:', name)
-    return (
-      <Row
-        style={style}
-        node={data}
-        treeRefetch={treeRefetch}
-        userId={userId}
-      />
-    )
-
-    // return (
-    //   <div style={style}>
-    //     {!isLeaf && (
-    //       <button type="button" onClick={() => setOpen(!isOpen)}>
-    //         {isOpen ? '-' : '+'}
-    //       </button>
-    //     )}
-    //     <div>{name ?? ''}</div>
-    //   </div>
-    // )
-  }
-
   return (
     <ErrorBoundary>
-      <Container ref={sizeRef}>
-        <Filter width={width} height={height} />
-        <SimpleBar
-          style={{ height: '100%', flex: '1 1 auto', overflowY: 'auto' }}
-        >
-          <Tree
-            treeWalker={treeWalker}
-            itemSize={30}
-            height={height}
-            width={width}
-          >
-            {Node}
-          </Tree>
-        </SimpleBar>
-        <StyledSnackbar open={treeDataLoading} message="lade Daten..." />
+      <Container
+      //ref={sizeRef}
+      >
+        <Filter />
+        <AutoSizerContainer>
+          {nodes.length ? (
+            <Tree
+              treeWalker={treeWalker}
+              itemSize={30}
+              //height={height - 35 - 10 - 3}
+              height={800}
+              width="100%"
+              async={true}
+            >
+              {(props) =>
+                Node({
+                  data: props.data,
+                  isOpen: props.isOpen,
+                  isCrolling: props.isScrolling,
+                  setOpen: props.setOpen,
+                  style: props.style,
+                  userId,
+                  treeRefetch,
+                })
+              }
+            </Tree>
+          ) : null}
+        </AutoSizerContainer>
+        <StyledSnackbar open={loading} message="lade Daten..." />
         <CmBenutzerFolder />
         <CmBenutzer />
         {userIsTaxWriter && (

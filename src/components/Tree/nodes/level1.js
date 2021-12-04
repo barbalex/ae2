@@ -1,26 +1,22 @@
 import union from 'lodash/union'
 import jwtDecode from 'jwt-decode'
 
-const level1 = ({ treeData, treeDataLoading, store }) => {
+const level1 = ({ treeData, loading, store }) => {
   if (!treeData) return []
-  const loading = treeDataLoading
+
   const pcCount = treeData?.allPropertyCollections?.totalCount ?? 0
   const artTaxonomiesCount = treeData?.artTaxonomies?.totalCount
   const lrTaxonomiesCount = treeData?.lrTaxonomies?.totalCount
-  const artenInfo =
-    loading && !artTaxonomiesCount
-      ? '(...)'
-      : `(${artTaxonomiesCount} Taxonomie${
-          artTaxonomiesCount !== 1 ? 'n' : ''
-        })`
-  const lrInfo =
-    loading && !lrTaxonomiesCount
-      ? '(...)'
-      : `(${lrTaxonomiesCount} Taxonomie${lrTaxonomiesCount !== 1 ? 'n' : ''})`
-  const pcInfo = loading && pcCount === 0 ? '(...)' : `(${pcCount})`
+  const artenInfo = loading
+    ? '(... Taxonomien)'
+    : `(${artTaxonomiesCount} Taxonomie${artTaxonomiesCount !== 1 ? 'n' : ''})`
+  const lrInfo = loading
+    ? '(... Taxonomien)'
+    : `(${lrTaxonomiesCount} Taxonomie${lrTaxonomiesCount !== 1 ? 'n' : ''})`
+  const pcInfo = loading ? '(...)' : `(${pcCount})`
   const { token } = store.login
   const userCount = treeData?.allUsers?.totalCount ?? 0
-  const userInfo = loading && userCount === 0 ? '(...)' : `(${userCount})`
+  const userInfo = loading ? '(...)' : `(${userCount})`
   const nodes = [
     {
       id: 'Arten',

@@ -4,6 +4,8 @@ import {
   MdExpandMore as ExpandMoreIcon,
   MdMoreHoriz as MoreHorizIcon,
   MdChevronRight as ChevronRightIcon,
+  //MdRefresh as LoadingIcon,
+  MdHourglassEmpty as LoadingIcon,
 } from 'react-icons/md'
 import Icon from '@mui/material/Icon'
 import isEqual from 'lodash/isEqual'
@@ -83,46 +85,61 @@ function collect(props) {
   return props
 }
 
-const Row = ({ index = 0, style, node, treeRefetch, userId }) => {
+const Row = ({
+  index = 0,
+  style,
+  data,
+  treeRefetch,
+  userId,
+  loading,
+  setLoading,
+  setOpen,
+}) => {
   const client = useApolloClient()
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const nodeIsInActiveNodePath = isUrlInActiveNodePath(
-    node.url,
+    data.url,
     activeNodeArray,
   )
   // build symbols
   let useSymbolIcon = true
   let useSymbolSpan = false
   let symbol
-  if (node.childrenCount && nodeIsInActiveNodePath) {
+  if (loading) {
+    symbol = 'Loading'
+  } else if (data.childrenCount && nodeIsInActiveNodePath) {
     symbol = 'ExpandMore'
-  } else if (node.childrenCount) {
+  } else if (data.childrenCount) {
     symbol = 'ChevronRight'
-  } else if (node.label === 'lade Daten') {
+  } else if (data.label === 'lade Daten') {
     symbol = 'MoreHoriz'
   } else {
     useSymbolSpan = true
     useSymbolIcon = false
   }
-  const { url, loadingNode } = node
-  const level = url && url.length ? url.length : 0
+  const { url } = data
+  const level = url?.length ?? 0
 
-  const onClickNode = useCallback(() => {
+  const onClickNode = useCallback(async () => {
     // do nothing when loading indicator is clicked
-    if (loadingNode) return
+    if (loading) return
     // or if node is already active
     if (!isEqual(url, activeNodeArray)) {
+      setLoading(true)
+      await data.fetch()
+      await setOpen(true)
+      setLoading(false)
       navigate(`/${url.join('/')}`)
     }
-  }, [loadingNode, url, activeNodeArray])
+  }, [loading, url, activeNodeArray, setLoading, data, setOpen])
   const onClickExpandMore = useCallback(
     (event) => {
       // do nothing when loading indicator is clicked
-      if (loadingNode) return
+      if (loading) return
       if (isEqual(url, activeNodeArray)) {
-        // close node if its expand mor symbol was clicked
+        // close node if its expand more symbol was clicked
         const newUrl = [...url]
         newUrl.pop()
         navigate(`/${newUrl.join('/')}`)
@@ -130,7 +147,7 @@ const Row = ({ index = 0, style, node, treeRefetch, userId }) => {
         event.preventDefault()
       }
     },
-    [loadingNode, url, activeNodeArray],
+    [loading, url, activeNodeArray],
   )
   const onClickContextMenu = useCallback(
     (e, data, target) => {
@@ -147,24 +164,24 @@ const Row = ({ index = 0, style, node, treeRefetch, userId }) => {
     [client, treeRefetch, userId, store],
   )
 
-  console.log('Row, node:', node)
+  //console.log('Row, node:', node)
 
   return (
     <div key={index} style={style}>
       <ErrorBoundary>
         <ContextMenuTrigger
-          id={node.menuType}
+          id={data.menuType}
           collect={collect}
-          nodeId={node.id}
-          nodeLabel={node.label}
-          key={node.id}
+          nodeId={data.id}
+          nodeLabel={data.label}
+          key={data.id}
           onItemClick={onClickContextMenu}
         >
           <StyledNode
             data-level={level}
             data-nodeisinactivenodepath={nodeIsInActiveNodePath}
-            data-id={node.id}
-            data-url={node.url}
+            data-id={data.id}
+            data-url={data.url}
             onClick={onClickNode}
           >
             {useSymbolIcon && (
@@ -173,6 +190,7 @@ const Row = ({ index = 0, style, node, treeRefetch, userId }) => {
                 data-nodeisinactivenodepath={nodeIsInActiveNodePath}
                 className="material-icons"
               >
+                {symbol === 'Loading' && <LoadingIcon />}
                 {symbol === 'ExpandMore' && (
                   <ExpandMoreIcon onClick={onClickExpandMore} />
                 )}
@@ -186,9 +204,9 @@ const Row = ({ index = 0, style, node, treeRefetch, userId }) => {
               </SymbolSpan>
             )}
             <TextSpan data-nodeisinactivenodepath={nodeIsInActiveNodePath}>
-              {node.label}
+              {data.label}
             </TextSpan>
-            <InfoSpan>{node.info || ''}</InfoSpan>
+            <InfoSpan>{data.info || ''}</InfoSpan>
           </StyledNode>
         </ContextMenuTrigger>
       </ErrorBoundary>
