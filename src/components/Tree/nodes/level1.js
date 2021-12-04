@@ -29,6 +29,7 @@ const level1 = ({ treeData, treeDataLoading, store }) => {
       label: 'Arten',
       info: artenInfo,
       childrenCount: artTaxonomiesCount,
+      children: [],
       menuType: 'CmType',
     },
     {
@@ -38,6 +39,7 @@ const level1 = ({ treeData, treeDataLoading, store }) => {
       label: 'Lebensräume',
       info: lrInfo,
       childrenCount: lrTaxonomiesCount,
+      children: [],
       menuType: 'CmType',
     },
     {
@@ -47,6 +49,7 @@ const level1 = ({ treeData, treeDataLoading, store }) => {
       label: 'Eigenschaften-Sammlungen',
       info: pcInfo,
       childrenCount: pcCount,
+      children: [],
       menuType: 'CmPCFolder',
     },
     ...(token
@@ -58,6 +61,7 @@ const level1 = ({ treeData, treeDataLoading, store }) => {
             label: 'Benutzer',
             info: userInfo,
             childrenCount: userCount,
+            children: [],
             menuType: 'CmBenutzerFolder',
           },
         ]
@@ -87,6 +91,7 @@ const level1 = ({ treeData, treeDataLoading, store }) => {
         label: 'Organisationen',
         info: orgInfo,
         childrenCount: orgsUserIsAdminIn.length,
+        children: [],
         menuType: 'orgFolder',
       })
     }

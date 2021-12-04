@@ -83,7 +83,7 @@ function collect(props) {
   return props
 }
 
-const Row = ({ index, style, node, treeRefetch, userId }) => {
+const Row = ({ index = 0, style, node, treeRefetch, userId }) => {
   const client = useApolloClient()
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)

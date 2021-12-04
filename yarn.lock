@@ -4580,7 +4580,7 @@ __metadata:
     react-select: 5.2.1
     react-swipeable-views: 0.14.0
     react-typography: 0.16.20
-    react-vtree: 2.0.4
+    react-vtree: 3.0.0-beta.0
     react-window: 1.8.6
     rimraf: 3.0.2
     simplebar-react: 2.3.6
@@ -15632,6 +15632,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-merge-refs@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "react-merge-refs@npm:1.1.0"
+  checksum: 90884352999002d868ab9f1bcfe3222fb0f2178ed629f1da7e98e5a9b02a2c96b4aa72800db92aabd69d2483211b4be57a2088e89a11a0b660e7ada744d4ddf7
+  languageName: node
+  linkType: hard
+
 "react-reflex@npm:4.0.3":
   version: 4.0.3
   resolution: "react-reflex@npm:4.0.3"
@@ -15767,17 +15774,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-vtree@npm:2.0.4":
-  version: 2.0.4
-  resolution: "react-vtree@npm:2.0.4"
+"react-vtree@npm:3.0.0-beta.0":
+  version: 3.0.0-beta.0
+  resolution: "react-vtree@npm:3.0.0-beta.0"
   dependencies:
     "@babel/runtime": ^7.11.0
+    react-merge-refs: ^1.1.0
   peerDependencies:
     "@types/react-window": ^1.8.2
     react: ^16.13.1
     react-dom: ^16.13.1
     react-window: ^1.8.5
-  checksum: 07f75733b6d7addd5f4e7f58d6791d76822f8481de5fafcd013311983b47a4549c99ee1ceafa9dd1d0e3731ac3d0cb8414144891e0cf53c62107ffdb559039d2
+  checksum: 7df8eb7c928b6bc1eefec4566732a6817e9b37d4dd3cbc4dce7738d5494dc20388347ff85e65219e7a3f92945e8789f5961ae9199027b6ccc5dad6c385eedce3
   languageName: node
   linkType: hard
 

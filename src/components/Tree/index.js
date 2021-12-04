@@ -1,4 +1,10 @@
-import React, { useRef, useEffect, useState, useContext } from 'react'
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+} from 'react'
 // if observer is active, forceUpdate during rendering happens
 import { FixedSizeList as List } from 'react-window'
 import styled from 'styled-components'
@@ -10,6 +16,7 @@ import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { useResizeDetector } from 'react-resize-detector'
+import { FixedSizeTree as Tree } from 'react-vtree'
 
 import Row from './Row'
 import Filter from './Filter'
@@ -25,6 +32,7 @@ import CmPCFolder from './contextmenu/PCFolder'
 import CmPC from './contextmenu/PC'
 import storeContext from '../../storeContext'
 import ErrorBoundary from '../shared/ErrorBoundary'
+import buildLevel1Nodes from './nodes/level1'
 
 const singleRowHeight = 23
 const ErrorContainer = styled.div`
@@ -120,31 +128,6 @@ const Container = styled.div`
     bottom: 3px;
   }
 `
-const StyledList = styled(List)`
-  overflow-x: hidden !important;
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-
-  /* hide native scrollbar */
-  &::-webkit-scrollbar {
-    width: 1px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-    box-shadow: none;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    box-shadow: none;
-  }
-  /* &::-webkit-scrollbar-thumb:hover {
-    background: '#6B2500';
-  } */
-`
-const AutoSizerContainer = styled.div`
-  height: 100%;
-  padding: 5px 0;
-`
 const StyledSnackbar = styled(Snackbar)`
   div {
     min-width: auto;
@@ -157,7 +140,8 @@ const StyledSnackbar = styled(Snackbar)`
   }
 `
 
-const Tree = () => {
+const TreeComponent = () => {
+  console.log('TreeComponent rendering')
   const store = useContext(storeContext)
   const { login } = store
   const activeNodeArray = getSnapshot(store.activeNodeArray)
@@ -195,19 +179,46 @@ const Tree = () => {
 
   const treeDataLoading = treeLoading
   const userId = treeData?.userByName?.id
-  const nodes = buildNodes({
+  const treeNodes = buildLevel1Nodes({
     treeData,
     activeNodeArray,
     treeDataLoading,
     store,
   })
+  console.log('Tree, treeNodes:', treeNodes)
+  const getNodeData = (node, nestingLevel) => {
+    console.log('getNodeData, node:', node)
+    return {
+      data: {
+        id: node.id.toString(), // mandatory
+        isLeaf: node?.childrenCount === 0,
+        isOpenByDefault: true, // mandatory
+        label: node.label,
+        nestingLevel,
+      },
+      nestingLevel,
+      node,
+    }
+  }
+  function* treeWalker() {
+    // Step [1]: Define the root node of our tree. There can be one or
+    // multiple nodes.
+    for (let i = 0; i < treeNodes.length; i++) {
+      yield getNodeData(treeNodes[i], 0)
+    }
 
-  useEffect(() => {
-    const index = findIndex(nodes, (node) => isEqual(node.url, activeNodeArray))
-    listRef.current &&
-      listRef.current.scrollToItem &&
-      listRef.current.scrollToItem(index)
-  }, [activeNodeArray, nodes])
+    while (true) {
+      // Step [2]: Get the parent component back. It will be the object
+      // the `getNodeData` function constructed, so you can read any data from it.
+      const parent = yield
+
+      for (let i = 0; i < parent.node.children.length; i++) {
+        // Step [3]: Yielding all the children of the provided component. Then we
+        // will return for the step [2] with the first children.
+        yield getNodeData(parent.node.children[i], parent.nestingLevel + 1)
+      }
+    }
+  }
 
   const { username } = login
   const organizationUsers = treeData?.allOrganizationUsers?.nodes ?? []
@@ -219,12 +230,37 @@ const Tree = () => {
 
   //console.log('tree', { height, width })
 
-  const listRef = useRef(null)
+  // const listRef = useRef(null)
 
   if (treeError) {
     return (
       <ErrorContainer>{`Error fetching data: ${treeError.message}`}</ErrorContainer>
     )
+  }
+
+  const Node = (props) => {
+    const { data, isOpen, style, setOpen } = props
+    const { isLeaf, name } = data
+    console.log('Node, name:', name)
+    return (
+      <Row
+        style={style}
+        node={data}
+        treeRefetch={treeRefetch}
+        userId={userId}
+      />
+    )
+
+    // return (
+    //   <div style={style}>
+    //     {!isLeaf && (
+    //       <button type="button" onClick={() => setOpen(!isOpen)}>
+    //         {isOpen ? '-' : '+'}
+    //       </button>
+    //     )}
+    //     <div>{name ?? ''}</div>
+    //   </div>
+    // )
   }
 
   return (
@@ -234,32 +270,14 @@ const Tree = () => {
         <SimpleBar
           style={{ height: '100%', flex: '1 1 auto', overflowY: 'auto' }}
         >
-          {({ scrollableNodeRef, contentNodeRef }) => {
-            return (
-              <AutoSizerContainer>
-                <StyledList
-                  height={height}
-                  itemCount={nodes.length}
-                  itemSize={singleRowHeight}
-                  width={width}
-                  ref={listRef}
-                  innerRef={contentNodeRef}
-                  outerRef={scrollableNodeRef}
-                >
-                  {({ index, style }) => (
-                    <Row
-                      key={index}
-                      style={style}
-                      index={index}
-                      node={nodes[index]}
-                      treeRefetch={treeRefetch}
-                      userId={userId}
-                    />
-                  )}
-                </StyledList>
-              </AutoSizerContainer>
-            )
-          }}
+          <Tree
+            treeWalker={treeWalker}
+            itemSize={30}
+            height={height}
+            width={width}
+          >
+            {Node}
+          </Tree>
         </SimpleBar>
         <StyledSnackbar open={treeDataLoading} message="lade Daten..." />
         <CmBenutzerFolder />
@@ -278,4 +296,4 @@ const Tree = () => {
   )
 }
 
-export default observer(Tree)
+export default observer(TreeComponent)
