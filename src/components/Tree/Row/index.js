@@ -109,17 +109,14 @@ const Row = ({ index = 0, style, node, treeRefetch, userId }) => {
   const { url, loadingNode } = node
   const level = url && url.length ? url.length : 0
 
-  const onClickNode = useCallback(
-    (event) => {
-      // do nothing when loading indicator is clicked
-      if (loadingNode) return
-      // or if node is already active
-      if (!isEqual(url, activeNodeArray)) {
-        navigate(`/${url.join('/')}`)
-      }
-    },
-    [loadingNode, url, activeNodeArray],
-  )
+  const onClickNode = useCallback(() => {
+    // do nothing when loading indicator is clicked
+    if (loadingNode) return
+    // or if node is already active
+    if (!isEqual(url, activeNodeArray)) {
+      navigate(`/${url.join('/')}`)
+    }
+  }, [loadingNode, url, activeNodeArray])
   const onClickExpandMore = useCallback(
     (event) => {
       // do nothing when loading indicator is clicked
@@ -149,6 +146,8 @@ const Row = ({ index = 0, style, node, treeRefetch, userId }) => {
     },
     [client, treeRefetch, userId, store],
   )
+
+  console.log('Row, node:', node)
 
   return (
     <div key={index} style={style}>

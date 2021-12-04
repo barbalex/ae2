@@ -186,20 +186,18 @@ const TreeComponent = () => {
     store,
   })
   console.log('Tree, treeNodes:', treeNodes)
-  const getNodeData = (node, nestingLevel) => {
-    console.log('getNodeData, node:', node)
-    return {
-      data: {
-        id: node.id.toString(), // mandatory
-        isLeaf: node?.childrenCount === 0,
-        isOpenByDefault: true, // mandatory
-        label: node.label,
-        nestingLevel,
-      },
+  const getNodeData = (node, nestingLevel) => ({
+    data: {
+      ...node,
+      id: node.id.toString(), // mandatory
+      isLeaf: node?.childrenCount === 0,
+      isOpenByDefault: true, // mandatory
       nestingLevel,
-      node,
-    }
-  }
+    },
+    nestingLevel,
+    node,
+  })
+
   function* treeWalker() {
     // Step [1]: Define the root node of our tree. There can be one or
     // multiple nodes.
