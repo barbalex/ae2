@@ -27,7 +27,6 @@ import CmPC from './contextmenu/PC'
 import storeContext from '../../storeContext'
 import ErrorBoundary from '../shared/ErrorBoundary'
 import buildLevel1Nodes from './nodes/level1'
-import buildLevel2TaxonomyNodes from './nodes/level2Taxonomy'
 
 const singleRowHeight = 23
 const ErrorContainer = styled.div`
@@ -139,51 +138,8 @@ const AutoSizerContainer = styled.div`
   padding: 5px 0;
 `
 
-const getNodeData = ({ node, nestingLevel, client, nodes, setNodes }) => ({
+const getNodeData = ({ node, nestingLevel }) => ({
   data: {
-    fetch: async () => {
-      console.log('node, fetch:', node)
-      switch (node.id) {
-        case 'Arten': {
-          const result = await client.query({
-            query: gql`
-              query TreeDataQueryForTaxonomyLevel2 {
-                allTaxonomies(filter: { type: { equalTo: ART } }) {
-                  totalCount
-                  nodes {
-                    id
-                    name
-                    type
-                    objectsByTaxonomyId {
-                      totalCount
-                    }
-                    topLevelObjects: objectsByTaxonomyId(
-                      filter: { parentId: { isNull: true } }
-                    ) {
-                      totalCount
-                    }
-                  }
-                }
-              }
-            `,
-          })
-          const children = buildLevel2TaxonomyNodes({
-            type: 'Arten',
-            taxonomies: result?.data?.allTaxonomies?.nodes ?? [],
-            taxonomySort: 1,
-          })
-          console.log('Tree, fetch, Arten, children:', children)
-          const newNodes = [...nodes]
-          const myNode = newNodes.find((n) => n.id === node.id)
-          myNode.children = children
-          setNodes(newNodes)
-          break
-        }
-        default:
-          console.log('default, TODO:')
-      }
-      return
-    },
     ...node,
     id: node.id.toString(), // mandatory
     isLeaf: node?.childrenCount === 0,
@@ -194,22 +150,6 @@ const getNodeData = ({ node, nestingLevel, client, nodes, setNodes }) => ({
   node,
 })
 
-const Node = (props) => {
-  const { data, isOpen, style, setOpen, userId } = props
-  const [isLoading, setLoading] = useState(false)
-
-  return (
-    <Row
-      style={style}
-      data={data}
-      userId={userId}
-      loading={isLoading}
-      setLoading={setLoading}
-      setOpen={setOpen}
-    />
-  )
-}
-
 const TreeComponent = () => {
   const store = useContext(storeContext)
   const { login } = store
@@ -218,10 +158,14 @@ const TreeComponent = () => {
 
   const client = useApolloClient()
 
-  const [treeData, setTreeData] = useState()
-  const [treeError, setTreeError] = useState()
-  const [loading, setLoading] = useState(true)
-  const [nodes, setNodes] = useState([])
+  const [data, setData] = useState({
+    treeData: undefined,
+    error: undefined,
+    loading: true,
+    nodes: [],
+  })
+
+  const { treeData, error, loading, nodes } = data
 
   const userId = treeData?.userByName?.id
 
@@ -234,20 +178,21 @@ const TreeComponent = () => {
           username: login.username,
         },
       })
-      .then(({ data, loading, error }) => {
-        console.log('effect setting data', { data, loading, error })
-        setTreeData(data)
-        setLoading(loading)
-        setTreeError(error)
-        setNodes(
-          buildLevel1Nodes({
-            treeData: data,
+      .then(({ data: treeData, loading, error }) => {
+        console.log('effect setting data', { treeData, loading, error })
+        setData({
+          treeData,
+          error,
+          loading,
+          nodes: buildLevel1Nodes({
+            treeData,
             loading,
+            activeNodeArray,
             store,
           }),
-        )
+        })
       })
-  }, [])
+  }, [activeNodeArray])
 
   console.log('Tree', { nodes, loading })
 
@@ -261,7 +206,6 @@ const TreeComponent = () => {
           nestingLevel: 0,
           client,
           nodes,
-          setNodes,
         })
       }
 
@@ -278,7 +222,6 @@ const TreeComponent = () => {
             nestingLevel: parent.nestingLevel + 1,
             client,
             nodes,
-            setNodes,
           })
         }
       }
@@ -294,9 +237,9 @@ const TreeComponent = () => {
   const userIsTaxWriter =
     userRoles.includes('orgAdmin') || userRoles.includes('orgTaxonomyWriter')
 
-  if (treeError) {
+  if (error) {
     return (
-      <ErrorContainer>{`Error fetching data: ${treeError.message}`}</ErrorContainer>
+      <ErrorContainer>{`Error fetching data: ${error.message}`}</ErrorContainer>
     )
   }
 
@@ -314,16 +257,14 @@ const TreeComponent = () => {
               width="100%"
               async={true}
             >
-              {(props) =>
-                Node({
-                  data: props.data,
-                  isOpen: props.isOpen,
-                  isCrolling: props.isScrolling,
-                  setOpen: props.setOpen,
-                  style: props.style,
-                  userId,
-                })
-              }
+              {(props) => (
+                <Row
+                  style={props.style}
+                  data={props.data}
+                  userId={userId}
+                  loading={loading}
+                />
+              )}
             </Tree>
           ) : null}
         </AutoSizerContainer>

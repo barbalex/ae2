@@ -21,9 +21,9 @@ import sort from './nodes/sort'
 const buildNodes = ({ treeData, activeNodeArray, treeDataLoading, store }) => {
   let nodes = buildLevel1Nodes({
     treeData,
-    activeNodeArray,
-    treeDataLoading,
+    loading: treeDataLoading,
     store,
+    activeNodeArray,
   })
   if (activeNodeArray.length > 0) {
     if (activeNodeArray[0] === 'Eigenschaften-Sammlungen') {

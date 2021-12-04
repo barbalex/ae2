@@ -1,7 +1,10 @@
 import union from 'lodash/union'
 import jwtDecode from 'jwt-decode'
 
-const level1 = ({ treeData, loading, store }) => {
+import level2Arten from './level2Arten'
+import level2Lr from './level2Lr'
+
+const level1 = ({ treeData, loading, store, activeNodeArray }) => {
   if (!treeData) return []
 
   const pcCount = treeData?.allPropertyCollections?.totalCount ?? 0
@@ -17,6 +20,7 @@ const level1 = ({ treeData, loading, store }) => {
   const { token } = store.login
   const userCount = treeData?.allUsers?.totalCount ?? 0
   const userInfo = loading ? '(...)' : `(${userCount})`
+
   const nodes = [
     {
       id: 'Arten',
@@ -25,7 +29,10 @@ const level1 = ({ treeData, loading, store }) => {
       label: 'Arten',
       info: artenInfo,
       childrenCount: artTaxonomiesCount,
-      children: [],
+      children: level2Arten({
+        treeData,
+        activeNodeArray,
+      }),
       menuType: 'CmType',
     },
     {
@@ -35,7 +42,11 @@ const level1 = ({ treeData, loading, store }) => {
       label: 'Lebensräume',
       info: lrInfo,
       childrenCount: lrTaxonomiesCount,
-      children: [],
+      children: level2Lr({
+        treeData,
+        taxonomies: treeData?.data?.lrTaxonomies?.nodes ?? [],
+        activeNodeArray,
+      }),
       menuType: 'CmType',
     },
     {

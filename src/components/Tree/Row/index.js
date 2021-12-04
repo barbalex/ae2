@@ -85,15 +85,7 @@ function collect(props) {
   return props
 }
 
-const Row = ({
-  index = 0,
-  style,
-  data,
-  userId,
-  loading,
-  setLoading,
-  setOpen,
-}) => {
+const Row = ({ index = 0, style, data, userId, loading }) => {
   const client = useApolloClient()
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
@@ -126,14 +118,9 @@ const Row = ({
     if (loading) return
     // or if node is already active
     if (!isEqual(url, activeNodeArray)) {
-      setLoading(true)
-      await data.fetch()
-      await setOpen(true)
-      setLoading(false)
-      // TODO: navigate makes Tree rerender and loose it's state
-      //navigate(`/${url.join('/')}`)
+      navigate(`/${url.join('/')}`)
     }
-  }, [loading, url, activeNodeArray, setLoading, data, setOpen])
+  }, [activeNodeArray, loading, url])
   const onClickExpandMore = useCallback(
     (event) => {
       // do nothing when loading indicator is clicked
