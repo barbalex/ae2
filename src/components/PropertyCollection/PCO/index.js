@@ -9,6 +9,7 @@ import Button from '@mui/material/Button'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
+import { useResizeDetector } from 'react-resize-detector'
 
 import ImportPco from './Import'
 import booleanToJaNein from '../../../modules/booleanToJaNein'
@@ -100,7 +101,7 @@ const pcoQuery = gql`
   }
 `
 
-const PCO = ({ dimensions }) => {
+const PCO = () => {
   const client = useApolloClient()
   const store = useContext(storeContext)
   const { login } = store
@@ -127,8 +128,7 @@ const PCO = ({ dimensions }) => {
   const [sortDirection, setSortDirection] = useState('asc')
   const [importing, setImport] = useState(false)
 
-  const height = isNaN(dimensions.height) ? 0 : dimensions.height
-  const width = isNaN(dimensions.width) ? 0 : dimensions.width
+  const { width = 200, height = 200 } = useResizeDetector()
 
   const [pCO, allKeys, pCORaw] = useMemo(() => {
     let pCO = []

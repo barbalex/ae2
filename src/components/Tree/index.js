@@ -168,7 +168,6 @@ const getNodeData = ({ node, nestingLevel, client, nodes, setNodes }) => ({
               }
             `,
           })
-          console.log('Tree, fetch, Arten, result:', result)
           const children = buildLevel2TaxonomyNodes({
             type: 'Arten',
             taxonomies: result?.data?.allTaxonomies?.nodes ?? [],
@@ -177,7 +176,6 @@ const getNodeData = ({ node, nestingLevel, client, nodes, setNodes }) => ({
           console.log('Tree, fetch, Arten, children:', children)
           const newNodes = [...nodes]
           const myNode = newNodes.find((n) => n.id === node.id)
-          console.log('Tree, fetch, Arten, myNode:', myNode)
           myNode.children = children
           setNodes(newNodes)
           break
@@ -215,15 +213,15 @@ const Node = (props) => {
 }
 
 const TreeComponent = () => {
-  //console.log('TreeComponent rendering')
   const store = useContext(storeContext)
   const { login } = store
   const activeNodeArray = getSnapshot(store.activeNodeArray)
+  //const activeNodeArray = store.activeNodeArray.slice()
 
   const client = useApolloClient()
 
   const {
-    data: treeData = {},
+    data: treeData,
     loading,
     error: treeError,
     refetch: treeRefetch,
@@ -243,17 +241,15 @@ const TreeComponent = () => {
       console.log('Tree, useEffect setting level 1 nodes')
       setNodes(
         buildLevel1Nodes({
-          treeData,
-          activeNodeArray,
+          treeData: treeData ?? {},
           loading,
           store,
-          client,
         }),
       )
     }
   }, [loading])
 
-  console.log('Tree, nodes:', { nodes, loading, treeData, activeNodeArray })
+  console.log('Tree', { nodes, loading, treeData, activeNodeArray })
 
   const treeWalker = useCallback(
     function* treeWalker() {
@@ -298,10 +294,6 @@ const TreeComponent = () => {
   const userIsTaxWriter =
     userRoles.includes('orgAdmin') || userRoles.includes('orgTaxonomyWriter')
 
-  //console.log('tree', { height, width })
-
-  // const listRef = useRef(null)
-
   if (treeError) {
     return (
       <ErrorContainer>{`Error fetching data: ${treeError.message}`}</ErrorContainer>
@@ -310,9 +302,7 @@ const TreeComponent = () => {
 
   return (
     <ErrorBoundary>
-      <Container
-      //ref={sizeRef}
-      >
+      <Container>
         <Filter />
         <AutoSizerContainer>
           {nodes.length ? (
