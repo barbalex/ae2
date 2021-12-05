@@ -1,5 +1,4 @@
 import union from 'lodash/union'
-import jwtDecode from 'jwt-decode'
 
 import level2Arten from './level2Arten'
 import level2Lr from './level2Lr'
@@ -75,11 +74,8 @@ const level1 = ({ treeData, loading, store, activeNodeArray }) => {
       : []),
   ]
   if (token) {
-    const tokenDecoded = jwtDecode(token)
-    const { username } = tokenDecoded
-    const user = (treeData?.allUsers?.nodes ?? []).find(
-      (u) => u.name === username,
-    )
+    const user = treeData?.userByName ?? {}
+    console.log('level1, user:', user)
     const orgUsers = user?.organizationUsersByUserId?.nodes ?? []
     const orgsUserIsAdminIn = union(
       orgUsers

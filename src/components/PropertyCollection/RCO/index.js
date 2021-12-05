@@ -116,7 +116,7 @@ const RCO = () => {
       ? activeNodeArray[1]
       : '99999999-9999-9999-9999-999999999999'
   const { refetch: treeDataRefetch } = useQuery(treeQuery, {
-    variables: treeQueryVariables({ activeNodeArray }),
+    variables: treeQueryVariables({ activeNodeArray, store }),
   })
   const {
     data: rcoData,

@@ -2,10 +2,13 @@ import { gql } from '@apollo/client'
 
 export default gql`
   query TreeDataQuery(
+    $existsLrTaxonomies: Boolean!
+    $existsArtenTaxonomies: Boolean!
     $existsLevel2Pc: Boolean!
     $existsPCId: Boolean!
     $existsLevel2Taxonomy: Boolean!
     $level2Taxonomy: UUID!
+    $existsLevel2Benutzer: Boolean!
     $existsLevel3Object: Boolean!
     $existsLevel4Object: Boolean!
     $existsLevel5Object: Boolean!
@@ -18,10 +21,23 @@ export default gql`
   ) {
     userByName(name: $username) {
       id
+      name
+      email
+      organizationUsersByUserId {
+        nodes {
+          id
+          organizationId
+          role
+          organizationByOrganizationId {
+            id
+            name
+          }
+        }
+      }
     }
     allUsers {
       totalCount
-      nodes {
+      nodes @include(if: $existsLevel2Benutzer) {
         id
         name
         email
@@ -35,19 +51,6 @@ export default gql`
               name
             }
           }
-        }
-      }
-    }
-    allOrganizationUsers {
-      nodes {
-        id
-        nodeId
-        organizationId
-        userId
-        role
-        userByUserId {
-          id
-          name
         }
       }
     }
@@ -69,7 +72,7 @@ export default gql`
       orderBy: NAME_ASC
     ) {
       totalCount
-      nodes {
+      nodes @include(if: $existsArtenTaxonomies) {
         id
         name
         type
@@ -88,7 +91,7 @@ export default gql`
       orderBy: NAME_ASC
     ) {
       totalCount
-      nodes {
+      nodes @include(if: $existsLrTaxonomies) {
         id
         name
         type

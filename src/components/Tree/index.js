@@ -1,13 +1,7 @@
-import React, {
-  useState,
-  useContext,
-  useCallback,
-  useMemo,
-  useEffect,
-} from 'react'
+import React, { useState, useContext, useCallback, useEffect } from 'react'
 import styled from 'styled-components'
 import Snackbar from '@mui/material/Snackbar'
-import { useQuery, useApolloClient, gql } from '@apollo/client'
+import { useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
 import { FixedSizeTree as Tree } from 'react-vtree'
@@ -28,7 +22,6 @@ import storeContext from '../../storeContext'
 import ErrorBoundary from '../shared/ErrorBoundary'
 import buildLevel1Nodes from './nodes/level1'
 
-const singleRowHeight = 23
 const ErrorContainer = styled.div`
   padding: 24px;
 `
@@ -174,7 +167,7 @@ const TreeComponent = () => {
       .query({
         query: treeQuery,
         variables: {
-          ...treeQueryVariables({ activeNodeArray }),
+          ...treeQueryVariables({ activeNodeArray, store }),
           username: login.username,
         },
       })
@@ -229,11 +222,9 @@ const TreeComponent = () => {
     [nodes],
   )
 
-  const { username } = login
-  const organizationUsers = treeData?.allOrganizationUsers?.nodes ?? []
-  const userRoles = organizationUsers
-    .filter((oU) => username === oU?.userByUserId?.name ?? '')
-    .map((oU) => oU.role)
+  const userRoles = (
+    treeData?.userByName?.organizationUsersByUserId?.nodes ?? []
+  ).map((r) => r?.role)
   const userIsTaxWriter =
     userRoles.includes('orgAdmin') || userRoles.includes('orgTaxonomyWriter')
 

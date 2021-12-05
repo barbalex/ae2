@@ -51,7 +51,7 @@ const User = () => {
   const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const { refetch: treeDataRefetch } = useQuery(treeQuery, {
-    variables: getTreeDataVariables({ activeNodeArray }),
+    variables: getTreeDataVariables({ activeNodeArray, store }),
   })
   const {
     data,
