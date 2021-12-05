@@ -8,7 +8,6 @@ import { FixedSizeTree as Tree } from 'react-vtree'
 
 import Row from './Row'
 import Filter from './Filter'
-import buildNodes from './buildNodes'
 import treeQuery from './treeQuery'
 import treeQueryVariables from './treeQueryVariables'
 import CmBenutzerFolder from './contextmenu/BenutzerFolder'

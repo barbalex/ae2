@@ -6,6 +6,7 @@ const level2Taxonomy = ({ activeNodeArray, treeData, type, taxonomySort }) => {
       type === 'Arten'
         ? treeData?.artTaxonomies?.nodes
         : treeData?.lrTaxonomies?.nodes
+
     return (nodes ?? []).map((taxonomy) => ({
       id: taxonomy.id,
       url: [type, taxonomy.id],

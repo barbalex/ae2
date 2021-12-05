@@ -1,4 +1,4 @@
-import level4Object from './level4Object'
+import levelXObject from './levelXObject'
 
 const level3Object = ({
   type,
@@ -22,11 +22,19 @@ const level3Object = ({
         info:
           childrenCount > 0 ? `(${childrenCount.toLocaleString('de-CH')})` : '',
         childrenCount,
-        children: level4Object({
-          type,
-          taxonomy,
-          level3Object: node,
-          taxonomySort,
+        // children: level4Object({
+        //   type,
+        //   taxonomy,
+        //   level3Object: node,
+        //   taxonomySort,
+        //   activeNodeArray,
+        // }),
+        children: levelXObject({
+          level: 4,
+          parentObjects: [],
+          parentObject: node,
+          parentUrl: [type, taxonomy?.id, node.id],
+          parentSort: [taxonomySort, taxonomy?.name, nodeName],
           activeNodeArray,
         }),
         menuType: 'CmObject',

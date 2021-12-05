@@ -1,7 +1,6 @@
 import union from 'lodash/union'
 
 import level2Taxonomy from './level2Taxonomy'
-import level2Lr from './level2Lr'
 
 const level1 = ({ treeData, loading, store, activeNodeArray }) => {
   if (!treeData) return []
