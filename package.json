@@ -78,6 +78,7 @@
     "react-select": "5.2.1",
     "react-swipeable-views": "0.14.0",
     "react-typography": "0.16.20",
+    "react-virtualized-auto-sizer": "^1.0.6",
     "react-vtree": "3.0.0-beta.0",
     "react-window": "1.8.6",
     "simplebar-react": "2.3.6",

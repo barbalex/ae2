@@ -5,6 +5,7 @@ import { useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
 import { FixedSizeTree as Tree } from 'react-vtree'
+import AutoSizer from 'react-virtualized-auto-sizer'
 
 import Row from './Row'
 import Filter from './Filter'
@@ -237,27 +238,28 @@ const TreeComponent = () => {
     <ErrorBoundary>
       <Container>
         <Filter />
-        <AutoSizerContainer>
-          {nodes.length ? (
-            <Tree
-              treeWalker={treeWalker}
-              itemSize={30}
-              //height={height - 35 - 10 - 3}
-              height={800}
-              width="100%"
-              async={true}
-            >
-              {(props) => (
-                <Row
-                  style={props.style}
-                  data={props.data}
-                  userId={userId}
-                  loading={loading}
-                />
-              )}
-            </Tree>
-          ) : null}
-        </AutoSizerContainer>
+        <AutoSizer style={{ flex: 1 }}>
+          {({ height, width }) =>
+            nodes.length ? (
+              <Tree
+                treeWalker={treeWalker}
+                itemSize={30}
+                height={height - 38}
+                width={width}
+                async={true}
+              >
+                {(props) => (
+                  <Row
+                    style={props.style}
+                    data={props.data}
+                    userId={userId}
+                    loading={loading}
+                  />
+                )}
+              </Tree>
+            ) : null
+          }
+        </AutoSizer>
         <StyledSnackbar open={loading} message="lade Daten..." />
         <CmBenutzerFolder />
         <CmBenutzer />
