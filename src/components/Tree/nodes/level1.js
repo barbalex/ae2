@@ -1,6 +1,6 @@
 import union from 'lodash/union'
 
-import level2Arten from './level2Arten'
+import level2Taxonomy from './level2Taxonomy'
 import level2Lr from './level2Lr'
 
 const level1 = ({ treeData, loading, store, activeNodeArray }) => {
@@ -28,7 +28,9 @@ const level1 = ({ treeData, loading, store, activeNodeArray }) => {
       label: 'Arten',
       info: artenInfo,
       childrenCount: artTaxonomiesCount,
-      children: level2Arten({
+      children: level2Taxonomy({
+        type: 'Arten',
+        taxonomySort: 1,
         treeData,
         activeNodeArray,
       }),

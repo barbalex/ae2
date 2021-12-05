@@ -120,6 +120,7 @@ export default gql`
         taxonomyId: { equalTo: $level2Taxonomy }
         parentId: { isNull: true }
       }
+      orderBy: NAME_ASC
     ) @include(if: $existsLevel2Taxonomy) {
       nodes {
         id

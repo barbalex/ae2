@@ -12,6 +12,7 @@ const level2Organization = ({ treeData, store }) => {
     (u) => u.name === username,
   )
   if (!user) return []
+  // TODO: query allOranizations instead, if user is admin?
   const orgUsers = user?.organizationUsersByUserId?.nodes ?? []
   const userOrganizations = union(
     orgUsers.map((u) => u?.organizationByOrganizationId?.name),

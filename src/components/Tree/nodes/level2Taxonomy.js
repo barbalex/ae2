@@ -1,18 +1,25 @@
-const level2Taxonomy = ({ type, taxonomySort, taxonomies }) =>
-  taxonomies.map((taxonomy) => {
-    const level1Count = taxonomy?.topLevelObjects?.totalCount
-    const allObjectsCount = taxonomy?.objectsByTaxonomyId?.totalCount ?? 0
+import level3Object from './level3Object'
 
-    return {
+const level2Taxonomy = ({ activeNodeArray, treeData, type, taxonomySort }) => {
+  if (activeNodeArray.length > 0 && activeNodeArray[0] === type) {
+    return (treeData?.artTaxonomies?.nodes ?? []).map((taxonomy) => ({
       id: taxonomy.id,
       url: [type, taxonomy.id],
       sort: [taxonomySort, taxonomy.name],
       label: taxonomy.name,
-      info: `(${level1Count})`,
-      childrenCount: allObjectsCount,
-      children: [],
+      info: `(${taxonomy?.topLevelObjects?.totalCount})`,
+      childrenCount: taxonomy?.objectsByTaxonomyId?.totalCount ?? 0,
+      children: level3Object({
+        type,
+        taxonomy,
+        taxonomySort,
+        treeData,
+        activeNodeArray,
+      }),
       menuType: 'CmTaxonomy',
-    }
-  })
+    }))
+  }
+  return []
+}
 
 export default level2Taxonomy
