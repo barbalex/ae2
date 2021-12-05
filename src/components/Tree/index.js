@@ -126,6 +126,20 @@ const StyledSnackbar = styled(Snackbar)`
     flex-grow: 0;
   }
 `
+const StyledTree = styled(Tree)`
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px !important;
+  }
+  ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    box-shadow: inset 0 0 7px #e65100;
+  }
+  ::-webkit-scrollbar-track {
+    border-radius: 1rem;
+    box-shadow: none;
+  }
+`
 
 const getNodeData = ({ node, nestingLevel }) => ({
   data: {
@@ -237,7 +251,7 @@ const TreeComponent = () => {
         <AutoSizer>
           {({ height, width }) =>
             nodes.length ? (
-              <Tree
+              <StyledTree
                 treeWalker={treeWalker}
                 itemSize={30}
                 height={height - 38}
@@ -252,7 +266,7 @@ const TreeComponent = () => {
                     loading={loading}
                   />
                 )}
-              </Tree>
+              </StyledTree>
             ) : null
           }
         </AutoSizer>
