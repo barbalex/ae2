@@ -1,3 +1,5 @@
+import level5Object from './level5Object'
+
 const level4Object = ({
   type,
   taxonomy,
@@ -22,7 +24,14 @@ const level4Object = ({
             ? ` (${childrenCount.toLocaleString('de-CH')})`
             : '',
         childrenCount,
-        children: [],
+        children: level5Object({
+          type,
+          taxonomy,
+          taxonomySort,
+          level3Object,
+          level4Object: node,
+          activeNodeArray,
+        }),
         menuType: 'CmObject',
       }
     })
