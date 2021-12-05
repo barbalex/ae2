@@ -126,10 +126,6 @@ const StyledSnackbar = styled(Snackbar)`
     flex-grow: 0;
   }
 `
-const AutoSizerContainer = styled.div`
-  height: 100%;
-  padding: 5px 0;
-`
 
 const getNodeData = ({ node, nestingLevel }) => ({
   data: {
@@ -185,7 +181,7 @@ const TreeComponent = () => {
           }),
         })
       })
-  }, [activeNodeArray])
+  }, [activeNodeArray, client, login.username, store])
 
   console.log('Tree', { nodes, loading })
 
@@ -219,7 +215,7 @@ const TreeComponent = () => {
         }
       }
     },
-    [nodes],
+    [client, nodes],
   )
 
   const userRoles = (
@@ -238,7 +234,7 @@ const TreeComponent = () => {
     <ErrorBoundary>
       <Container>
         <Filter />
-        <AutoSizer style={{ flex: 1 }}>
+        <AutoSizer>
           {({ height, width }) =>
             nodes.length ? (
               <Tree
