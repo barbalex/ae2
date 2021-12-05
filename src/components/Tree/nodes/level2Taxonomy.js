@@ -2,7 +2,11 @@ import level3Object from './level3Object'
 
 const level2Taxonomy = ({ activeNodeArray, treeData, type, taxonomySort }) => {
   if (activeNodeArray.length > 0 && activeNodeArray[0] === type) {
-    return (treeData?.artTaxonomies?.nodes ?? []).map((taxonomy) => ({
+    const nodes =
+      type === 'Arten'
+        ? treeData?.artTaxonomies?.nodes
+        : treeData?.lrTaxonomies?.nodes
+    return (nodes ?? []).map((taxonomy) => ({
       id: taxonomy.id,
       url: [type, taxonomy.id],
       sort: [taxonomySort, taxonomy.name],

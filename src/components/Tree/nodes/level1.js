@@ -43,9 +43,10 @@ const level1 = ({ treeData, loading, store, activeNodeArray }) => {
       label: 'Lebensräume',
       info: lrInfo,
       childrenCount: lrTaxonomiesCount,
-      children: level2Lr({
+      children: level2Taxonomy({
+        type: 'Lebensräume',
+        taxonomySort: 2,
         treeData,
-        taxonomies: treeData?.data?.lrTaxonomies?.nodes ?? [],
         activeNodeArray,
       }),
       menuType: 'CmType',
