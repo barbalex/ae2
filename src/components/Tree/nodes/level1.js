@@ -2,6 +2,8 @@ import union from 'lodash/union'
 
 import level2Taxonomy from './level2Taxonomy'
 import level2Pc from './level2Pc'
+import level2Benutzer from './level2Benutzer'
+import level2Organization from './level2Organization'
 
 const level1 = ({ treeData, loading, store, activeNodeArray }) => {
   if (!treeData) return []
@@ -19,6 +21,18 @@ const level1 = ({ treeData, loading, store, activeNodeArray }) => {
   const { token } = store.login
   const userCount = treeData?.allUsers?.totalCount ?? 0
   const userInfo = loading ? '(...)' : `(${userCount})`
+
+  const user = treeData?.userByName ?? {}
+  const orgUsers = user?.organizationUsersByUserId?.nodes ?? []
+  const orgsUserIsAdminIn = union(
+    orgUsers
+      .filter((o) => o.role === 'orgAdmin')
+      .map((u) => u?.organizationByOrganizationId?.name),
+  )
+  const orgInfo =
+    loading && orgsUserIsAdminIn.length === 0
+      ? '(...)'
+      : `(${orgsUserIsAdminIn.length.toLocaleString('de-CH')})`
 
   const nodes = [
     {
@@ -70,37 +84,23 @@ const level1 = ({ treeData, loading, store, activeNodeArray }) => {
             label: 'Benutzer',
             info: userInfo,
             childrenCount: userCount,
-            children: [],
+            children: level2Benutzer({ activeNodeArray, treeData, store }),
             menuType: 'CmBenutzerFolder',
           },
         ]
       : []),
   ]
-  if (token) {
-    const user = treeData?.userByName ?? {}
-    console.log('level1, user:', user)
-    const orgUsers = user?.organizationUsersByUserId?.nodes ?? []
-    const orgsUserIsAdminIn = union(
-      orgUsers
-        .filter((o) => o.role === 'orgAdmin')
-        .map((u) => u?.organizationByOrganizationId?.name),
-    )
-    const orgInfo =
-      loading && orgsUserIsAdminIn.length === 0
-        ? '(...)'
-        : `(${orgsUserIsAdminIn.length.toLocaleString('de-CH')})`
-    if (orgsUserIsAdminIn.length > 0) {
-      nodes.push({
-        id: 'Organisationen',
-        url: ['Organisationen'],
-        sort: [5],
-        label: 'Organisationen',
-        info: orgInfo,
-        childrenCount: orgsUserIsAdminIn.length,
-        children: [],
-        menuType: 'orgFolder',
-      })
-    }
+  if (token && orgsUserIsAdminIn.length > 0) {
+    nodes.push({
+      id: 'Organisationen',
+      url: ['Organisationen'],
+      sort: [5],
+      label: 'Organisationen',
+      info: orgInfo,
+      childrenCount: orgsUserIsAdminIn.length,
+      children: level2Organization({ activeNodeArray, treeData, store }),
+      menuType: 'orgFolder',
+    })
   }
   return nodes
 }

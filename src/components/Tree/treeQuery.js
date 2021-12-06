@@ -35,7 +35,7 @@ export default gql`
         }
       }
     }
-    allUsers {
+    allUsers(orderBy: NAME_ASC) {
       totalCount
       nodes @include(if: $existsLevel2Benutzer) {
         id
