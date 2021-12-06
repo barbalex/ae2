@@ -29,19 +29,25 @@ const Container = styled.div`
   .react-grid-Container {
     font-size: small;
   }
-  .react-grid-Header {
-  }
-  .react-grid-HeaderRow {
-    overflow: hidden;
-  }
   .react-grid-HeaderCell:not(:first-child) {
     border-left: #c7c7c7 solid 1px !important;
   }
-  .react-grid-HeaderCell__draggable {
-    right: 16px !important;
-  }
   .react-grid-Cell {
     border: #ddd solid 1px !important;
+  }
+  .react-grid-Canvas {
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px !important;
+    }
+    ::-webkit-scrollbar-thumb {
+      border-radius: 3px;
+      box-shadow: inset 0 0 7px #e65100;
+    }
+    ::-webkit-scrollbar-track {
+      border-radius: 1rem;
+      box-shadow: none;
+    }
   }
 `
 const TotalDiv = styled.div`
@@ -128,7 +134,8 @@ const PCO = () => {
   const [sortDirection, setSortDirection] = useState('asc')
   const [importing, setImport] = useState(false)
 
-  const { width = 200, height = 200 } = useResizeDetector()
+  const { width = 200, height = 200, ref: resizeRef } = useResizeDetector()
+  console.log('PCO, height:', height)
 
   const [pCO, allKeys, pCORaw] = useMemo(() => {
     let pCO = []
@@ -210,7 +217,7 @@ const PCO = () => {
   }
 
   return (
-    <Container>
+    <Container ref={resizeRef}>
       {!showImportPco && (
         <TotalDiv>{`${pCO.length.toLocaleString('de-CH')} Datensätze, ${(
           columns.length - 2

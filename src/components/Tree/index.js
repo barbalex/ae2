@@ -172,7 +172,10 @@ const TreeComponent = () => {
 
   const userId = treeData?.userByName?.id
 
-  //console.log('Tree, username:', login.username)
+  console.log('Tree, username:', {
+    username: login.username,
+    existsUsername: Boolean(login.username),
+  })
 
   useEffect(() => {
     client
@@ -180,7 +183,7 @@ const TreeComponent = () => {
         query: treeQuery,
         variables: {
           ...treeQueryVariables({ activeNodeArray, store }),
-          username: login.username,
+          username: login.username ?? 'no_user_with_this_name_exists',
         },
       })
       .then(({ data: treeData, loading, error }) => {
@@ -198,8 +201,6 @@ const TreeComponent = () => {
         })
       })
   }, [activeNodeArray, client, login.username, store])
-
-  console.log('Tree', { nodes, loading })
 
   const treeWalker = useCallback(
     function* treeWalker() {
