@@ -54,7 +54,7 @@ export default gql`
         }
       }
     }
-    allPropertyCollections {
+    allPropertyCollections(orderBy: NAME_ASC) {
       totalCount
       nodes @include(if: $existsLevel2Pc) {
         id

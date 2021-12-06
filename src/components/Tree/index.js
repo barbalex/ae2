@@ -172,6 +172,8 @@ const TreeComponent = () => {
 
   const userId = treeData?.userByName?.id
 
+  //console.log('Tree, username:', login.username)
+
   useEffect(() => {
     client
       .query({

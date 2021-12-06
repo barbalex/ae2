@@ -1,6 +1,7 @@
 import union from 'lodash/union'
 
 import level2Taxonomy from './level2Taxonomy'
+import level2Pc from './level2Pc'
 
 const level1 = ({ treeData, loading, store, activeNodeArray }) => {
   if (!treeData) return []
@@ -57,7 +58,7 @@ const level1 = ({ treeData, loading, store, activeNodeArray }) => {
       label: 'Eigenschaften-Sammlungen',
       info: pcInfo,
       childrenCount: pcCount,
-      children: [],
+      children: level2Pc({ activeNodeArray, treeData }),
       menuType: 'CmPCFolder',
     },
     ...(token
