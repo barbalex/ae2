@@ -15,6 +15,7 @@ const level2Pc = ({ treeData }) => {
       label: node.name,
       info: `(${count.toLocaleString('de-CH')})`,
       childrenCount: count,
+      children: [],
       menuType: 'CmPC',
     }
   })
