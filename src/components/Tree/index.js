@@ -172,11 +172,6 @@ const TreeComponent = () => {
 
   const userId = treeData?.userByName?.id
 
-  console.log('Tree, username:', {
-    username: login.username,
-    existsUsername: Boolean(login.username),
-  })
-
   useEffect(() => {
     client
       .query({
@@ -186,8 +181,7 @@ const TreeComponent = () => {
           username: login.username ?? 'no_user_with_this_name_exists',
         },
       })
-      .then(({ data: treeData, loading, error }) => {
-        console.log('effect setting data', { treeData, loading, error })
+      .then(({ data: treeData, loading, error }) =>
         setData({
           treeData,
           error,
@@ -198,8 +192,8 @@ const TreeComponent = () => {
             activeNodeArray,
             store,
           }),
-        })
-      })
+        }),
+      )
   }, [activeNodeArray, client, login.username, store])
 
   const treeWalker = useCallback(
