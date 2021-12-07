@@ -10,10 +10,8 @@ import Snackbar from '@mui/material/Snackbar'
 import { useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
-import { FixedSizeTree as Tree } from 'react-vtree'
+import { FixedSizeTree } from 'react-vtree'
 import AutoSizer from 'react-virtualized-auto-sizer'
-import findIndex from 'lodash/findIndex'
-import isEqual from 'lodash/isequal'
 
 import Row from './Row'
 import Filter from './Filter'
@@ -134,7 +132,7 @@ const StyledSnackbar = styled(Snackbar)`
     flex-grow: 0;
   }
 `
-const StyledTree = styled(Tree)`
+const StyledTree = styled(FixedSizeTree)`
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px !important;
@@ -180,7 +178,7 @@ const TreeComponent = () => {
 
   const listRef = useRef(null)
   useEffect(() => {
-    listRef?.current?.scrollToItem(activeNodeArray.at(-1))
+    listRef?.current?.scrollToItem(activeNodeArray?.at(-1))
   }, [activeNodeArray, nodes])
 
   const userId = treeData?.userByName?.id
@@ -263,7 +261,7 @@ const TreeComponent = () => {
             nodes.length ? (
               <StyledTree
                 treeWalker={treeWalker}
-                itemSize={30}
+                itemSize={23}
                 height={height - 38}
                 width={width}
                 async={true}
