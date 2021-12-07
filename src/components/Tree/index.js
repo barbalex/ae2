@@ -197,8 +197,7 @@ const TreeComponent = () => {
           username: login.username ?? 'no_user_with_this_name_exists',
         },
       })
-      .then(({ data: treeData, loading, error }) => {
-        console.log('treeData:', treeData)
+      .then(({ data: treeData, loading, error }) =>
         setData({
           treeData,
           error,
@@ -209,8 +208,8 @@ const TreeComponent = () => {
             activeNodeArray,
             store,
           }),
-        })
-      })
+        }),
+      )
   }, [activeNodeArray, client, login.username, store])
 
   const treeWalker = useCallback(
