@@ -12,7 +12,7 @@ import { observer } from 'mobx-react-lite'
 
 import RcList from './RcList'
 import ChooseNrOfRows from './ChooseNrOfRows'
-import mobxStoreContext from '../../../../../mobxStoreContext'
+import storeContext from '../../../../../storeContext'
 import ErrorBoundary from '../../../../shared/ErrorBoundary'
 
 const Container = styled.div`
@@ -71,8 +71,8 @@ const propsByTaxQuery = gql`
 `
 
 const RCOs = ({ rcoExpanded, onToggleRco }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const { data, error: dataError } = useQuery(
     rcoCountByTaxonomyRelationTypeQuery,

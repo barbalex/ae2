@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { observer } from 'mobx-react-lite'
 
 import booleanToJaNein from '../../../../../modules/booleanToJaNein'
-import mobxStoreContext from '../../../../../mobxStoreContext'
+import storeContext from '../../../../../storeContext'
 
 const FilterValueSpan = styled.span`
   background-color: #dadada;
@@ -20,8 +20,8 @@ const ResetSpan = styled.span`
 `
 
 const ExportPcoFilterListItem = ({ filter }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const { setPcoFilter } = mobxStore.export
+  const store = useContext(storeContext)
+  const { setPcoFilter } = store.export
 
   const { pcname, pname, comparator, value } = filter
 

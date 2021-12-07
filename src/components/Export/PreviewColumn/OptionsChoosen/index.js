@@ -10,7 +10,7 @@ import RcoFilterItems from './RcoFilterItems'
 import TaxPropertiesItems from './TaxPropertiesItems'
 import PcoPropertiesItems from './PcoPropertiesItems'
 import RcoPropertiesItems from './RcoPropertiesItems'
-import mobxStoreContext from '../../../../mobxStoreContext'
+import storeContext from '../../../../storeContext'
 
 const Container = styled.div`
   margin: 0;
@@ -44,7 +44,7 @@ const StyledButton = styled(Button)`
 `
 
 const OptionsChoosen = () => {
-  const mobxStore = useContext(mobxStoreContext)
+  const store = useContext(storeContext)
   const {
     setType,
     type: exportType,
@@ -66,14 +66,14 @@ const OptionsChoosen = () => {
     resetTaxProperties,
     taxProperties: taxPropertiesPassed,
     rcoInOneRow,
-  } = mobxStore.export
+  } = store.export
   const pcoFilters = getSnapshot(pcoFiltersPassed)
   const rcoFilters = getSnapshot(rcoFiltersPassed)
   const taxFilters = getSnapshot(taxFiltersPassed)
   const rcoProperties = getSnapshot(rcoPropertiesPassed)
   const pcoProperties = getSnapshot(pcoPropertiesPassed)
   const taxProperties = getSnapshot(taxPropertiesPassed)
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const noDataChoosen =
     [

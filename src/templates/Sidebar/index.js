@@ -5,7 +5,7 @@ import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
 import { withResizeDetector } from 'react-resize-detector'
 
-import storeContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 import MenuItems from './MenuItems'
 import Filter from './Filter'
 import getConstants from '../../modules/constants'

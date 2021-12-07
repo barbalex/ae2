@@ -9,6 +9,7 @@ import Button from '@mui/material/Button'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
+import { useResizeDetector } from 'react-resize-detector'
 
 import ImportPco from './Import'
 import booleanToJaNein from '../../../modules/booleanToJaNein'
@@ -17,7 +18,7 @@ import exportCsv from '../../../modules/exportCsv'
 import treeQuery from '../../Tree/treeQuery'
 import treeQueryVariables from '../../Tree/treeQueryVariables'
 import deletePcoOfPcMutation from './deletePcoOfPcMutation'
-import mobxStoreContext from '../../../mobxStoreContext'
+import storeContext from '../../../storeContext'
 import Spinner from '../../shared/Spinner'
 
 const Container = styled.div`
@@ -28,19 +29,25 @@ const Container = styled.div`
   .react-grid-Container {
     font-size: small;
   }
-  .react-grid-Header {
-  }
-  .react-grid-HeaderRow {
-    overflow: hidden;
-  }
   .react-grid-HeaderCell:not(:first-child) {
     border-left: #c7c7c7 solid 1px !important;
   }
-  .react-grid-HeaderCell__draggable {
-    right: 16px !important;
-  }
   .react-grid-Cell {
     border: #ddd solid 1px !important;
+  }
+  .react-grid-Canvas {
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px !important;
+    }
+    ::-webkit-scrollbar-thumb {
+      border-radius: 3px;
+      box-shadow: inset 0 0 7px #e65100;
+    }
+    ::-webkit-scrollbar-track {
+      border-radius: 1rem;
+      box-shadow: none;
+    }
   }
 `
 const TotalDiv = styled.div`
@@ -100,17 +107,17 @@ const pcoQuery = gql`
   }
 `
 
-const PCO = ({ dimensions }) => {
+const PCO = () => {
   const client = useApolloClient()
-  const mobxStore = useContext(mobxStoreContext)
-  const { login } = mobxStore
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const { login } = store
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
   const pCId =
     activeNodeArray.length > 0
       ? activeNodeArray[1]
       : '99999999-9999-9999-9999-999999999999'
   const { refetch: treeDataRefetch } = useQuery(treeQuery, {
-    variables: treeQueryVariables({ activeNodeArray }),
+    variables: treeQueryVariables({ activeNodeArray, store }),
   })
   const {
     data: pcoData,
@@ -127,8 +134,8 @@ const PCO = ({ dimensions }) => {
   const [sortDirection, setSortDirection] = useState('asc')
   const [importing, setImport] = useState(false)
 
-  const height = isNaN(dimensions.height) ? 0 : dimensions.height
-  const width = isNaN(dimensions.width) ? 0 : dimensions.width
+  const { width = 200, height = 200, ref: resizeRef } = useResizeDetector()
+  console.log('PCO, height:', height)
 
   const [pCO, allKeys, pCORaw] = useMemo(() => {
     let pCO = []
@@ -210,7 +217,7 @@ const PCO = ({ dimensions }) => {
   }
 
   return (
-    <Container>
+    <Container ref={resizeRef}>
       {!showImportPco && (
         <TotalDiv>{`${pCO.length.toLocaleString('de-CH')} Datensätze, ${(
           columns.length - 2

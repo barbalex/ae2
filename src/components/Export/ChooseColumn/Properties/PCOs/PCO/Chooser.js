@@ -4,7 +4,7 @@ import Checkbox from '@mui/material/Checkbox'
 import styled from 'styled-components'
 import { observer } from 'mobx-react-lite'
 
-import mobxStoreContext from '../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../storeContext'
 
 const Container = styled.div`
   width: ${(props) => `${props['data-width']}%`};
@@ -29,8 +29,8 @@ const PcoChooser = ({
   columns,
   propertiesLength,
 }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const { pcoProperties, addPcoProperty, removePcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { pcoProperties, addPcoProperty, removePcoProperty } = store.export
 
   const onCheck = useCallback(
     (event, isChecked) => {

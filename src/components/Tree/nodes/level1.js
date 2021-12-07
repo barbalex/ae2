@@ -1,26 +1,38 @@
 import union from 'lodash/union'
-import jwtDecode from 'jwt-decode'
 
-const level1 = ({ treeData, treeDataLoading, mobxStore }) => {
-  if (!treeData) return []
-  const loading = treeDataLoading
+import level2Taxonomy from './level2Taxonomy'
+import level2Pc from './level2Pc'
+import level2Benutzer from './level2Benutzer'
+import level2Organization from './level2Organization'
+
+const level1 = ({ treeData, loading, store, activeNodeArray }) => {
+  const { token } = store.login
+
   const pcCount = treeData?.allPropertyCollections?.totalCount ?? 0
   const artTaxonomiesCount = treeData?.artTaxonomies?.totalCount
   const lrTaxonomiesCount = treeData?.lrTaxonomies?.totalCount
-  const artenInfo =
-    loading && !artTaxonomiesCount
-      ? '(...)'
-      : `(${artTaxonomiesCount} Taxonomie${
-          artTaxonomiesCount !== 1 ? 'n' : ''
-        })`
-  const lrInfo =
-    loading && !lrTaxonomiesCount
-      ? '(...)'
-      : `(${lrTaxonomiesCount} Taxonomie${lrTaxonomiesCount !== 1 ? 'n' : ''})`
-  const pcInfo = loading && pcCount === 0 ? '(...)' : `(${pcCount})`
-  const { token } = mobxStore.login
+  const artenInfo = loading
+    ? '(... Taxonomien)'
+    : `(${artTaxonomiesCount} Taxonomie${artTaxonomiesCount !== 1 ? 'n' : ''})`
+  const lrInfo = loading
+    ? '(... Taxonomien)'
+    : `(${lrTaxonomiesCount} Taxonomie${lrTaxonomiesCount !== 1 ? 'n' : ''})`
+  const pcInfo = loading ? '(...)' : `(${pcCount})`
   const userCount = treeData?.allUsers?.totalCount ?? 0
-  const userInfo = loading && userCount === 0 ? '(...)' : `(${userCount})`
+  const userInfo = loading ? '(...)' : `(${userCount})`
+
+  const user = treeData?.userByName ?? {}
+  const orgUsers = user?.organizationUsersByUserId?.nodes ?? []
+  const orgsUserIsAdminIn = union(
+    orgUsers
+      .filter((o) => o.role === 'orgAdmin')
+      .map((u) => u?.organizationByOrganizationId?.name),
+  )
+  const orgInfo =
+    loading && orgsUserIsAdminIn.length === 0
+      ? '(...)'
+      : `(${orgsUserIsAdminIn.length.toLocaleString('de-CH')})`
+
   const nodes = [
     {
       id: 'Arten',
@@ -29,6 +41,12 @@ const level1 = ({ treeData, treeDataLoading, mobxStore }) => {
       label: 'Arten',
       info: artenInfo,
       childrenCount: artTaxonomiesCount,
+      children: level2Taxonomy({
+        type: 'Arten',
+        taxonomySort: 1,
+        treeData,
+        activeNodeArray,
+      }),
       menuType: 'CmType',
     },
     {
@@ -38,6 +56,12 @@ const level1 = ({ treeData, treeDataLoading, mobxStore }) => {
       label: 'Lebensräume',
       info: lrInfo,
       childrenCount: lrTaxonomiesCount,
+      children: level2Taxonomy({
+        type: 'Lebensräume',
+        taxonomySort: 2,
+        treeData,
+        activeNodeArray,
+      }),
       menuType: 'CmType',
     },
     {
@@ -47,6 +71,7 @@ const level1 = ({ treeData, treeDataLoading, mobxStore }) => {
       label: 'Eigenschaften-Sammlungen',
       info: pcInfo,
       childrenCount: pcCount,
+      children: level2Pc({ activeNodeArray, treeData }),
       menuType: 'CmPCFolder',
     },
     ...(token
@@ -58,38 +83,23 @@ const level1 = ({ treeData, treeDataLoading, mobxStore }) => {
             label: 'Benutzer',
             info: userInfo,
             childrenCount: userCount,
+            children: level2Benutzer({ activeNodeArray, treeData, store }),
             menuType: 'CmBenutzerFolder',
           },
         ]
       : []),
   ]
-  if (token) {
-    const tokenDecoded = jwtDecode(token)
-    const { username } = tokenDecoded
-    const user = (treeData?.allUsers?.nodes ?? []).find(
-      (u) => u.name === username,
-    )
-    const orgUsers = user?.organizationUsersByUserId?.nodes ?? []
-    const orgsUserIsAdminIn = union(
-      orgUsers
-        .filter((o) => o.role === 'orgAdmin')
-        .map((u) => u?.organizationByOrganizationId?.name),
-    )
-    const orgInfo =
-      loading && orgsUserIsAdminIn.length === 0
-        ? '(...)'
-        : `(${orgsUserIsAdminIn.length.toLocaleString('de-CH')})`
-    if (orgsUserIsAdminIn.length > 0) {
-      nodes.push({
-        id: 'Organisationen',
-        url: ['Organisationen'],
-        sort: [5],
-        label: 'Organisationen',
-        info: orgInfo,
-        childrenCount: orgsUserIsAdminIn.length,
-        menuType: 'orgFolder',
-      })
-    }
+  if (token && orgsUserIsAdminIn.length > 0) {
+    nodes.push({
+      id: 'Organisationen',
+      url: ['Organisationen'],
+      sort: [5],
+      label: 'Organisationen',
+      info: orgInfo,
+      childrenCount: orgsUserIsAdminIn.length,
+      children: level2Organization({ activeNodeArray, treeData, store }),
+      menuType: 'orgFolder',
+    })
   }
   return nodes
 }

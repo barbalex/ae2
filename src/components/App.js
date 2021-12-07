@@ -10,7 +10,7 @@ import { getSnapshot } from 'mobx-state-tree'
 import ErrorBoundary from './shared/ErrorBoundary'
 import Layout from './Layout'
 //import LazyImportFallback from './shared/LazyImportFallback'
-import mobxStoreContext from '../mobxStoreContext'
+import storeContext from '../storeContext'
 
 const Container = styled.div`
   height: 100%;
@@ -31,10 +31,9 @@ const FourOhFour = loadable(() => import('./FourOhFour'))
 const GraphIql = loadable(() => import('./GraphIql'))
 
 const App = () => {
-  const mobxStore = useContext(mobxStoreContext)
-  const { updateAvailable, setWindowWidth, setWindowHeight, singleColumnView } =
-    mobxStore
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const { updateAvailable, setWindowWidth, setWindowHeight } = store
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const [stacked, setStacked] = useState(false)
 

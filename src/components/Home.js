@@ -7,7 +7,7 @@ import SimpleBar from 'simplebar-react'
 import { useResizeDetector } from 'react-resize-detector'
 import { observer } from 'mobx-react-lite'
 
-import mobxStoreContext from '../mobxStoreContext'
+import storeContext from '../storeContext'
 
 const StyledSimpleBar = styled(SimpleBar)`
   max-height: 100%;
@@ -95,8 +95,8 @@ const bgImageStyle = {
 
 const Home = ({ data }) => {
   // trick to prevent with from being reset on routing
-  const mobxStore = useContext(mobxStoreContext)
-  const { homeWidth, setHomeWidth } = mobxStore
+  const store = useContext(storeContext)
+  const { homeWidth, setHomeWidth } = store
   const { width, ref } = useResizeDetector({
     refreshMode: 'debounce',
     refreshRate: 100,

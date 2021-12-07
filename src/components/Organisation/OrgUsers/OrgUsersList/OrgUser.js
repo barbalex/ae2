@@ -16,7 +16,7 @@ import { getSnapshot } from 'mobx-state-tree'
 
 import updateOrgUserMutation from './updateOrgUserMutation'
 import deleteOrgUserMutation from './deleteOrgUserMutation'
-import mobxStoreContext from '../../../../mobxStoreContext'
+import storeContext from '../../../../storeContext'
 import ErrorBoundary from '../../../shared/ErrorBoundary'
 
 const OrgUserDiv = styled.div`
@@ -92,8 +92,8 @@ const orgUsersQuery = gql`
 
 const OrgUser = ({ orgUser }) => {
   const client = useApolloClient()
-  const mobxStore = useContext(mobxStoreContext)
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
   const name = activeNodeArray.length > 1 ? activeNodeArray[1] : 'none'
 
   const {

@@ -23,7 +23,7 @@ import { getSnapshot } from 'mobx-state-tree'
 
 import createPCOMutation from './createPCOMutation'
 import updatePCOMutation from './updatePCOMutation'
-import mobxStoreContext from '../../../../mobxStoreContext'
+import storeContext from '../../../../storeContext'
 import isUuid from '../../../../modules/isUuid'
 
 const Container = styled.div`
@@ -201,8 +201,8 @@ const importPcoQuery = gql`
 
 const ImportPco = ({ setImport, pCO }) => {
   const client = useApolloClient()
-  const mobxStore = useContext(mobxStoreContext)
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
   const pCId =
     activeNodeArray.length > 0
       ? activeNodeArray[1]
@@ -747,7 +747,7 @@ const ImportPco = ({ setImport, pCO }) => {
                   markieren, aus welcher Eigenschaften-Sammlung diese
                   Eigenschaften stammen.{' '}
                   <a
-                    href="https://github.com/barbalex/ae2#zusammenfassende-eigenschaften-sammlungen"
+                    href="http://localhost:8000/Dokumentation/Projektbeschreibung/#zusammenfassende-eigenschaften-sammlungen"
                     target="_blank"
                     rel="noopener noreferrer"
                   >

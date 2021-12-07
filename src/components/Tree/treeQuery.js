@@ -2,9 +2,13 @@ import { gql } from '@apollo/client'
 
 export default gql`
   query TreeDataQuery(
+    $existsLrTaxonomies: Boolean!
+    $existsArtenTaxonomies: Boolean!
     $existsLevel2Pc: Boolean!
+    $existsPCId: Boolean!
     $existsLevel2Taxonomy: Boolean!
     $level2Taxonomy: UUID!
+    $existsLevel2Benutzer: Boolean!
     $existsLevel3Object: Boolean!
     $existsLevel4Object: Boolean!
     $existsLevel5Object: Boolean!
@@ -13,19 +17,31 @@ export default gql`
     $existsLevel8Object: Boolean!
     $existsLevel9Object: Boolean!
     $pCId: UUID!
-    $existsPCId: Boolean!
     $username: String!
   ) {
     userByName(name: $username) {
       id
+      name
+      email
+      organizationUsersByUserId {
+        nodes {
+          id
+          organizationId
+          role
+          organizationByOrganizationId {
+            id
+            name
+          }
+        }
+      }
     }
-    allUsers {
+    allUsers(orderBy: NAME_ASC) {
       totalCount
       nodes {
         id
-        name
-        email
-        organizationUsersByUserId {
+        name @include(if: $existsLevel2Benutzer)
+        email @include(if: $existsLevel2Benutzer)
+        organizationUsersByUserId @include(if: $existsLevel2Benutzer) {
           nodes {
             id
             organizationId
@@ -38,60 +54,56 @@ export default gql`
         }
       }
     }
-    allOrganizationUsers {
+    allPropertyCollections(orderBy: NAME_ASC) {
+      totalCount
       nodes {
         id
-        nodeId
-        organizationId
-        userId
-        role
-        userByUserId {
-          id
-          name
-        }
-      }
-    }
-    allPropertyCollections {
-      totalCount
-      nodes @include(if: $existsLevel2Pc) {
-        id
-        name
-        propertyCollectionObjectsByPropertyCollectionId {
+        name @include(if: $existsLevel2Pc)
+        propertyCollectionObjectsByPropertyCollectionId
+          @include(if: $existsLevel2Pc) {
           totalCount
         }
-        relationsByPropertyCollectionId {
+        relationsByPropertyCollectionId @include(if: $existsLevel2Pc) {
           totalCount
         }
       }
     }
-    artTaxonomies: allTaxonomies(filter: { type: { equalTo: ART } }) {
+    artTaxonomies: allTaxonomies(
+      filter: { type: { equalTo: ART } }
+      orderBy: NAME_ASC
+    ) {
       totalCount
+      # beware: not including node id's makes apollo loose cache...
       nodes {
         id
-        name
-        type
-        objectsByTaxonomyId {
+        name @include(if: $existsArtenTaxonomies)
+        type @include(if: $existsArtenTaxonomies)
+        objectsByTaxonomyId @include(if: $existsArtenTaxonomies) {
           totalCount
         }
         topLevelObjects: objectsByTaxonomyId(
           filter: { parentId: { isNull: true } }
-        ) {
+        ) @include(if: $existsArtenTaxonomies) {
           totalCount
         }
       }
     }
-    lrTaxonomies: allTaxonomies(filter: { type: { equalTo: LEBENSRAUM } }) {
+    lrTaxonomies: allTaxonomies(
+      filter: { type: { equalTo: LEBENSRAUM } }
+      orderBy: NAME_ASC
+    ) {
       totalCount
+      # beware: not including node id's makes apollo loose cache...
       nodes {
         id
-        name
-        type
-        objectsByTaxonomyId {
+        name @include(if: $existsLrTaxonomies)
+        type @include(if: $existsLrTaxonomies)
+        objectsByTaxonomyId @include(if: $existsLrTaxonomies) {
           totalCount
         }
         topLevelObjects: objectsByTaxonomyId(
           filter: { parentId: { isNull: true } }
-        ) {
+        ) @include(if: $existsLrTaxonomies) {
           totalCount
         }
       }
@@ -111,6 +123,7 @@ export default gql`
         taxonomyId: { equalTo: $level2Taxonomy }
         parentId: { isNull: true }
       }
+      orderBy: NAME_ASC
     ) @include(if: $existsLevel2Taxonomy) {
       nodes {
         id

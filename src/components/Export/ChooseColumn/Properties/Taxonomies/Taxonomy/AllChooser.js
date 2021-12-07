@@ -4,7 +4,7 @@ import Checkbox from '@mui/material/Checkbox'
 import styled from 'styled-components'
 import { observer } from 'mobx-react-lite'
 
-import mobxStoreContext from '../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../storeContext'
 
 const Container = styled.div`
   margin-bottom: 16px;
@@ -19,8 +19,8 @@ const Label = styled(FormControlLabel)`
 `
 
 const AllTaxChooser = ({ properties }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const { taxProperties, addTaxProperty, removeTaxProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { taxProperties, addTaxProperty, removeTaxProperty } = store.export
 
   const onCheck = useCallback(
     async (event, isChecked) => {
@@ -38,11 +38,11 @@ const AllTaxChooser = ({ properties }) => {
     [addTaxProperty, properties, removeTaxProperty],
   )
 
-  const checkedArray = properties.map(p => {
+  const checkedArray = properties.map((p) => {
     const taxname = p.taxname ? p.taxname : p.taxonomyName
     return (
       taxProperties.filter(
-        x => x.taxname === taxname && x.pname === p.propertyName,
+        (x) => x.taxname === taxname && x.pname === p.propertyName,
       ).length > 0
     )
   })

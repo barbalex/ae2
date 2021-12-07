@@ -13,7 +13,7 @@ import { observer } from 'mobx-react-lite'
 
 import TaxonomiesList from './TaxonomiesList'
 import JointTaxonomy from './JointTaxonomy'
-import mobxStoreContext from '../../../../../mobxStoreContext'
+import storeContext from '../../../../../storeContext'
 import ErrorBoundary from '../../../../shared/ErrorBoundary'
 
 const Container = styled.div`
@@ -59,8 +59,8 @@ const propsByTaxQuery = gql`
 `
 
 const Properties = ({ taxonomiesExpanded, onToggleTaxonomies }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const { data: propsByTaxData, error: propsByTaxError } = useQuery(
     propsByTaxQuery,

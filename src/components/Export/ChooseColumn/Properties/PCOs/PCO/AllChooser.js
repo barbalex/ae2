@@ -4,7 +4,7 @@ import Checkbox from '@mui/material/Checkbox'
 import styled from 'styled-components'
 import { observer } from 'mobx-react-lite'
 
-import mobxStoreContext from '../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../storeContext'
 
 const Container = styled.div`
   margin-bottom: 16px;
@@ -19,19 +19,19 @@ const Label = styled(FormControlLabel)`
 `
 
 const AllPcoChooser = ({ properties }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const { pcoProperties, addPcoProperty, removePcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { pcoProperties, addPcoProperty, removePcoProperty } = store.export
 
   const onCheck = useCallback(
     (event, isChecked) => {
       if (isChecked) {
-        return properties.forEach(p => {
+        return properties.forEach((p) => {
           const pcname = p.propertyCollectionName
           const pname = p.propertyName
           addPcoProperty({ pcname, pname })
         })
       }
-      properties.forEach(p => {
+      properties.forEach((p) => {
         const pcname = p.propertyCollectionName
         const pname = p.propertyName
         removePcoProperty({ pcname, pname })
@@ -41,9 +41,9 @@ const AllPcoChooser = ({ properties }) => {
   )
 
   const checkedArray = properties.map(
-    p =>
+    (p) =>
       pcoProperties.filter(
-        x =>
+        (x) =>
           x.pcname === p.propertyCollectionName && x.pname === p.propertyName,
       ).length > 0,
   )

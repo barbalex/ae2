@@ -6,7 +6,7 @@ import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react-lite'
 
 import Taxonomies from './Taxonomies'
-import mobxStoreContext from '../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../storeContext'
 import ErrorBoundary from '../../../../../shared/ErrorBoundary'
 
 const exportTypes = ['Arten', 'Lebensräume']
@@ -34,13 +34,13 @@ const TypeLabel = styled(FormControlLabel)`
 `
 
 const ExportTypes = ({ type, taxonomies }) => {
-  const mobxStore = useContext(mobxStoreContext)
+  const store = useContext(storeContext)
   const {
     type: exportType,
     setType: setExportType,
     setTaxonomies,
-  } = mobxStore.export
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  } = store.export
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const onCheckType = useCallback(
     async (event, isChecked) => {

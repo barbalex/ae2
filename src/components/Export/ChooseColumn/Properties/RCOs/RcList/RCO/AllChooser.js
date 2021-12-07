@@ -4,7 +4,7 @@ import Checkbox from '@mui/material/Checkbox'
 import styled from 'styled-components'
 import { observer } from 'mobx-react-lite'
 
-import mobxStoreContext from '../../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../../storeContext'
 
 const Container = styled.div`
   margin-bottom: 16px;
@@ -19,20 +19,20 @@ const Label = styled(FormControlLabel)`
 `
 
 const AllRcoChooser = ({ properties }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const { rcoProperties, addRcoProperty, removeRcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { rcoProperties, addRcoProperty, removeRcoProperty } = store.export
 
   const onCheck = useCallback(
     (event, isChecked) => {
       if (isChecked) {
-        return properties.forEach(p => {
+        return properties.forEach((p) => {
           const pcname = p.propertyCollectionName
           const relationtype = p.relationType
           const pname = p.propertyName
           addRcoProperty({ pcname, relationtype, pname })
         })
       }
-      properties.forEach(p => {
+      properties.forEach((p) => {
         const pcname = p.propertyCollectionName
         const relationtype = p.relationType
         const pname = p.propertyName
@@ -43,9 +43,9 @@ const AllRcoChooser = ({ properties }) => {
   )
 
   const checkedArray = properties.map(
-    p =>
+    (p) =>
       rcoProperties.filter(
-        x =>
+        (x) =>
           x.pcname === p.propertyCollectionName &&
           x.relationtype === p.relationType &&
           x.pname === p.propertyName,

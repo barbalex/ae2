@@ -11,7 +11,7 @@ import Layout from '../components/Layout'
 import ErrorBoundary from '../components/shared/ErrorBoundary'
 import Sidebar from '../templates/Sidebar'
 import useLocation from '../modules/useLocation'
-import mobxStoreContext from '../mobxStoreContext'
+import storeContext from '../storeContext'
 
 const Container = styled.div`
   height: calc(100vh - 64px);
@@ -48,7 +48,7 @@ const StyledSwipeableViews = styled(SwipeableViews)`
 `
 
 const Dokumentation = ({ data }) => {
-  const { singleColumnView } = useContext(mobxStoreContext)
+  const { singleColumnView } = useContext(storeContext)
   const { allMarkdownRemark } = data
   const { edges } = allMarkdownRemark
   const { pathname } = useLocation()

@@ -4,7 +4,7 @@ import loadable from '@loadable/component'
 import { getSnapshot } from 'mobx-state-tree'
 
 //import LazyImportFallback from './shared/LazyImportFallback'
-import mobxStoreContext from '../mobxStoreContext'
+import storeContext from '../storeContext'
 
 //const Pco = lazy(() => import('./PropertyCollection/PCO'))
 const Pco = loadable(() => import('./PropertyCollection/PCO'))
@@ -22,9 +22,9 @@ const Benutzer = loadable(() => import('./Benutzer'))
 const Organisation = loadable(() => import('./Organisation'))
 const Home = loadable(() => import('./Home'))
 
-const DataType = ({ dimensions, stacked = false }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+const DataType = ({ stacked = false }) => {
+  const store = useContext(storeContext)
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const showObjekt =
     ['Arten', 'Lebensräume'].includes(activeNodeArray[0]) &&
@@ -51,12 +51,11 @@ const DataType = ({ dimensions, stacked = false }) => {
   const showOrganization =
     activeNodeArray[0] === 'Organisationen' && activeNodeArray.length === 2
 
-  // TODO: ReactDOMServer does not yet support Suspense
   if (showTaxonomy) return <Taxonomy />
   if (showObjekt) return <Objekt stacked={stacked} />
   if (showPC) return <PropertyCollection />
-  if (showPCO) return <Pco dimensions={dimensions} />
-  if (showRCO) return <Rco dimensions={dimensions} />
+  if (showPCO) return <Pco />
+  if (showRCO) return <Rco />
   if (showBenutzer) return <Benutzer />
   if (showOrganization) return <Organisation />
   return <Home />

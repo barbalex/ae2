@@ -11,7 +11,7 @@ import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
 import RCO from './RCO'
-import mobxStoreContext from '../../../../../mobxStoreContext'
+import storeContext from '../../../../../storeContext'
 import ErrorBoundary from '../../../../shared/ErrorBoundary'
 
 const Container = styled.div`
@@ -61,8 +61,8 @@ const propsByTaxQuery = gql`
 `
 
 const RcosCard = ({ rcoExpanded, onToggleRco }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const { data: propsByTaxData, error: propsByTaxDataError } = useQuery(
     propsByTaxQuery,

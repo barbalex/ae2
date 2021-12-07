@@ -2,7 +2,7 @@ import React, { useCallback, useContext } from 'react'
 import styled from 'styled-components'
 import { observer } from 'mobx-react-lite'
 
-import mobxStoreContext from '../../../../../mobxStoreContext'
+import storeContext from '../../../../../storeContext'
 
 const ResetSpan = styled.span`
   margin-left: 8px;
@@ -14,8 +14,8 @@ const ResetSpan = styled.span`
 
 const ExportRcoPropertiesListItem = ({ properties }) => {
   const { pcname, relationtype, pname } = properties
-  const mobxStore = useContext(mobxStoreContext)
-  const { removeRcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { removeRcoProperty } = store.export
 
   const onClick = useCallback(
     () =>

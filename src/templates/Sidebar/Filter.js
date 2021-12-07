@@ -6,7 +6,7 @@ import InputAdornment from '@mui/material/InputAdornment'
 import { MdDeleteSweep } from 'react-icons/md'
 import styled from 'styled-components'
 
-import storeContext from '../../mobxStoreContext'
+import storeContext from '../../storeContext'
 
 const StyledInput = styled(Input)`
   div hr {

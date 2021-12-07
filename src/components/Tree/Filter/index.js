@@ -9,9 +9,12 @@ import { navigate } from 'gatsby'
 import { useDebouncedCallback } from 'use-debounce'
 
 import getUrlForObject from '../../../modules/getUrlForObject'
-import mobxStoreContext from '../../../mobxStoreContext'
+import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
 import buildOptions from './buildOptions'
+import getConstants from '../../../modules/constants'
+
+const constants = getConstants()
 
 const Container = styled.div`
   flex: 0 1 auto;
@@ -79,11 +82,11 @@ const objectUrlQuery = gql`
   }
 `
 
-const TreeFilter = ({ height = 250 }) => {
+const TreeFilter = () => {
   // TODO: use local state instead of mobx for label, id
   const client = useApolloClient()
-  const mobxStore = useContext(mobxStoreContext)
-  const { treeFilter } = mobxStore
+  const store = useContext(storeContext)
+  const { treeFilter } = store
   const { setTreeFilter } = treeFilter
 
   const treeFilterId = treeFilter.id ?? '99999999-9999-9999-9999-999999999999'
@@ -214,7 +217,7 @@ const TreeFilter = ({ height = 250 }) => {
       }),
       menuList: (provided) => ({
         ...provided,
-        maxHeight: height - 39,
+        maxHeight: `calc(100vh - ${constants.appBarHeight}px - 39px)`,
         '::-webkit-scrollbar': {
           width: '6px',
         },
@@ -254,7 +257,7 @@ const TreeFilter = ({ height = 250 }) => {
         color: 'rgba(0,0,0,0.8)',
       }),
     }),
-    [singleColumnView, height],
+    [singleColumnView],
   )
 
   return (

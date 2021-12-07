@@ -13,7 +13,7 @@ import { withResizeDetector } from 'react-resize-detector'
 
 import AllChooser from './AllChooser'
 import Properties from './Properties'
-import mobxStoreContext from '../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../storeContext'
 import ErrorBoundary from '../../../../../shared/ErrorBoundary'
 import getConstants from '../../../../../../modules/constants'
 const constants = getConstants()
@@ -67,8 +67,8 @@ const propsByTaxQuery = gql`
 `
 
 const PCO = ({ pc, width = 500 }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   const { data: propsData, error: propsDataError } = useQuery(propsByTaxQuery, {
     variables: {

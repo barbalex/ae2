@@ -14,7 +14,7 @@ import SimpleBar from 'simplebar-react'
 import Taxonomies from './Taxonomies'
 import Properties from './Properties'
 import Filter from './Filter'
-import mobxStoreContext from '../../../mobxStoreContext'
+import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
 
 const StyledSnackbar = styled(Snackbar)`
@@ -147,9 +147,9 @@ const synonymQuery = gql`
 `
 
 const Export = () => {
-  const mobxStore = useContext(mobxStoreContext)
-  const { taxProperties, taxFilters } = mobxStore.export
-  const exportTaxonomies = mobxStore.export.taxonomies.toJSON()
+  const store = useContext(storeContext)
+  const { taxProperties, taxFilters } = store.export
+  const exportTaxonomies = store.export.taxonomies.toJSON()
 
   // need to remove __typename because apollo passes it along ?!
   const fetchTaxProperties = taxProperties.length > 0

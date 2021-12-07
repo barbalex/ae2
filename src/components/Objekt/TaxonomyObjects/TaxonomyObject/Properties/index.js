@@ -12,7 +12,7 @@ import { observer } from 'mobx-react-lite'
 
 import PropertyList from './PropertyList'
 import NewProperty from '../../../../shared/NewProperty'
-import mobxStoreContext from '../../../../../mobxStoreContext'
+import storeContext from '../../../../../storeContext'
 
 const PropertiesTitleContainer = styled.div`
   display: flex;
@@ -42,8 +42,8 @@ const PropertiesTitleValue = styled.p`
 `
 
 const Properties = ({ id, properties, objectData, stacked }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const { editingTaxonomies } = mobxStore
+  const store = useContext(storeContext)
+  const { editingTaxonomies } = store
 
   const propertiesArray = Object.entries(properties)
 

@@ -24,7 +24,7 @@ import { getSnapshot } from 'mobx-state-tree'
 
 import createRCOMutation from './createRCOMutation'
 import updateRCOMutation from './updateRCOMutation'
-import mobxStoreContext from '../../../../mobxStoreContext'
+import storeContext from '../../../../storeContext'
 //import importWorker from './import.worker.js'
 
 const Container = styled.div`
@@ -216,8 +216,8 @@ const importRcoQuery = gql`
 
 const ImportRco = ({ setImport, pCO }) => {
   const client = useApolloClient()
-  const mobxStore = useContext(mobxStoreContext)
-  const activeNodeArray = getSnapshot(mobxStore.activeNodeArray)
+  const store = useContext(storeContext)
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
   const pCId =
     activeNodeArray.length > 0
       ? activeNodeArray[1]
@@ -961,7 +961,7 @@ const ImportRco = ({ setImport, pCO }) => {
                   markieren, aus welcher Eigenschaften-Sammlung diese
                   Beziehungen stammen.{' '}
                   <a
-                    href="https://github.com/barbalex/ae2#zusammenfassende-eigenschaften-sammlungen"
+                    href="http://localhost:8000/Dokumentation/Projektbeschreibung/#zusammenfassende-eigenschaften-sammlungen"
                     target="_blank"
                     rel="noopener noreferrer"
                   >

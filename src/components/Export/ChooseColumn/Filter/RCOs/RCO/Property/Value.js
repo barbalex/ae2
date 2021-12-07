@@ -12,7 +12,7 @@ import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
 import readableType from '../../../../../../../modules/readableType'
-import mobxStoreContext from '../../../../../../../mobxStoreContext'
+import storeContext from '../../../../../../../storeContext'
 
 const StyledPaper = styled(Paper)`
   z-index: 1;
@@ -127,8 +127,8 @@ const IntegrationAutosuggest = ({
   value: propValue,
   classes,
 }) => {
-  const mobxStore = useContext(mobxStoreContext)
-  const { addFilterFields, setRcoFilters, addRcoProperty } = mobxStore.export
+  const store = useContext(storeContext)
+  const { addFilterFields, setRcoFilters, addRcoProperty } = store.export
 
   const [suggestions, setSuggestions] = useState([])
   const [propValues, setPropValues] = useState([])
