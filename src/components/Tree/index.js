@@ -1,4 +1,10 @@
-import React, { useState, useContext, useCallback, useEffect } from 'react'
+import React, {
+  useState,
+  useContext,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react'
 import styled from 'styled-components'
 import Snackbar from '@mui/material/Snackbar'
 import { useApolloClient } from '@apollo/client'
@@ -6,6 +12,8 @@ import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
 import { FixedSizeTree as Tree } from 'react-vtree'
 import AutoSizer from 'react-virtualized-auto-sizer'
+import findIndex from 'lodash/findIndex'
+import isEqual from 'lodash/isequal'
 
 import Row from './Row'
 import Filter from './Filter'
@@ -170,6 +178,11 @@ const TreeComponent = () => {
 
   const { treeData, error, loading, nodes } = data
 
+  const listRef = useRef(null)
+  useEffect(() => {
+    listRef?.current?.scrollToItem(activeNodeArray.at(-1))
+  }, [activeNodeArray, nodes])
+
   const userId = treeData?.userByName?.id
 
   useEffect(() => {
@@ -254,6 +267,7 @@ const TreeComponent = () => {
                 height={height - 38}
                 width={width}
                 async={true}
+                ref={listRef}
               >
                 {(props) => (
                   <Row
