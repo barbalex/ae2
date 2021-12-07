@@ -6,7 +6,55 @@ import level2Benutzer from './level2Benutzer'
 import level2Organization from './level2Organization'
 
 const level1 = ({ treeData, loading, store, activeNodeArray }) => {
-  if (!treeData) return []
+  const { token } = store.login
+  if (!treeData) {
+    return [
+      {
+        id: 'Arten',
+        url: ['Arten'],
+        sort: [1],
+        label: 'Arten',
+        info: '... Taxonomien',
+        childrenCount: 2,
+        children: [],
+        menuType: 'CmType',
+      },
+      {
+        id: 'Lebensräume',
+        url: ['Lebensräume'],
+        sort: [2],
+        label: 'Lebensräume',
+        info: '... Lebensräume',
+        childrenCount: 2,
+        children: [],
+        menuType: 'CmType',
+      },
+      {
+        id: 'Eigenschaften-Sammlungen',
+        url: ['Eigenschaften-Sammlungen'],
+        sort: [3],
+        label: 'Eigenschaften-Sammlungen',
+        info: '...',
+        childrenCount: 2,
+        children: [],
+        menuType: 'CmPCFolder',
+      },
+      ...(token
+        ? [
+            {
+              id: 'Benutzer',
+              url: ['Benutzer'],
+              sort: [4],
+              label: 'Benutzer',
+              info: '...',
+              childrenCount: 2,
+              children: [],
+              menuType: 'CmBenutzerFolder',
+            },
+          ]
+        : []),
+    ]
+  }
 
   const pcCount = treeData?.allPropertyCollections?.totalCount ?? 0
   const artTaxonomiesCount = treeData?.artTaxonomies?.totalCount
@@ -18,7 +66,6 @@ const level1 = ({ treeData, loading, store, activeNodeArray }) => {
     ? '(... Taxonomien)'
     : `(${lrTaxonomiesCount} Taxonomie${lrTaxonomiesCount !== 1 ? 'n' : ''})`
   const pcInfo = loading ? '(...)' : `(${pcCount})`
-  const { token } = store.login
   const userCount = treeData?.allUsers?.totalCount ?? 0
   const userInfo = loading ? '(...)' : `(${userCount})`
 

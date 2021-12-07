@@ -171,7 +171,12 @@ const TreeComponent = () => {
     treeData: undefined,
     error: undefined,
     loading: true,
-    nodes: [],
+    nodes: buildLevel1Nodes({
+      treeData: undefined,
+      loading: true,
+      activeNodeArray,
+      store,
+    }),
   })
 
   const { treeData, error, loading, nodes } = data
@@ -192,19 +197,20 @@ const TreeComponent = () => {
           username: login.username ?? 'no_user_with_this_name_exists',
         },
       })
-      .then(({ data: treeData, loading, error }) =>
+      .then(({ data: treeData, loading, error }) => {
+        console.log('treeData:', treeData)
         setData({
           treeData,
           error,
           loading,
           nodes: buildLevel1Nodes({
             treeData,
-            loading,
+            loading: false,
             activeNodeArray,
             store,
           }),
-        }),
-      )
+        })
+      })
   }, [activeNodeArray, client, login.username, store])
 
   const treeWalker = useCallback(
@@ -257,27 +263,25 @@ const TreeComponent = () => {
       <Container>
         <Filter />
         <AutoSizer>
-          {({ height, width }) =>
-            nodes.length ? (
-              <StyledTree
-                treeWalker={treeWalker}
-                itemSize={23}
-                height={height - 38}
-                width={width}
-                async={true}
-                ref={listRef}
-              >
-                {(props) => (
-                  <Row
-                    style={props.style}
-                    data={props.data}
-                    userId={userId}
-                    loading={loading}
-                  />
-                )}
-              </StyledTree>
-            ) : null
-          }
+          {({ height, width }) => (
+            <StyledTree
+              treeWalker={treeWalker}
+              itemSize={23}
+              height={height - 38}
+              width={width}
+              async={true}
+              ref={listRef}
+            >
+              {(props) => (
+                <Row
+                  style={props.style}
+                  data={props.data}
+                  userId={userId}
+                  loading={loading}
+                />
+              )}
+            </StyledTree>
+          )}
         </AutoSizer>
         <StyledSnackbar open={loading} message="lade Daten..." />
         <CmBenutzerFolder />
