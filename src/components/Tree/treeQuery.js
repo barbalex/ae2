@@ -37,11 +37,11 @@ export default gql`
     }
     allUsers(orderBy: NAME_ASC) {
       totalCount
-      nodes @include(if: $existsLevel2Benutzer) {
+      nodes {
         id
-        name
-        email
-        organizationUsersByUserId {
+        name @include(if: $existsLevel2Benutzer)
+        email @include(if: $existsLevel2Benutzer)
+        organizationUsersByUserId @include(if: $existsLevel2Benutzer) {
           nodes {
             id
             organizationId
@@ -56,13 +56,14 @@ export default gql`
     }
     allPropertyCollections(orderBy: NAME_ASC) {
       totalCount
-      nodes @include(if: $existsLevel2Pc) {
+      nodes {
         id
-        name
-        propertyCollectionObjectsByPropertyCollectionId {
+        name @include(if: $existsLevel2Pc)
+        propertyCollectionObjectsByPropertyCollectionId
+          @include(if: $existsLevel2Pc) {
           totalCount
         }
-        relationsByPropertyCollectionId {
+        relationsByPropertyCollectionId @include(if: $existsLevel2Pc) {
           totalCount
         }
       }
