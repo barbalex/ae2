@@ -72,16 +72,17 @@ export default gql`
       orderBy: NAME_ASC
     ) {
       totalCount
-      nodes @include(if: $existsArtenTaxonomies) {
+      # beware: not including node id's makes apollo loose cache...
+      nodes {
         id
-        name
-        type
-        objectsByTaxonomyId {
+        name @include(if: $existsArtenTaxonomies)
+        type @include(if: $existsArtenTaxonomies)
+        objectsByTaxonomyId @include(if: $existsArtenTaxonomies) {
           totalCount
         }
         topLevelObjects: objectsByTaxonomyId(
           filter: { parentId: { isNull: true } }
-        ) {
+        ) @include(if: $existsArtenTaxonomies) {
           totalCount
         }
       }
@@ -91,16 +92,17 @@ export default gql`
       orderBy: NAME_ASC
     ) {
       totalCount
-      nodes @include(if: $existsLrTaxonomies) {
+      # beware: not including node id's makes apollo loose cache...
+      nodes {
         id
-        name
-        type
-        objectsByTaxonomyId {
+        name @include(if: $existsLrTaxonomies)
+        type @include(if: $existsLrTaxonomies)
+        objectsByTaxonomyId @include(if: $existsLrTaxonomies) {
           totalCount
         }
         topLevelObjects: objectsByTaxonomyId(
           filter: { parentId: { isNull: true } }
-        ) {
+        ) @include(if: $existsLrTaxonomies) {
           totalCount
         }
       }
