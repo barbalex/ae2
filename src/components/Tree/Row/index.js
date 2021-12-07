@@ -85,7 +85,7 @@ function collect(props) {
   return props
 }
 
-const Row = ({ index = 0, style, data, userId, loading }) => {
+const Row = ({ index = 0, style, data, userId }) => {
   const client = useApolloClient()
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
@@ -98,9 +98,7 @@ const Row = ({ index = 0, style, data, userId, loading }) => {
   let useSymbolIcon = true
   let useSymbolSpan = false
   let symbol
-  if (loading) {
-    symbol = 'Loading'
-  } else if (data.childrenCount && nodeIsInActiveNodePath) {
+  if (data.childrenCount && nodeIsInActiveNodePath) {
     symbol = 'ExpandMore'
   } else if (data.childrenCount) {
     symbol = 'ChevronRight'
@@ -114,17 +112,13 @@ const Row = ({ index = 0, style, data, userId, loading }) => {
   const level = url?.length ?? 0
 
   const onClickNode = useCallback(async () => {
-    // do nothing when loading indicator is clicked
-    if (loading) return
     // or if node is already active
     if (!isEqual(url, activeNodeArray)) {
       navigate(`/${url.join('/')}`)
     }
-  }, [activeNodeArray, loading, url])
+  }, [activeNodeArray, url])
   const onClickExpandMore = useCallback(
     (event) => {
-      // do nothing when loading indicator is clicked
-      if (loading) return
       if (isEqual(url, activeNodeArray)) {
         // close node if its expand more symbol was clicked
         const newUrl = [...url]
@@ -134,7 +128,7 @@ const Row = ({ index = 0, style, data, userId, loading }) => {
         event.preventDefault()
       }
     },
-    [loading, url, activeNodeArray],
+    [url, activeNodeArray],
   )
   const onClickContextMenu = useCallback(
     (e, data, target) => {

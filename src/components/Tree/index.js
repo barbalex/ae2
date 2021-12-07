@@ -205,7 +205,7 @@ const TreeComponent = () => {
           loading,
           nodes: buildLevel1Nodes({
             treeData,
-            loading: false,
+            loading,
             activeNodeArray,
             store,
           }),
@@ -273,12 +273,7 @@ const TreeComponent = () => {
               ref={listRef}
             >
               {(props) => (
-                <Row
-                  style={props.style}
-                  data={props.data}
-                  userId={userId}
-                  loading={loading}
-                />
+                <Row style={props.style} data={props.data} userId={userId} />
               )}
             </StyledTree>
           )}

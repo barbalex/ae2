@@ -7,54 +7,6 @@ import level2Organization from './level2Organization'
 
 const level1 = ({ treeData, loading, store, activeNodeArray }) => {
   const { token } = store.login
-  if (!treeData) {
-    return [
-      {
-        id: 'Arten',
-        url: ['Arten'],
-        sort: [1],
-        label: 'Arten',
-        info: '... Taxonomien',
-        childrenCount: 2,
-        children: [],
-        menuType: 'CmType',
-      },
-      {
-        id: 'Lebensräume',
-        url: ['Lebensräume'],
-        sort: [2],
-        label: 'Lebensräume',
-        info: '... Lebensräume',
-        childrenCount: 2,
-        children: [],
-        menuType: 'CmType',
-      },
-      {
-        id: 'Eigenschaften-Sammlungen',
-        url: ['Eigenschaften-Sammlungen'],
-        sort: [3],
-        label: 'Eigenschaften-Sammlungen',
-        info: '...',
-        childrenCount: 2,
-        children: [],
-        menuType: 'CmPCFolder',
-      },
-      ...(token
-        ? [
-            {
-              id: 'Benutzer',
-              url: ['Benutzer'],
-              sort: [4],
-              label: 'Benutzer',
-              info: '...',
-              childrenCount: 2,
-              children: [],
-              menuType: 'CmBenutzerFolder',
-            },
-          ]
-        : []),
-    ]
-  }
 
   const pcCount = treeData?.allPropertyCollections?.totalCount ?? 0
   const artTaxonomiesCount = treeData?.artTaxonomies?.totalCount
