@@ -7,13 +7,7 @@ import ErrorBoundary from '../shared/ErrorBoundary'
 
 const ExportFlexed = () => (
   <ReflexContainer orientation="vertical">
-    <ReflexElement
-      flex={0.5}
-      className="tree-reflex-element"
-      propagateDimensions={true}
-      renderOnResizeRate={50}
-      renderOnResize={true}
-    >
+    <ReflexElement flex={0.5} className="tree-reflex-element">
       <ErrorBoundary>
         <ChooseColumn />
       </ErrorBoundary>

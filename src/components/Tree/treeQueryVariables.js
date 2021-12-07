@@ -1,4 +1,8 @@
-const treeDataVariables = ({ activeNodeArray }) => {
+const treeDataVariables = ({ activeNodeArray, store }) => {
+  const existsLrTaxonomies =
+    activeNodeArray.length > 0 && activeNodeArray[0] === 'Lebensräume'
+  const existsArtenTaxonomies =
+    activeNodeArray.length > 0 && activeNodeArray[0] === 'Arten'
   const existsLevel1 = activeNodeArray.length > 0
   const existsLevel2Pc =
     existsLevel1 &&
@@ -11,6 +15,8 @@ const treeDataVariables = ({ activeNodeArray }) => {
   const level2Taxonomy = existsLevel2Taxonomy
     ? activeNodeArray[1]
     : '99999999-9999-9999-9999-999999999999'
+  const existsLevel2Benutzer =
+    activeNodeArray[0] === 'Benutzer' && !!store.login.token
   const existsLevel3Object =
     activeNodeArray.length > 2 &&
     ['Arten', 'Lebensräume'].includes(activeNodeArray[0])
@@ -27,9 +33,12 @@ const treeDataVariables = ({ activeNodeArray }) => {
   const existsPCId = pCId !== '99999999-9999-9999-9999-999999999999'
 
   return {
+    existsLrTaxonomies,
+    existsArtenTaxonomies,
     existsLevel2Pc,
     existsLevel2Taxonomy,
     level2Taxonomy,
+    existsLevel2Benutzer,
     existsLevel3Object,
     existsLevel4Object,
     existsLevel5Object,

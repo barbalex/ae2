@@ -9,6 +9,7 @@ import Button from '@mui/material/Button'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
+import { useResizeDetector } from 'react-resize-detector'
 
 import ImportRco from './Import'
 import booleanToJaNein from '../../../modules/booleanToJaNein'
@@ -28,19 +29,25 @@ const Container = styled.div`
   .react-grid-Container {
     font-size: small;
   }
-  .react-grid-Header {
-  }
-  .react-grid-HeaderRow {
-    overflow: hidden;
-  }
   .react-grid-HeaderCell:not(:first-child) {
     border-left: #c7c7c7 solid 1px !important;
   }
-  .react-grid-HeaderCell__draggable {
-    right: 16px !important;
-  }
   .react-grid-Cell {
     border: #ddd solid 1px !important;
+  }
+  .react-grid-Canvas {
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px !important;
+    }
+    ::-webkit-scrollbar-thumb {
+      border-radius: 3px;
+      box-shadow: inset 0 0 7px #e65100;
+    }
+    ::-webkit-scrollbar-track {
+      border-radius: 1rem;
+      box-shadow: none;
+    }
   }
 `
 const TotalDiv = styled.div`
@@ -105,7 +112,7 @@ const rcoQuery = gql`
   }
 `
 
-const RCO = ({ dimensions }) => {
+const RCO = () => {
   const client = useApolloClient()
   const store = useContext(storeContext)
   const { login } = store
@@ -115,7 +122,7 @@ const RCO = ({ dimensions }) => {
       ? activeNodeArray[1]
       : '99999999-9999-9999-9999-999999999999'
   const { refetch: treeDataRefetch } = useQuery(treeQuery, {
-    variables: treeQueryVariables({ activeNodeArray }),
+    variables: treeQueryVariables({ activeNodeArray, store }),
   })
   const {
     data: rcoData,
@@ -132,8 +139,7 @@ const RCO = ({ dimensions }) => {
   const [sortDirection, setSortDirection] = useState('asc')
   const [importing, setImport] = useState(false)
 
-  const height = isNaN(dimensions.height) ? 0 : dimensions.height
-  const width = isNaN(dimensions.width) ? 0 : dimensions.width
+  const { width = 200, height = 200, ref: resizeRef } = useResizeDetector()
 
   const [rCO, allKeys, rCORaw] = useMemo(() => {
     let rCO = []
@@ -225,7 +231,7 @@ const RCO = ({ dimensions }) => {
   }
 
   return (
-    <Container>
+    <Container ref={resizeRef}>
       {!showImportRco && (
         <TotalDiv>{`${rCO.length.toLocaleString('de-CH')} Datensätze, ${(
           columns.length - 5
