@@ -1,7 +1,7 @@
 {
   "name": "artdaten",
   "description": "Eigenschaften von Flora, Fauna, Moosen und Lebensräumen: Sichten, exportieren, importieren",
-  "version": "1.6.9",
+  "version": "1.6.10",
   "author": {
     "name": "Alexander Gabriel",
     "email": "alex@gabriel-software.ch",
@@ -15,10 +15,10 @@
     "serve": "gatsby serve"
   },
   "dependencies": {
-    "@apollo/client": "3.5.6",
+    "@apollo/client": "3.5.7",
     "@fontsource/roboto": "4.5.1",
     "@loadable/component": "5.15.2",
-    "@mui/material": "5.2.7",
+    "@mui/material": "5.2.8",
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest",
     "@mui/styled-engine-sc": "5.1.0",
     "@mui/styles": "5.2.3",
@@ -57,7 +57,7 @@
     "json2csv": "5.0.6",
     "jwt-decode": "3.1.2",
     "lodash": "4.17.21",
-    "mobx": "6.3.10",
+    "mobx": "6.3.12",
     "mobx-react-lite": "3.2.3",
     "mobx-state-tree": "5.1.0",
     "polished": "1.x",
@@ -66,7 +66,7 @@
     "react-autosuggest": "10.1.0",
     "react-data-grid": "6.1.0",
     "react-dom": "17.0.2",
-    "react-dropzone": "11.4.2",
+    "react-dropzone": "11.5.1",
     "react-error-boundary": "3.1.4",
     "react-helmet": "6.1.0",
     "react-highlight-words": "0.17.0",
@@ -74,7 +74,7 @@
     "react-is": "17.0.2",
     "react-linkify": "0.x",
     "react-reflex": "4.0.3",
-    "react-resize-detector": "6.7.7",
+    "react-resize-detector": "7.0.0",
     "react-select": "5.2.1",
     "react-swipeable-views": "0.14.0",
     "react-typography": "0.16.20",
@@ -88,7 +88,7 @@
     "use-debounce": "7.0.1",
     "use-subscription": "1.5.1",
     "webpack": "5.65.0",
-    "xlsx": "0.17.4"
+    "xlsx": "0.17.5"
   },
   "dependenciesComments": {
     "coa": "2.0.2: fixed because of malware attack, see https://github.com/veged/coa/issues/99",

@@ -5,9 +5,9 @@ __metadata:
   version: 5
   cacheKey: 8
 
-"@apollo/client@npm:3.5.6":
-  version: 3.5.6
-  resolution: "@apollo/client@npm:3.5.6"
+"@apollo/client@npm:3.5.7":
+  version: 3.5.7
+  resolution: "@apollo/client@npm:3.5.7"
   dependencies:
     "@graphql-typed-document-node/core": ^3.0.0
     "@wry/context": ^0.6.0
@@ -30,7 +30,7 @@ __metadata:
       optional: true
     subscriptions-transport-ws:
       optional: true
-  checksum: 503cc1f34114be1c0fe411744881078f781c6d33b431199dce3813e7cbf85f4cf2f06fd283b08c00f92c0ccea83ef531aa3c5d2215ba2937fb1cc208fbe83300
+  checksum: ddecf62b4bf402948892bf993d58933432fc743b6859ef557fcd137e9b9398c081279dce75e037396f9b22fd54bf578cb88819b4b55bd5e2c30428f100c519b6
   languageName: node
   linkType: hard
 
@@ -3158,9 +3158,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/base@npm:5.0.0-alpha.63":
-  version: 5.0.0-alpha.63
-  resolution: "@mui/base@npm:5.0.0-alpha.63"
+"@mui/base@npm:5.0.0-alpha.64":
+  version: 5.0.0-alpha.64
+  resolution: "@mui/base@npm:5.0.0-alpha.64"
   dependencies:
     "@babel/runtime": ^7.16.3
     "@emotion/is-prop-valid": ^1.1.1
@@ -3176,17 +3176,17 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 641c6d3ddcfc1962d4ebe21587761f728c6eb3d5b0d4063c70321c8c99cc2392c4350cc03e310fb997c98e412616f63028a85f133e9f44e6b1b60917955c95ac
+  checksum: 337f30692694ddcadeee0ebc8db93e0d4c6af1d281d0407794be6512bd96fe8111619b111654bd5a749f6bd2db9fc8b4e4ace38e91336ad76a3458ad71203337
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.2.7":
-  version: 5.2.7
-  resolution: "@mui/material@npm:5.2.7"
+"@mui/material@npm:5.2.8":
+  version: 5.2.8
+  resolution: "@mui/material@npm:5.2.8"
   dependencies:
     "@babel/runtime": ^7.16.3
-    "@mui/base": 5.0.0-alpha.63
-    "@mui/system": ^5.2.6
+    "@mui/base": 5.0.0-alpha.64
+    "@mui/system": ^5.2.8
     "@mui/types": ^7.1.0
     "@mui/utils": ^5.2.3
     "@types/react-transition-group": ^4.4.4
@@ -3209,7 +3209,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: e92b82b251ded01537f68080958afdab4fea3858e9952d3c74913a3b7f4f8df713d9bc148ca39dec66a7a0869af447afd6299bc5ee1701b1ba78c18765e2d146
+  checksum: 4b6bf166597d5776d4f0b6b3376efdd574ca69bc7c7cb908e21a3fda7d4a56c7be3e10902f260b4824de2955185d92356f5251d6e84aecccf1226041bb7081f3
   languageName: node
   linkType: hard
 
@@ -3276,9 +3276,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/system@npm:^5.2.6":
-  version: 5.2.6
-  resolution: "@mui/system@npm:5.2.6"
+"@mui/system@npm:^5.2.8":
+  version: 5.2.8
+  resolution: "@mui/system@npm:5.2.8"
   dependencies:
     "@babel/runtime": ^7.16.3
     "@mui/private-theming": ^5.2.3
@@ -3300,7 +3300,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 24d99fedf9743b9665749ee8fcd927fa7a1a6b366d92345c1b006153844eb9d76cffc40ff341a8af9499af8335605e6a91d536f7f1f976fa0858b95537a6e013
+  checksum: eb86da6582b2f6013136162ffdbca0fd1fcdc7d8b1fda64f117f7d40fb6ff88aebb75a48df2673021d89242dace58fc35931755b7c8a19569630d2baee89fb63
   languageName: node
   linkType: hard
 
@@ -4831,7 +4831,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "artdaten@workspace:."
   dependencies:
-    "@apollo/client": 3.5.6
+    "@apollo/client": 3.5.7
     "@babel/core": 7.16.7
     "@babel/eslint-parser": 7.16.5
     "@babel/plugin-syntax-flow": 7.16.7
@@ -4841,7 +4841,7 @@ __metadata:
     "@graphile-contrib/pg-order-by-related": 1.0.0-beta.6
     "@hot-loader/react-dom": 17.0.1
     "@loadable/component": 5.15.2
-    "@mui/material": 5.2.7
+    "@mui/material": 5.2.8
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest"
     "@mui/styled-engine-sc": 5.1.0
     "@mui/styles": 5.2.3
@@ -4887,7 +4887,7 @@ __metadata:
     json2csv: 5.0.6
     jwt-decode: 3.1.2
     lodash: 4.17.21
-    mobx: 6.3.10
+    mobx: 6.3.12
     mobx-react-lite: 3.2.3
     mobx-state-tree: 5.1.0
     polished: 1.x
@@ -4898,7 +4898,7 @@ __metadata:
     react-autosuggest: 10.1.0
     react-data-grid: 6.1.0
     react-dom: 17.0.2
-    react-dropzone: 11.4.2
+    react-dropzone: 11.5.1
     react-error-boundary: 3.1.4
     react-helmet: 6.1.0
     react-highlight-words: 0.17.0
@@ -4906,7 +4906,7 @@ __metadata:
     react-is: 17.0.2
     react-linkify: 0.x
     react-reflex: 4.0.3
-    react-resize-detector: 6.7.7
+    react-resize-detector: 7.0.0
     react-select: 5.2.1
     react-swipeable-views: 0.14.0
     react-typography: 0.16.20
@@ -4922,7 +4922,7 @@ __metadata:
     use-subscription: 1.5.1
     vercel: 23.1.2
     webpack: 5.65.0
-    xlsx: 0.17.4
+    xlsx: 0.17.5
   languageName: unknown
   linkType: soft
 
@@ -13590,10 +13590,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mobx@npm:6.3.10":
-  version: 6.3.10
-  resolution: "mobx@npm:6.3.10"
-  checksum: d632c656f740ce67eef00c4c73be15acfc8fc057ab08492cba58ef904d617a1df465e059edaf4b2c02659c8d286be88a57eef4544b879ed6092faabf08b7e4ac
+"mobx@npm:6.3.12":
+  version: 6.3.12
+  resolution: "mobx@npm:6.3.12"
+  checksum: 1f1e414ffa1ed1efa92ff91e470d08e2a602d07dcf316ea12dc48d1077adb291643148badee4a052170260e3b0161842ddeae3cf3fdedd13599fee72cdf85c38
   languageName: node
   linkType: hard
 
@@ -15897,16 +15897,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dropzone@npm:11.4.2":
-  version: 11.4.2
-  resolution: "react-dropzone@npm:11.4.2"
+"react-dropzone@npm:11.5.1":
+  version: 11.5.1
+  resolution: "react-dropzone@npm:11.5.1"
   dependencies:
     attr-accept: ^2.2.1
     file-selector: ^0.2.2
     prop-types: ^15.7.2
   peerDependencies:
     react: ">= 16.8"
-  checksum: f8dc6af69193133efe30ed11dd8c2212a180abd3833e91d03dab4bdc9546d47dcad311d7f72b4968b7d016871884555b9e16f7a490913b78dbfec8ce8f569193
+  checksum: 54d801ca5b952d9e00913c516bcb3b961d34058116d0444ac3ce911e98e777fbd936fb60e81c0739664f68bf1dd1bdc6a1477d0b50b46ffe986140671562110d
   languageName: node
   linkType: hard
 
@@ -16066,18 +16066,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-resize-detector@npm:6.7.7":
-  version: 6.7.7
-  resolution: "react-resize-detector@npm:6.7.7"
+"react-resize-detector@npm:7.0.0":
+  version: 7.0.0
+  resolution: "react-resize-detector@npm:7.0.0"
   dependencies:
     "@types/resize-observer-browser": ^0.1.6
-    lodash.debounce: ^4.0.8
-    lodash.throttle: ^4.1.1
-    resize-observer-polyfill: ^1.5.1
+    lodash: ^4.17.21
   peerDependencies:
     react: ^16.0.0 || ^17.0.0
     react-dom: ^16.0.0 || ^17.0.0
-  checksum: e9ebacb00f9f57151d2870a05ccffb1688d9f0a3ed8875b705cf3d1af3d852cea5060b6fb3555ecefa5ca7cd0dd5a2c662dd14cb0e83ed269a3ca158d50563a3
+  checksum: 8525746a4841f020bc50b26166ef1f1951c64991f7117f4dafe423f29c4fefe8595b806881ac3ec81ebd0b29df3480e282a1db8bbe927df4a620282154c7ed1c
   languageName: node
   linkType: hard
 
@@ -16661,7 +16659,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resize-observer-polyfill@npm:^1.5.0, resize-observer-polyfill@npm:^1.5.1":
+"resize-observer-polyfill@npm:^1.5.0":
   version: 1.5.1
   resolution: "resize-observer-polyfill@npm:1.5.1"
   checksum: 57e7f79489867b00ba43c9c051524a5c8f162a61d5547e99333549afc23e15c44fd43f2f318ea0261ea98c0eb3158cca261e6f48d66e1ed1cd1f340a43977094
@@ -19915,9 +19913,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xlsx@npm:0.17.4":
-  version: 0.17.4
-  resolution: "xlsx@npm:0.17.4"
+"xlsx@npm:0.17.5":
+  version: 0.17.5
+  resolution: "xlsx@npm:0.17.5"
   dependencies:
     adler-32: ~1.2.0
     cfb: ^1.1.4
@@ -19928,7 +19926,7 @@ __metadata:
     word: ~0.3.0
   bin:
     xlsx: bin/xlsx.njs
-  checksum: cef35f431e182ef6c147acedc1b883cc5a6914d33d8031983f542d281d1f2305cb878aebe060c25e2b864ec58aeb6f9ad026b2ab3288e0114a036b16310a40a2
+  checksum: f2dc48671994ba13aa98c4aaa14d7cb13f75f248964f555809ec3d4069e80e99a0bcb6657273e3872af3765118aa30630d566b991a14b6193f1ad79022542e46
   languageName: node
   linkType: hard
 

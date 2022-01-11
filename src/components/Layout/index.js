@@ -19,7 +19,7 @@ const Container = styled.div`
 const Layout = ({ children }) => (
   <Container>
     <Helmet
-      title="arteigenschaften v1.6.9"
+      title="arteigenschaften v1.6.10"
       meta={[
         {
           name: 'description',
