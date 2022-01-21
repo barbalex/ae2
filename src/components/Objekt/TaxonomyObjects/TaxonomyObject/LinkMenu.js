@@ -77,7 +77,7 @@ const LinkMenu = ({ objekt }) => {
     },
     [einheit, nameDeutsch, objekt.name],
   )
-  const onClickGbif = useCallback(
+  const onClickGbifFromSisf2 = useCallback(
     (e) => {
       e.stopPropagation()
       const url = `https://www.gbif.org/species/search?q=${encodeURIComponent(
@@ -87,6 +87,17 @@ const LinkMenu = ({ objekt }) => {
       setAnchorEl(null)
     },
     [art, gattung],
+  )
+  const onClickGbifFromDbTaxref = useCallback(
+    (e) => {
+      e.stopPropagation()
+      const url = `https://www.gbif.org/species/search?q=${encodeURIComponent(
+        `${props['Artname vollständig']}`,
+      )}`
+      typeof window !== 'undefined' && window.open(url)
+      setAnchorEl(null)
+    },
+    [props],
   )
   const onClickSisf2 = useCallback(
     (e) => {
@@ -134,8 +145,13 @@ const LinkMenu = ({ objekt }) => {
         <MenuItem key="wikipedia" onClick={onClickWikepedia}>
           Wikipedia-Artikel suchen
         </MenuItem>
-        {gattung && art && (
-          <MenuItem key="gbif" onClick={onClickGbif}>
+        {isSisf2 && gattung && art && (
+          <MenuItem key="gbif" onClick={onClickGbifFromSisf2}>
+            Im GBIF suchen
+          </MenuItem>
+        )}
+        {isDbTaxref && props?.['Artname vollständig'] && (
+          <MenuItem key="gbif" onClick={onClickGbifFromDbTaxref}>
             Im GBIF suchen
           </MenuItem>
         )}
