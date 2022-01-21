@@ -29,13 +29,14 @@ const ITEM_HEIGHT = 48
 const LinkMenu = ({ objekt }) => {
   const [anchorEl, setAnchorEl] = useState(null)
 
-  const props = objekt?.properties ? JSON.parse(objekt?.properties) : {}
+  const props = objekt?.properties ? JSON.parse(objekt?.properties) : null
   const nameDeutsch = props?.['Name Deutsch'] ?? null
   const einheit = props?.Einheit ?? null
   const gattung = props?.Gattung
   const art = props?.Art
   const taxName = objekt?.taxonomyByTaxonomyId?.name
-  const isFlora = taxName.toLowerCase().includes('sisf')
+  const isSisf2 = taxName.toLowerCase().includes('sisf')
+  const isDbTaxref = taxName.toLowerCase().includes('db-taxref')
   const paperProps = {
     style: {
       maxHeight: ITEM_HEIGHT * 4.5,
@@ -76,7 +77,7 @@ const LinkMenu = ({ objekt }) => {
     },
     [einheit, nameDeutsch, objekt.name],
   )
-  const onClickGbif = useCallback(
+  const onClickGbifFromSisf2 = useCallback(
     (e) => {
       e.stopPropagation()
       const url = `https://www.gbif.org/species/search?q=${encodeURIComponent(
@@ -87,7 +88,18 @@ const LinkMenu = ({ objekt }) => {
     },
     [art, gattung],
   )
-  const onClickInfoflora = useCallback(
+  const onClickGbifFromDbTaxref = useCallback(
+    (e) => {
+      e.stopPropagation()
+      const url = `https://www.gbif.org/species/search?q=${encodeURIComponent(
+        `${props['Artname vollständig']}`,
+      )}`
+      typeof window !== 'undefined' && window.open(url)
+      setAnchorEl(null)
+    },
+    [props],
+  )
+  const onClickSisf2 = useCallback(
     (e) => {
       e.stopPropagation()
       const url = `https://www.infoflora.ch/de/flora/${`${gattung.toLowerCase()}-${art.toLowerCase()}.html`}`
@@ -95,6 +107,15 @@ const LinkMenu = ({ objekt }) => {
       setAnchorEl(null)
     },
     [art, gattung],
+  )
+  const onClickDbTaxref = useCallback(
+    (e) => {
+      e.stopPropagation()
+      const url = `https://www.infoflora.ch/de/flora/${props?.['Taxonomie ID intern']}`
+      typeof window !== 'undefined' && window.open(url)
+      setAnchorEl(null)
+    },
+    [props],
   )
 
   return (
@@ -124,13 +145,23 @@ const LinkMenu = ({ objekt }) => {
         <MenuItem key="wikipedia" onClick={onClickWikepedia}>
           Wikipedia-Artikel suchen
         </MenuItem>
-        {gattung && art && (
-          <MenuItem key="gbif" onClick={onClickGbif}>
+        {isSisf2 && gattung && art && (
+          <MenuItem key="gbif" onClick={onClickGbifFromSisf2}>
             Im GBIF suchen
           </MenuItem>
         )}
-        {isFlora && gattung && art && (
-          <MenuItem key="infoflora" onClick={onClickInfoflora}>
+        {isDbTaxref && props?.['Artname vollständig'] && (
+          <MenuItem key="gbif" onClick={onClickGbifFromDbTaxref}>
+            Im GBIF suchen
+          </MenuItem>
+        )}
+        {isSisf2 && gattung && art && (
+          <MenuItem key="infoflora" onClick={onClickSisf2}>
+            Bei Info Flora suchen
+          </MenuItem>
+        )}
+        {isDbTaxref && props?.['Taxonomie ID intern'] && (
+          <MenuItem key="db-taxref" onClick={onClickDbTaxref}>
             Bei Info Flora suchen
           </MenuItem>
         )}
