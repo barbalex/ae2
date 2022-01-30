@@ -22,18 +22,25 @@
  * - filter: 
  *   - this object's url equals activeUrl 
  *   - or: this object's url minus last element equals any of activeUrl's parents 
+ *
+ * ONLY works on PG >= 14
  */
-WITH tree_categories AS (
+-- https://stackoverflow.com/a/16552441/712005
+WITH constants (
+  active_url
+) AS (
+  VALUES ('Arten/aed47d40-7b0e-11e8-b9a5-bd4f79edbcc4/aedf52b0-7b0e-11e8-b9a5-bd4f79edbcc4/aee40da0-7b0e-11e8-b9a5-bd4f79edbcc4')
+),
+tree_categories AS (
   SELECT
-    id,
-    name,
-    NULL::uuid AS parent_id,
-    1::bigint AS level,
-    name AS category,
-    replace(name, '/', '|') AS url,
+    id, name, NULL::uuid AS parent_id, 1::bigint AS level, name AS category, replace(name, '/', '|') AS url,
     replace(name, '/', '|') AS sort
   FROM
-    ae.tree_category
+    ae.tree_category,
+    constants c
+  WHERE
+    replace(name, '/', '|') = c.active_url
+    OR array_to_string(TRIM_ARRAY (regexp_split_to_array(c.active_url, '/'), 1), '/') = replace(name, '/', '|')
 ),
 taxonomies AS (
   SELECT
