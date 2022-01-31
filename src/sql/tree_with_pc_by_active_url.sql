@@ -28,7 +28,7 @@
 WITH constants (
   active_url
 ) AS (
-  VALUES ('https://www.arteigenschaften.ch/Eigenschaften-Sammlungen/bdf5c7c0-7b0e-11e8-b9a5-bd4f79edbcc4')
+  VALUES ('Eigenschaften-Sammlungen/bdf5c7c0-7b0e-11e8-b9a5-bd4f79edbcc4')
 ),
 tree_categories AS (
   SELECT
@@ -152,16 +152,47 @@ objects AS (
 ),
 pcs AS (
   SELECT
-    id,
-    name
-  FROM
-    ae.property_collection pc
-  ORDER BY
-    name
+    2 AS level,
+    cat.sort AS cat_sort,
+    pc.id,
+    cat.id AS parent_id,
+    pc.name,
+    concat(replace(cat.name, '/', '|'), '/', pc.id) AS url,
+    concat(cat.sort, '/', pc.name) AS sort,
+    (
+      SELECT
+        count(*)
+      FROM
+        ae.property_collection_object
+      WHERE
+        property_collection_id = pc.id) + (
+        SELECT
+          count(*)
+        FROM
+          ae.relation
+        WHERE
+          property_collection_id = pc.id) AS children_count
+    FROM
+      ae.property_collection pc
+      INNER JOIN ae.tree_category cat ON cat.id = '33744e59-1942-4341-8b2d-088d4ac96434'
+    ORDER BY
+      pc.name
 )
 SELECT
   level,
-  category,
+  cat_sort,
+  name,
+  id,
+  parent_id,
+  url,
+  sort,
+  children_count,
+  children_count::text AS info
+FROM
+  pcs
+UNION ALL
+SELECT
+  level,
   cat_sort,
   name,
   id,
@@ -175,7 +206,6 @@ FROM
 UNION ALL
 SELECT
   level,
-  category,
   cat_sort,
   name,
   id,
@@ -189,7 +219,6 @@ FROM
 UNION ALL
 SELECT
   level,
-  category,
   cat_sort,
   name,
   id,
