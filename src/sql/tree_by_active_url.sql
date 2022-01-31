@@ -35,60 +35,113 @@ tree_categories AS (
   SELECT
     id, name, NULL::uuid AS parent_id, 1::bigint AS level, name AS category, replace(name, '/', '|') AS url,
     sort AS cat_sort,
-    sort::text
-  FROM
-    ae.tree_category
+    sort::text,
+    (
+      SELECT
+        count(tax.id)
+      FROM
+        ae.taxonomy tax
+        INNER JOIN ae.tree_category ON ae.tree_category.id = tax.tree_category
+      WHERE
+        tax.tree_category = cat.id
+      GROUP BY
+        tree_category.id) AS children_count
+    FROM
+      ae.tree_category cat
 ),
 taxonomies AS (
   SELECT
-    tax.id, tax.name, tax.tree_category AS parent_id, 2::bigint AS level, cat.name AS category, concat(replace(cat.name, '/', '|'), '/', tax.id) AS url,
+    tax.id,
+    tax.name,
+    tax.tree_category AS parent_id,
+    2::bigint AS level,
+    cat.name AS category,
+    concat(replace(cat.name, '/', '|'), '/', tax.id) AS url,
     cat.sort AS cat_sort,
-    concat(replace(cat.name, '/', '|'), '/', tax.name) AS sort
-  FROM
-    ae.taxonomy tax
-    INNER JOIN ae.tree_category cat ON tax.tree_category = cat.id,
-    constants c
-  WHERE
-    c.active_url LIKE replace(cat.name, '/', '|') || '%'
+    concat(replace(cat.name, '/', '|'), '/', tax.name) AS sort,
+    (
+      SELECT
+        count(ae.object.id)
+      FROM
+        ae.object
+        INNER JOIN ae.taxonomy ON ae.object.taxonomy_id = ae.taxonomy.id
+      WHERE
+        ae.object.parent_id IS NULL
+        AND ae.object.taxonomy_id = tax.id
+      GROUP BY
+        ae.taxonomy.id) AS children_count
+    FROM
+      ae.taxonomy tax
+      INNER JOIN ae.tree_category cat ON tax.tree_category = cat.id,
+      constants c
+    WHERE
+      c.active_url LIKE replace(cat.name, '/', '|') || '%'
 ),
 objects AS (
   WITH RECURSIVE a AS (
     SELECT
-      ae.object.id,
-      ae.object.name,
-      ae.object.parent_id,
-      3::bigint AS level,
-      cat.name AS category,
-      cat.sort AS cat_sort,
-      concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id, '/', ae.object.id) AS url,
-      concat(replace(cat.name, '/', '|'), '/', replace(ae.taxonomy.name, '/', '|'), '/', replace(ae.object.name, '/', '|')) AS sort
-    FROM
-      ae.object
-      INNER JOIN ae.taxonomy
-      INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON ae.object.taxonomy_id = ae.taxonomy.id,
-      constants c
-    WHERE
-      ae.object.parent_id IS NULL
-      AND c.active_url LIKE concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id) || '%'
-    UNION ALL
-    SELECT
       o.id,
       o.name,
       o.parent_id,
-      a.level + 1,
+      3::bigint AS level,
       cat.name AS category,
       cat.sort AS cat_sort,
-      concat(a.url, '/', o.id) AS url,
-      concat(a.sort, '/', replace(o.name, '/', '|')) AS sort
-    FROM
-      ae.object o
-      INNER JOIN ae.taxonomy
-      INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
-      JOIN a ON a.id = o.parent_id,
-      constants c
-    WHERE
-      a.level <= 10
-      AND c.active_url LIKE a.url || '%'
+      concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id, '/', o.id) AS url,
+      concat(replace(cat.name, '/', '|'), '/', replace(ae.taxonomy.name, '/', '|'), '/', replace(o.name, '/', '|')) AS sort,
+      (
+        SELECT
+          count(ae.object.id)
+        FROM
+          ae.object
+        WHERE
+          ae.object.parent_id = o.id) AS children_count
+      FROM
+        ae.object o
+        INNER JOIN ae.taxonomy
+        INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id,
+        constants c
+      WHERE
+        o.parent_id IS NULL
+        AND c.active_url LIKE concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id) || '%'
+      UNION ALL
+      SELECT
+        o.id,
+        o.name,
+        o.parent_id,
+        a.level + 1,
+        cat.name AS category,
+        cat.sort AS cat_sort,
+        concat(a.url, '/', o.id) AS url,
+        concat(a.sort, '/', replace(o.name, '/', '|')) AS sort,
+        (
+          SELECT
+            count(ae.object.id)
+          FROM
+            ae.object
+          WHERE
+            ae.object.parent_id = o.id) AS children_count
+        FROM
+          ae.object o
+          INNER JOIN ae.taxonomy
+          INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
+          JOIN a ON a.id = o.parent_id,
+          constants c
+        WHERE
+          a.level <= 10
+          AND c.active_url LIKE a.url || '%'
+)
+        SELECT
+          level,
+          category,
+          cat_sort,
+          name,
+          id,
+          parent_id,
+          url,
+          sort,
+          children_count
+        FROM
+          a
 )
     SELECT
       level,
@@ -98,46 +151,37 @@ objects AS (
       id,
       parent_id,
       url,
-      sort
+      sort,
+      children_count
     FROM
-      a
-)
-  SELECT
-    level,
-    category,
-    cat_sort,
-    name,
-    id,
-    parent_id,
-    url,
-    sort
-  FROM
-    objects
-  UNION ALL
-  SELECT
-    level,
-    category,
-    cat_sort,
-    name,
-    id,
-    parent_id,
-    url,
-    sort
-  FROM
-    taxonomies
-  UNION ALL
-  SELECT
-    level,
-    category,
-    cat_sort,
-    name,
-    id,
-    parent_id,
-    url,
-    sort
-  FROM
-    tree_categories
-  ORDER BY
-    cat_sort,
-    sort;
+      objects
+    UNION ALL
+    SELECT
+      level,
+      category,
+      cat_sort,
+      name,
+      id,
+      parent_id,
+      url,
+      sort,
+      children_count
+    FROM
+      taxonomies
+    UNION ALL
+    SELECT
+      level,
+      category,
+      cat_sort,
+      name,
+      id,
+      parent_id,
+      url,
+      sort,
+      children_count
+    FROM
+      tree_categories
+    ORDER BY
+      cat_sort,
+      sort;
 
