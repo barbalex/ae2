@@ -34,7 +34,7 @@ tree_categories AS (
   SELECT
     id, name, NULL::uuid AS parent_id, 1::bigint AS level, name AS category, replace(name, '/', '|') AS url,
     sort AS cat_sort,
-    sort::text,
+    sort,
     CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
     (
       SELECT
@@ -70,23 +70,22 @@ taxonomies AS (
     cat.name AS category,
     concat(replace(cat.name, '/', '|'), '/', tax.id) AS url,
     cat.sort AS cat_sort,
-    concat(replace(cat.name, '/', '|'), '/', tax.name) AS sort,
-  (
-    SELECT
-      count(ae.object.id)
-    FROM
-      ae.object
-      INNER JOIN ae.taxonomy ON ae.object.taxonomy_id = ae.taxonomy.id
-    WHERE
-      ae.object.parent_id IS NULL
-      AND ae.object.taxonomy_id = tax.id
-    GROUP BY
-      ae.taxonomy.id) AS children_count,
-  'CmTaxonomy' AS menu_type
-FROM
-  ae.taxonomy tax
-  INNER JOIN ae.tree_category cat ON tax.tree_category = cat.id,
-  constants c
+    ARRAY[cat.name,
+    tax.name] AS sort,
+    --concat(replace(cat.name, '/', '|'), '/', tax.name) AS sort,
+    (
+      SELECT
+        count(ae.object.id)
+        FROM ae.object
+        INNER JOIN ae.taxonomy ON ae.object.taxonomy_id = ae.taxonomy.id
+      WHERE
+        ae.object.parent_id IS NULL
+        AND ae.object.taxonomy_id = tax.id GROUP BY ae.taxonomy.id) AS children_count,
+    'CmTaxonomy' AS menu_type
+  FROM
+    ae.taxonomy tax
+    INNER JOIN ae.tree_category cat ON tax.tree_category = cat.id,
+    constants c
   WHERE
     c.active_url LIKE replace(cat.name, '/', '|') || '%'
 ),
@@ -100,14 +99,16 @@ objects AS (
       cat.name AS category,
       cat.sort AS cat_sort,
       concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id, '/', o.id) AS url,
-    concat(replace(cat.name, '/', '|'), '/', replace(ae.taxonomy.name, '/', '|'), '/', replace(o.name, '/', '|')) AS sort,
-    (
-      SELECT
-        count(ae.object.id)
-      FROM
-        ae.object
-      WHERE
-        ae.object.parent_id = o.id) AS children_count,
+      ARRAY[cat.name,
+      ae.taxonomy.name,
+      o.name] AS sort,
+      --concat(replace(cat.name, '/', '|'), '/', replace(ae.taxonomy.name, '/', '|'), '/', replace(o.name, '/', '|')) AS sort,
+      (
+        SELECT
+          count(ae.object.id)
+          FROM ae.object
+        WHERE
+          ae.object.parent_id = o.id) AS children_count,
       'CmObject' AS menu_type
     FROM
       ae.object o
@@ -126,38 +127,38 @@ objects AS (
       cat.name AS category,
       cat.sort AS cat_sort,
       concat(a.url, '/', o.id) AS url,
-      concat(a.sort, '/', replace(o.name, '/', '|')) AS sort,
-      (
-        SELECT
-          count(ae.object.id)
-        FROM
-          ae.object
-        WHERE
-          ae.object.parent_id = o.id) AS children_count,
-        'CmObject' AS menu_type
-      FROM
-        ae.object o
-        INNER JOIN ae.taxonomy
-        INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
-        JOIN a ON a.id = o.parent_id,
-        constants c
-      WHERE
-        a.level <= 10
-        AND c.active_url LIKE a.url || '%'
-)
+    array_append(a.sort, o.name) AS sort,
+    --concat(a.sort, '/', replace(o.name, '/', '|')) AS sort,
+    (
       SELECT
-        level,
-        category,
-        cat_sort,
-        name,
-        id,
-        parent_id,
-        url,
-        sort,
-        children_count,
-        menu_type
-      FROM
-        a
+        count(ae.object.id)
+        FROM ae.object
+      WHERE
+        ae.object.parent_id = o.id) AS children_count,
+    'CmObject' AS menu_type
+  FROM
+    ae.object o
+    INNER JOIN ae.taxonomy
+    INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
+    JOIN a ON a.id = o.parent_id,
+    constants c
+  WHERE
+    a.level <= 10
+    AND c.active_url LIKE a.url || '%'
+)
+  SELECT
+    level,
+    category,
+    cat_sort,
+    name,
+    id,
+    parent_id,
+    url,
+    sort,
+    children_count,
+    menu_type
+  FROM
+    a
 ),
 pcs AS (
   SELECT
@@ -167,29 +168,30 @@ pcs AS (
     cat.id AS parent_id,
     pc.name,
     concat(replace(cat.name, '/', '|'), '/', pc.id) AS url,
-    concat(cat.sort, '/', pc.name) AS sort,
+    ARRAY[cat.sort::text,
+    pc.name] AS sort,
+    --concat(cat.sort, '/', pc.name) AS sort,
     (
       SELECT
         count(*)
-      FROM
-        ae.property_collection_object
+        FROM ae.property_collection_object
       WHERE
         property_collection_id = pc.id) + (
-        SELECT
-          count(*)
-        FROM
-          ae.relation
-        WHERE
-          property_collection_id = pc.id) AS children_count,
-      'CmPC' AS menu_type
-    FROM
-      ae.property_collection pc
-      INNER JOIN ae.tree_category cat ON cat.id = '33744e59-1942-4341-8b2d-088d4ac96434',
-      constants c
-    WHERE
-      c.active_url LIKE replace(cat.name, '/', '|') || '%'
-    ORDER BY
-      pc.name
+      SELECT
+        count(*)
+      FROM
+        ae.relation
+      WHERE
+        property_collection_id = pc.id) AS children_count,
+    'CmPC' AS menu_type
+  FROM
+    ae.property_collection pc
+    INNER JOIN ae.tree_category cat ON cat.id = '33744e59-1942-4341-8b2d-088d4ac96434',
+    constants c
+  WHERE
+    c.active_url LIKE replace(cat.name, '/', '|') || '%'
+  ORDER BY
+    pc.name
 ),
 pcs_folders AS (
   SELECT
@@ -204,9 +206,11 @@ pcs_folders AS (
     END AS name,
     concat(pcs.url, '/', folders.name) AS url,
   CASE WHEN folders.name = 'pc' THEN
-    concat(pcs.sort, '/1')
+    --concat(pcs.sort, '/1')
+    array_append(pcs.sort, '1')
   ELSE
-    concat(pcs.sort, '/2')
+    --concat(pcs.sort, '/2')
+    array_append(pcs.sort, '2')
   END AS sort,
   CASE WHEN folders.name = 'pc' THEN
   (
@@ -309,7 +313,7 @@ unioned AS (
     id::text,
     parent_id,
     url,
-    sort,
+    ARRAY[sort::text] AS sort,
     children_count,
     CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
       children_count::text
@@ -319,9 +323,6 @@ unioned AS (
     menu_type
   FROM
     tree_categories
-  ORDER BY
-    cat_sort,
-    sort
 )
 SELECT
   level,
@@ -329,9 +330,13 @@ SELECT
   id,
   url,
   sort,
+  array_to_string(sort, '/') AS sort_string,
   children_count,
   info,
   menu_type
 FROM
-  unioned;
+  unioned
+ORDER BY
+  cat_sort,
+  sort_string;
 
