@@ -323,14 +323,15 @@ unioned AS (
     menu_type
   FROM
     tree_categories
-)
-SELECT
-  level,
-  name AS label,
-  id,
-  url,
-  sort,
-  array_to_string(sort, '/') AS sort_string,
+),
+sorted AS (
+  SELECT
+    level,
+    name AS label,
+    id,
+    url,
+    sort,
+    array_to_string(sort, '/') AS sort_string,
   children_count,
   info,
   menu_type
@@ -338,5 +339,17 @@ FROM
   unioned
 ORDER BY
   cat_sort,
-  sort_string;
+  sort_string
+)
+SELECT
+  level,
+  label,
+  id,
+  url,
+  sort,
+  children_count,
+  info,
+  menu_type
+FROM
+  sorted;
 
