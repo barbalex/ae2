@@ -18,6 +18,7 @@ export default gql`
     $existsLevel9Object: Boolean!
     $pCId: UUID!
     $username: String!
+    $url: [String]
   ) {
     userByName(name: $username) {
       id
@@ -52,6 +53,18 @@ export default gql`
             }
           }
         }
+      }
+    }
+    treeFunction(url: $url) {
+      nodes {
+        level
+        label
+        id
+        url
+        sort
+        childrenCount
+        info
+        menuType
       }
     }
     allPropertyCollections(orderBy: NAME_ASC) {
