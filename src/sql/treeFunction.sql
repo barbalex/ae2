@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS ae.tree CASCADE;
+DROP TYPE IF EXISTS ae.tree CASCADE;
 
 CREATE TYPE ae.tree AS (
   level bigint,
@@ -11,7 +11,7 @@ CREATE TYPE ae.tree AS (
   menu_type text
 );
 
-CREATE OR REPLACE FUNCTION ae.tree_function (url text[])
+CREATE OR REPLACE FUNCTION ae.tree_function (active_url text[])
   RETURNS SETOF ae.tree
   AS $$
   WITH tree_categories AS (
@@ -78,7 +78,7 @@ taxonomies AS (
       ae.taxonomy tax
       INNER JOIN ae.tree_category cat ON tax.tree_category = cat.id
     WHERE
-      array_to_string(url, '/')
+      array_to_string(active_url, '/')
       LIKE replace(cat.name, '/', '|') || '%'
 ),
 objects AS (
@@ -110,7 +110,7 @@ objects AS (
     INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
   WHERE
     o.parent_id IS NULL
-    AND array_to_string(url, '/')
+    AND array_to_string(active_url, '/')
     LIKE concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id) || '%'
   UNION ALL
   SELECT
@@ -137,7 +137,7 @@ FROM
   JOIN a ON a.id = o.parent_id
   WHERE
     a.level <= 10
-    AND array_to_string(url, '/')
+    AND array_to_string(active_url, '/')
     LIKE array_to_string(a.url, '/') || '%'
 )
   SELECT
@@ -183,7 +183,7 @@ pcs AS (
     ae.property_collection pc
     INNER JOIN ae.tree_category cat ON cat.id = '33744e59-1942-4341-8b2d-088d4ac96434'
   WHERE
-    array_to_string(url, '/')
+    array_to_string(active_url, '/')
     LIKE replace(cat.name, '/', '|') || '%'
   ORDER BY
     pc.name
@@ -233,7 +233,7 @@ FROM
     VALUES ('pc'),
       ('rel')) AS folders (name) ON folders.name IN ('pc', 'rel')
   WHERE
-    array_to_string(url, '/')
+    array_to_string(active_url, '/')
     LIKE concat(array_to_string(pcs.url, '/'), '%')
   ORDER BY
     CASE WHEN folders.name = 'pc' THEN

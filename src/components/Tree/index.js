@@ -10,8 +10,8 @@ import Snackbar from '@mui/material/Snackbar'
 import { useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
-import { FixedSizeTree } from 'react-vtree'
 import AutoSizer from 'react-virtualized-auto-sizer'
+import { FixedSizeList as List } from 'react-window'
 
 import Row from './Row'
 import Filter from './Filter'
@@ -26,7 +26,7 @@ import CmPCFolder from './contextmenu/PCFolder'
 import CmPC from './contextmenu/PC'
 import storeContext from '../../storeContext'
 import ErrorBoundary from '../shared/ErrorBoundary'
-import buildLevel1Nodes from './nodes/level1'
+import buildTreeNodes from './nodes/tree'
 
 const ErrorContainer = styled.div`
   padding: 24px;
@@ -132,32 +132,27 @@ const StyledSnackbar = styled(Snackbar)`
     flex-grow: 0;
   }
 `
-const StyledTree = styled(FixedSizeTree)`
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px !important;
+const StyledList = styled(List)`
+  overflow-x: hidden !important;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  /* hide native scrollbar */
+  &::-webkit-scrollbar {
+    width: 1px;
   }
-  ::-webkit-scrollbar-thumb {
-    border-radius: 4px;
-    box-shadow: inset 0 0 7px #e65100;
-  }
-  ::-webkit-scrollbar-track {
-    border-radius: 1rem;
+  &::-webkit-scrollbar-track {
+    background: transparent;
     box-shadow: none;
   }
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    box-shadow: none;
+  }
+  /* &::-webkit-scrollbar-thumb:hover {
+    background: '#6B2500';
+  } */
 `
-
-const getNodeData = ({ node, nestingLevel }) => ({
-  data: {
-    ...node,
-    id: node.id.toString(), // mandatory
-    isLeaf: node?.childrenCount === 0,
-    isOpenByDefault: true, // mandatory
-    nestingLevel,
-  },
-  nestingLevel,
-  node,
-})
 
 const TreeComponent = () => {
   const store = useContext(storeContext)
@@ -171,15 +166,14 @@ const TreeComponent = () => {
     treeData: undefined,
     error: undefined,
     loading: true,
-    nodes: buildLevel1Nodes({
+    nodes: buildTreeNodes({
       treeData: undefined,
-      loading: true,
-      activeNodeArray,
-      store,
     }),
   })
 
   const { treeData, error, loading, nodes } = data
+  console.log('tree, treeData.treeFunction:', treeData?.treeFunction?.nodes)
+  console.log('tree, nodes:', nodes)
 
   const listRef = useRef(null)
   useEffect(() => {
@@ -189,12 +183,14 @@ const TreeComponent = () => {
   const userId = treeData?.userByName?.id
 
   useEffect(() => {
+    console.log('Tree, activeNodeArray:', activeNodeArray.slice())
     client
       .query({
         query: treeQuery,
         variables: {
           ...treeQueryVariables({ activeNodeArray, store }),
           username: login.username ?? 'no_user_with_this_name_exists',
+          url: activeNodeArray.slice().filter((n) => n !== 0),
         },
       })
       .then(({ data: treeData, loading, error }) =>
@@ -202,48 +198,12 @@ const TreeComponent = () => {
           treeData,
           error,
           loading,
-          nodes: buildLevel1Nodes({
+          nodes: buildTreeNodes({
             treeData,
-            loading,
-            activeNodeArray,
-            store,
           }),
         }),
       )
   }, [activeNodeArray, client, login.username, store])
-
-  const treeWalker = useCallback(
-    function* treeWalker() {
-      // Step [1]: Define the root node of our tree. There can be one or
-      // multiple nodes.
-      for (let i = 0; i < nodes.length; i++) {
-        yield getNodeData({
-          node: nodes[i],
-          nestingLevel: 0,
-          client,
-          nodes,
-        })
-      }
-
-      while (true) {
-        // Step [2]: Get the parent component back. It will be the object
-        // the `getNodeData` function constructed, so you can read any data from it.
-        const parent = yield
-
-        for (let i = 0; i < parent.node.children.length; i++) {
-          // Step [3]: Yielding all the children of the provided component. Then we
-          // will return for the step [2] with the first children.
-          yield getNodeData({
-            node: parent.node.children[i],
-            nestingLevel: parent.nestingLevel + 1,
-            client,
-            nodes,
-          })
-        }
-      }
-    },
-    [client, nodes],
-  )
 
   const userRoles = (
     treeData?.userByName?.organizationUsersByUserId?.nodes ?? []
@@ -263,18 +223,23 @@ const TreeComponent = () => {
         <Filter />
         <AutoSizer>
           {({ height, width }) => (
-            <StyledTree
-              treeWalker={treeWalker}
+            <StyledList
+              height={height}
+              itemCount={nodes.length}
               itemSize={23}
-              height={height - 38}
               width={width}
-              async={true}
-              ref={listRef}
             >
-              {(props) => (
-                <Row style={props.style} data={props.data} userId={userId} />
+              {({ index, style }) => (
+                <Row
+                  key={index}
+                  style={style}
+                  index={index}
+                  data={nodes[index]}
+                  //treeRefetch={treeRefetch}
+                  userId={userId}
+                />
               )}
-            </StyledTree>
+            </StyledList>
           )}
         </AutoSizer>
         <StyledSnackbar open={loading} message="lade Daten..." />
