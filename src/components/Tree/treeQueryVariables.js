@@ -7,7 +7,7 @@ const treeQueryVariables = (store) => {
     existsLevel2Benutzer:
       activeNodeArray[0] === 'Benutzer' && !!store.login.token,
     username: store.login.username ?? 'no_user_with_this_name_exists',
-    url: activeNodeArray,
+    url: activeNodeArray.filter((n) => n !== 0),
   }
 }
 

@@ -4,8 +4,11 @@ import Snackbar from '@mui/material/Snackbar'
 import { useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
-import AutoSizer from 'react-virtualized-auto-sizer'
 import { FixedSizeList as List } from 'react-window'
+import SimpleBar from 'simplebar-react'
+import findIndex from 'lodash/findIndex'
+import isEqual from 'lodash/isEqual'
+import { useResizeDetector } from 'react-resize-detector'
 
 import Row from './Row'
 import Filter from './Filter'
@@ -20,6 +23,9 @@ import CmPC from './contextmenu/PC'
 import storeContext from '../../storeContext'
 import ErrorBoundary from '../shared/ErrorBoundary'
 import getTreeDataVariables from './treeQueryVariables'
+import getConstants from '../../modules/constants'
+
+const constants = getConstants()
 
 const ErrorContainer = styled.div`
   padding: 24px;
@@ -114,6 +120,10 @@ const Container = styled.div`
     bottom: 3px;
   }
 `
+const AutoSizerContainer = styled.div`
+  height: calc(100vh - ${constants.appBarHeight}px - 39px);
+  padding: 0;
+`
 const StyledSnackbar = styled(Snackbar)`
   div {
     min-width: auto;
@@ -152,6 +162,17 @@ const TreeComponent = () => {
   const { login } = store
   const activeNodeArray = getSnapshot(store.activeNodeArray)
 
+  const {
+    height = 250,
+    width = 250,
+    ref: sizeRef,
+  } = useResizeDetector({
+    refreshMode: 'debounce',
+    refreshRate: 500,
+    refreshOptions: { leading: true },
+  })
+  console.log('height:', height)
+
   const client = useApolloClient()
 
   const [data, setData] = useState({
@@ -164,8 +185,12 @@ const TreeComponent = () => {
   const { treeData, error, loading, nodes } = data
 
   const listRef = useRef(null)
+
   useEffect(() => {
-    listRef?.current?.scrollToItem(activeNodeArray?.at(-1))
+    const index = findIndex(nodes, (node) => isEqual(node.url, activeNodeArray))
+    listRef.current &&
+      listRef.current.scrollToItem &&
+      listRef.current.scrollToItem(index)
   }, [activeNodeArray, nodes])
 
   const userId = treeData?.userByName?.id
@@ -202,27 +227,39 @@ const TreeComponent = () => {
     <ErrorBoundary>
       <Container>
         <Filter />
-        <AutoSizer>
-          {({ height, width }) => (
-            <StyledList
-              height={height}
-              itemCount={nodes.length}
-              itemSize={23}
-              width={width}
-            >
-              {({ index, style }) => (
-                <Row
-                  key={index}
-                  style={style}
-                  index={index}
-                  data={nodes[index]}
-                  //treeRefetch={treeRefetch}
-                  userId={userId}
-                />
-              )}
-            </StyledList>
-          )}
-        </AutoSizer>
+        <SimpleBar
+          style={{
+            height: `calc(100vh - ${constants.appBarHeight}px - 39px)`,
+            flex: '1 1 auto',
+            overflowY: 'auto',
+          }}
+        >
+          {({ scrollableNodeRef, contentNodeRef }) => {
+            return (
+              <AutoSizerContainer ref={sizeRef}>
+                <StyledList
+                  height={height}
+                  itemCount={nodes.length}
+                  itemSize={23}
+                  width={width}
+                  ref={listRef}
+                  innerRef={contentNodeRef}
+                  outerRef={scrollableNodeRef}
+                >
+                  {({ index, style }) => (
+                    <Row
+                      key={index}
+                      style={style}
+                      index={index}
+                      data={nodes[index]}
+                      userId={userId}
+                    />
+                  )}
+                </StyledList>
+              </AutoSizerContainer>
+            )
+          }}
+        </SimpleBar>
         <StyledSnackbar open={loading} message="lade Daten..." />
         <CmBenutzerFolder />
         <CmBenutzer />
