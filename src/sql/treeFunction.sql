@@ -78,8 +78,7 @@ taxonomies AS (
       ae.taxonomy tax
       INNER JOIN ae.tree_category cat ON tax.tree_category = cat.id
     WHERE
-      array_to_string(active_url, '/')
-      LIKE replace(cat.name, '/', '|') || '%'
+      active_url @> ARRAY[cat.name]
 ),
 objects AS (
   WITH RECURSIVE a AS (
@@ -110,8 +109,8 @@ objects AS (
     INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
   WHERE
     o.parent_id IS NULL
-    AND array_to_string(active_url, '/')
-    LIKE concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id) || '%'
+    AND active_url @> ARRAY[cat.name,
+    ae.taxonomy.id::text]
   UNION ALL
   SELECT
     o.id,
@@ -137,8 +136,7 @@ FROM
   JOIN a ON a.id = o.parent_id
   WHERE
     a.level <= 10
-    AND array_to_string(active_url, '/')
-    LIKE array_to_string(a.url, '/') || '%'
+    AND active_url @> a.url
 )
   SELECT
     level,
@@ -165,28 +163,27 @@ pcs AS (
     pc.id::text] AS url,
     ARRAY[cat.sort::text,
     pc.name] AS sort,
-    --concat(cat.sort, '/', pc.name) AS sort,
     (
       SELECT
         count(*)
-        FROM ae.property_collection_object
+      FROM
+        ae.property_collection_object
       WHERE
         property_collection_id = pc.id) + (
-      SELECT
-        count(*)
-      FROM
-        ae.relation
-      WHERE
-        property_collection_id = pc.id) AS children_count,
-    'CmPC' AS menu_type
-  FROM
-    ae.property_collection pc
-    INNER JOIN ae.tree_category cat ON cat.id = '33744e59-1942-4341-8b2d-088d4ac96434'
-  WHERE
-    array_to_string(active_url, '/')
-    LIKE replace(cat.name, '/', '|') || '%'
-  ORDER BY
-    pc.name
+        SELECT
+          count(*)
+        FROM
+          ae.relation
+        WHERE
+          property_collection_id = pc.id) AS children_count,
+      'CmPC' AS menu_type
+    FROM
+      ae.property_collection pc
+      INNER JOIN ae.tree_category cat ON cat.id = '33744e59-1942-4341-8b2d-088d4ac96434'
+    WHERE
+      active_url @> ARRAY[cat.name]
+    ORDER BY
+      pc.name
 ),
 pcs_folders AS (
   SELECT
@@ -199,42 +196,45 @@ pcs_folders AS (
     ELSE
       'Beziehungen'
     END AS name,
-    array_append(pcs.url, folders.name) AS url,
-  CASE WHEN folders.name = 'pc' THEN
-    array_append(pcs.sort, '1')
-  ELSE
-    array_append(pcs.sort, '2')
-  END AS sort,
-  CASE WHEN folders.name = 'pc' THEN
-  (
-    SELECT
-      count(*)
-    FROM
-      ae.property_collection_object
-    WHERE
-      property_collection_id = pcs.id)
-  ELSE
+    CASE WHEN folders.name = 'pc' THEN
+      array_append(pcs.url, 'Eigenschaften')
+    ELSE
+      array_append(pcs.url, 'Beziehungen')
+    END AS url,
+    CASE WHEN folders.name = 'pc' THEN
+      array_append(pcs.sort, '1')
+    ELSE
+      array_append(pcs.sort, '2')
+    END AS sort,
+    CASE WHEN folders.name = 'pc' THEN
     (
       SELECT
         count(*)
       FROM
-        ae.relation
+        ae.property_collection_object
       WHERE
         property_collection_id = pcs.id)
-  END AS children_count,
-  CASE WHEN folders.name = 'pc' THEN
-    'pCProperties'
-  ELSE
-    'pCRelations'
-  END AS menu_type
-FROM
-  pcs
-  INNER JOIN (
-    VALUES ('pc'),
-      ('rel')) AS folders (name) ON folders.name IN ('pc', 'rel')
+    ELSE
+      (
+        SELECT
+          count(*)
+        FROM
+          ae.relation
+        WHERE
+          property_collection_id = pcs.id)
+    END AS children_count,
+    CASE WHEN folders.name = 'pc' THEN
+      'pCProperties'
+    ELSE
+      'pCRelations'
+    END AS menu_type
+  FROM
+    pcs
+    INNER JOIN (
+      VALUES ('pc'),
+        ('rel')) AS folders (name) ON folders.name IN ('pc', 'rel')
   WHERE
-    array_to_string(active_url, '/')
-    LIKE concat(array_to_string(pcs.url, '/'), '%')
+    active_url @> pcs.url
   ORDER BY
     CASE WHEN folders.name = 'pc' THEN
       1
@@ -325,14 +325,14 @@ sorted AS (
     url,
     sort,
     array_to_string(sort, '/') AS sort_string,
-  children_count,
-  info,
-  menu_type
-FROM
-  unioned
-ORDER BY
-  cat_sort,
-  sort_string
+    children_count,
+    info,
+    menu_type
+  FROM
+    unioned
+  ORDER BY
+    cat_sort,
+    sort_string
 )
 SELECT
   level,
