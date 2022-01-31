@@ -32,10 +32,7 @@ WITH constants (
 ),
 tree_categories AS (
   SELECT
-    id, name, NULL::uuid AS parent_id, 1::bigint AS level, name AS category, replace(name, '/', '|') AS url,
-    sort AS cat_sort,
-    sort,
-    CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
+    id, name, NULL::uuid AS parent_id, 1::bigint AS level, name AS category, ARRAY[name] AS url, sort AS cat_sort, sort, CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
     (
       SELECT
         count(id)
@@ -68,26 +65,29 @@ taxonomies AS (
     tax.tree_category AS parent_id,
     2::bigint AS level,
     cat.name AS category,
-    concat(replace(cat.name, '/', '|'), '/', tax.id) AS url,
+    ARRAY[cat.name,
+    tax.id::text] AS url,
     cat.sort AS cat_sort,
     ARRAY[cat.name,
     tax.name] AS sort,
-    --concat(replace(cat.name, '/', '|'), '/', tax.name) AS sort,
     (
       SELECT
         count(ae.object.id)
-        FROM ae.object
+      FROM
+        ae.object
         INNER JOIN ae.taxonomy ON ae.object.taxonomy_id = ae.taxonomy.id
       WHERE
         ae.object.parent_id IS NULL
-        AND ae.object.taxonomy_id = tax.id GROUP BY ae.taxonomy.id) AS children_count,
-    'CmTaxonomy' AS menu_type
-  FROM
-    ae.taxonomy tax
-    INNER JOIN ae.tree_category cat ON tax.tree_category = cat.id,
-    constants c
-  WHERE
-    c.active_url LIKE replace(cat.name, '/', '|') || '%'
+        AND ae.object.taxonomy_id = tax.id
+      GROUP BY
+        ae.taxonomy.id) AS children_count,
+      'CmTaxonomy' AS menu_type
+    FROM
+      ae.taxonomy tax
+      INNER JOIN ae.tree_category cat ON tax.tree_category = cat.id,
+      constants c
+    WHERE
+      c.active_url LIKE replace(cat.name, '/', '|') || '%'
 ),
 objects AS (
   WITH RECURSIVE a AS (
@@ -98,7 +98,9 @@ objects AS (
       3::bigint AS level,
       cat.name AS category,
       cat.sort AS cat_sort,
-      concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id, '/', o.id) AS url,
+      ARRAY[cat.name,
+      ae.taxonomy.id::text,
+      o.id::text] AS url,
       ARRAY[cat.name,
       ae.taxonomy.name,
       o.name] AS sort,
@@ -109,42 +111,42 @@ objects AS (
           FROM ae.object
         WHERE
           ae.object.parent_id = o.id) AS children_count,
-      'CmObject' AS menu_type
-    FROM
-      ae.object o
-      INNER JOIN ae.taxonomy
-      INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id,
-      constants c
-    WHERE
-      o.parent_id IS NULL
-      AND c.active_url LIKE concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id) || '%'
-    UNION ALL
-    SELECT
-      o.id,
-      o.name,
-      o.parent_id,
-      a.level + 1,
-      cat.name AS category,
-      cat.sort AS cat_sort,
-      concat(a.url, '/', o.id) AS url,
-    array_append(a.sort, o.name) AS sort,
-    --concat(a.sort, '/', replace(o.name, '/', '|')) AS sort,
-    (
-      SELECT
-        count(ae.object.id)
-        FROM ae.object
-      WHERE
-        ae.object.parent_id = o.id) AS children_count,
     'CmObject' AS menu_type
   FROM
     ae.object o
     INNER JOIN ae.taxonomy
-    INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
-    JOIN a ON a.id = o.parent_id,
+    INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id,
     constants c
   WHERE
+    o.parent_id IS NULL
+    AND c.active_url LIKE concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id) || '%'
+  UNION ALL
+  SELECT
+    o.id,
+    o.name,
+    o.parent_id,
+    a.level + 1,
+    cat.name AS category,
+    cat.sort AS cat_sort,
+    array_append(a.url, o.id::text) AS url,
+    array_append(a.sort, o.name) AS sort,
+  (
+    SELECT
+      count(ae.object.id)
+    FROM
+      ae.object
+    WHERE
+      ae.object.parent_id = o.id) AS children_count,
+  'CmObject' AS menu_type
+FROM
+  ae.object o
+  INNER JOIN ae.taxonomy
+  INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
+  JOIN a ON a.id = o.parent_id,
+  constants c
+  WHERE
     a.level <= 10
-    AND c.active_url LIKE a.url || '%'
+    AND c.active_url LIKE array_to_string(a.url, '/') || '%'
 )
   SELECT
     level,
@@ -167,7 +169,8 @@ pcs AS (
     pc.id,
     cat.id AS parent_id,
     pc.name,
-    concat(replace(cat.name, '/', '|'), '/', pc.id) AS url,
+    ARRAY[cat.name,
+    pc.id::text] AS url,
     ARRAY[cat.sort::text,
     pc.name] AS sort,
     --concat(cat.sort, '/', pc.name) AS sort,
@@ -204,12 +207,10 @@ pcs_folders AS (
     ELSE
       'Beziehungen'
     END AS name,
-    concat(pcs.url, '/', folders.name) AS url,
+    array_append(pcs.url, folders.name) AS url,
   CASE WHEN folders.name = 'pc' THEN
-    --concat(pcs.sort, '/1')
     array_append(pcs.sort, '1')
   ELSE
-    --concat(pcs.sort, '/2')
     array_append(pcs.sort, '2')
   END AS sort,
   CASE WHEN folders.name = 'pc' THEN
@@ -241,7 +242,7 @@ FROM
       ('rel')) AS folders (name) ON folders.name IN ('pc', 'rel'),
     constants c
   WHERE
-    c.active_url LIKE concat(pcs.url, '%')
+    c.active_url LIKE concat(array_to_string(pcs.url, '/'), '%')
   ORDER BY
     CASE WHEN folders.name = 'pc' THEN
       1
