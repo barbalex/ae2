@@ -1,54 +1,14 @@
-const treeDataVariables = ({ activeNodeArray, store }) => {
-  const existsLrTaxonomies =
-    activeNodeArray.length > 0 && activeNodeArray[0] === 'Lebensräume'
-  const existsArtenTaxonomies =
-    activeNodeArray.length > 0 && activeNodeArray[0] === 'Arten'
-  const existsLevel1 = activeNodeArray.length > 0
-  const existsLevel2Pc =
-    existsLevel1 &&
-    activeNodeArray[0] === 'Eigenschaften-Sammlungen' &&
-    activeNodeArray.length > 0
-  const existsLevel2Taxonomy =
-    activeNodeArray.length > 1 &&
-    activeNodeArray[1] !== 0 && // dont know why but this happens
-    ['Arten', 'Lebensräume'].includes(activeNodeArray[0])
-  const level2Taxonomy = existsLevel2Taxonomy
-    ? activeNodeArray[1]
-    : '99999999-9999-9999-9999-999999999999'
-  const existsLevel2Benutzer =
-    activeNodeArray[0] === 'Benutzer' && !!store.login.token
-  const existsLevel3Object =
-    activeNodeArray.length > 2 &&
-    ['Arten', 'Lebensräume'].includes(activeNodeArray[0])
-  const existsLevel4Object = activeNodeArray.length > 3
-  const existsLevel5Object = activeNodeArray.length > 4
-  const existsLevel6Object = activeNodeArray.length > 5
-  const existsLevel7Object = activeNodeArray.length > 6
-  const existsLevel8Object = activeNodeArray.length > 7
-  const existsLevel9Object = activeNodeArray.length > 8
-  let pCId = '99999999-9999-9999-9999-999999999999'
-  if (activeNodeArray[0] === 'Eigenschaften-Sammlungen' && activeNodeArray[1]) {
-    pCId = activeNodeArray[1]
-  }
-  const existsPCId = pCId !== '99999999-9999-9999-9999-999999999999'
+import { getSnapshot } from 'mobx-state-tree'
+
+const treeQueryVariables = (store) => {
+  const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   return {
-    existsLrTaxonomies,
-    existsArtenTaxonomies,
-    existsLevel2Pc,
-    existsLevel2Taxonomy,
-    level2Taxonomy,
-    existsLevel2Benutzer,
-    existsLevel3Object,
-    existsLevel4Object,
-    existsLevel5Object,
-    existsLevel6Object,
-    existsLevel7Object,
-    existsLevel8Object,
-    existsLevel9Object,
-    pCId,
-    existsPCId,
+    existsLevel2Benutzer:
+      activeNodeArray[0] === 'Benutzer' && !!store.login.token,
+    username: store.login.username ?? 'no_user_with_this_name_exists',
+    url: activeNodeArray,
   }
 }
 
-export default treeDataVariables
+export default treeQueryVariables

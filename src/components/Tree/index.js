@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useContext,
-  useCallback,
-  useEffect,
-  useRef,
-} from 'react'
+import React, { useState, useContext, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import Snackbar from '@mui/material/Snackbar'
 import { useApolloClient } from '@apollo/client'
@@ -16,7 +10,6 @@ import { FixedSizeList as List } from 'react-window'
 import Row from './Row'
 import Filter from './Filter'
 import treeQuery from './treeQuery'
-import treeQueryVariables from './treeQueryVariables'
 import CmBenutzerFolder from './contextmenu/BenutzerFolder'
 import CmBenutzer from './contextmenu/Benutzer'
 import CmObject from './contextmenu/Object'
@@ -26,7 +19,7 @@ import CmPCFolder from './contextmenu/PCFolder'
 import CmPC from './contextmenu/PC'
 import storeContext from '../../storeContext'
 import ErrorBoundary from '../shared/ErrorBoundary'
-import buildTreeNodes from './nodes/tree'
+import getTreeDataVariables from './treeQueryVariables'
 
 const ErrorContainer = styled.div`
   padding: 24px;
@@ -158,7 +151,6 @@ const TreeComponent = () => {
   const store = useContext(storeContext)
   const { login } = store
   const activeNodeArray = getSnapshot(store.activeNodeArray)
-  //const activeNodeArray = store.activeNodeArray.slice()
 
   const client = useApolloClient()
 
@@ -166,14 +158,10 @@ const TreeComponent = () => {
     treeData: undefined,
     error: undefined,
     loading: true,
-    nodes: buildTreeNodes({
-      treeData: undefined,
-    }),
+    nodes: [],
   })
 
   const { treeData, error, loading, nodes } = data
-  console.log('tree, treeData.treeFunction:', treeData?.treeFunction?.nodes)
-  console.log('tree, nodes:', nodes)
 
   const listRef = useRef(null)
   useEffect(() => {
@@ -183,27 +171,20 @@ const TreeComponent = () => {
   const userId = treeData?.userByName?.id
 
   useEffect(() => {
-    console.log('Tree, activeNodeArray:', activeNodeArray.slice())
     client
       .query({
         query: treeQuery,
-        variables: {
-          ...treeQueryVariables({ activeNodeArray, store }),
-          username: login.username ?? 'no_user_with_this_name_exists',
-          url: activeNodeArray.slice().filter((n) => n !== 0),
-        },
+        variables: getTreeDataVariables(store),
       })
       .then(({ data: treeData, loading, error }) =>
         setData({
           treeData,
           error,
           loading,
-          nodes: buildTreeNodes({
-            treeData,
-          }),
+          nodes: treeData?.treeFunction?.nodes ?? [],
         }),
       )
-  }, [activeNodeArray, client, login.username, store])
+  }, [activeNodeArray, client, login.username, login.token, store])
 
   const userRoles = (
     treeData?.userByName?.organizationUsersByUserId?.nodes ?? []
