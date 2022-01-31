@@ -208,10 +208,23 @@ pcs_folders AS (
   ELSE
     concat(pcs.sort, '/2')
   END AS sort,
-  -- TODO:
-  0 AS children_count,
-  -- TODO:
-  '0' AS info,
+  CASE WHEN folders.name = 'pc' THEN
+  (
+    SELECT
+      count(*)
+    FROM
+      ae.property_collection_object
+    WHERE
+      property_collection_id = pcs.id)
+  ELSE
+    (
+      SELECT
+        count(*)
+      FROM
+        ae.relation
+      WHERE
+        property_collection_id = pcs.id)
+  END AS children_count,
   CASE WHEN folders.name = 'pc' THEN
     'pCProperties'
   ELSE
