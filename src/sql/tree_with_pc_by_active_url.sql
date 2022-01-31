@@ -52,7 +52,12 @@ tree_categories AS (
           tax.tree_category = cat.id
         GROUP BY
           tree_category.id)
-    END AS children_count
+    END AS children_count,
+    CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
+      'CmPCFolder'
+    ELSE
+      'CmType'
+    END AS menu_type
   FROM
     ae.tree_category cat
 ),
@@ -76,7 +81,8 @@ taxonomies AS (
       ae.object.parent_id IS NULL
       AND ae.object.taxonomy_id = tax.id
     GROUP BY
-      ae.taxonomy.id) AS children_count
+      ae.taxonomy.id) AS children_count,
+  'CmTaxonomy' AS menu_type
 FROM
   ae.taxonomy tax
   INNER JOIN ae.tree_category cat ON tax.tree_category = cat.id,
@@ -101,7 +107,8 @@ objects AS (
       FROM
         ae.object
       WHERE
-        ae.object.parent_id = o.id) AS children_count
+        ae.object.parent_id = o.id) AS children_count,
+      'CmObject' AS menu_type
     FROM
       ae.object o
       INNER JOIN ae.taxonomy
@@ -126,7 +133,8 @@ objects AS (
         FROM
           ae.object
         WHERE
-          ae.object.parent_id = o.id) AS children_count
+          ae.object.parent_id = o.id) AS children_count,
+        'CmObject' AS menu_type
       FROM
         ae.object o
         INNER JOIN ae.taxonomy
@@ -146,7 +154,8 @@ objects AS (
         parent_id,
         url,
         sort,
-        children_count
+        children_count,
+        menu_type
       FROM
         a
 ),
@@ -171,69 +180,145 @@ pcs AS (
         FROM
           ae.relation
         WHERE
-          property_collection_id = pc.id) AS children_count
+          property_collection_id = pc.id) AS children_count,
+      'CmPC' AS menu_type
     FROM
       ae.property_collection pc
-      INNER JOIN ae.tree_category cat ON cat.id = '33744e59-1942-4341-8b2d-088d4ac96434'
+      INNER JOIN ae.tree_category cat ON cat.id = '33744e59-1942-4341-8b2d-088d4ac96434',
+      constants c
+    WHERE
+      c.active_url LIKE replace(cat.name, '/', '|') || '%'
     ORDER BY
       pc.name
+),
+pcs_folders AS (
+  SELECT
+    3 AS level,
+    pcs.cat_sort AS cat_sort,
+    pcs.id || '_folder' AS id,
+    pcs.id AS parent_id,
+    CASE WHEN folders.name = 'pc' THEN
+      'Eigenschaften'
+    ELSE
+      'Beziehungen'
+    END AS name,
+    concat(pcs.url, '/', folders.name) AS url,
+  CASE WHEN folders.name = 'pc' THEN
+    concat(pcs.sort, '/1')
+  ELSE
+    concat(pcs.sort, '/2')
+  END AS sort,
+  -- TODO:
+  0 AS children_count,
+  -- TODO:
+  '0' AS info,
+  CASE WHEN folders.name = 'pc' THEN
+    'pCProperties'
+  ELSE
+    'pCRelations'
+  END AS menu_type
+FROM
+  pcs
+  INNER JOIN (
+    VALUES ('pc'),
+      ('rel')) AS folders (name) ON folders.name IN ('pc', 'rel'),
+    constants c
+  WHERE
+    c.active_url LIKE concat(pcs.url, '%')
+  ORDER BY
+    CASE WHEN folders.name = 'pc' THEN
+      1
+    ELSE
+      2
+    END
+),
+unioned AS (
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    parent_id,
+    url,
+    sort,
+    children_count,
+    children_count::text AS info,
+    menu_type
+  FROM
+    pcs_folders
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    parent_id,
+    url,
+    sort,
+    children_count,
+    children_count::text AS info,
+    menu_type
+  FROM
+    pcs
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    parent_id,
+    url,
+    sort,
+    children_count,
+    children_count::text AS info,
+    menu_type
+  FROM
+    objects
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    parent_id,
+    url,
+    sort,
+    children_count,
+    children_count::text AS info,
+    menu_type
+  FROM
+    taxonomies
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    parent_id,
+    url,
+    sort,
+    children_count,
+    CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
+      children_count::text
+    ELSE
+      children_count::text || ' Taxonomien'
+    END AS info,
+    menu_type
+  FROM
+    tree_categories
+  ORDER BY
+    cat_sort,
+    sort
 )
 SELECT
   level,
-  cat_sort,
-  name,
+  name AS label,
   id,
-  parent_id,
   url,
   sort,
   children_count,
-  children_count::text AS info
+  info,
+  menu_type
 FROM
-  pcs
-UNION ALL
-SELECT
-  level,
-  cat_sort,
-  name,
-  id,
-  parent_id,
-  url,
-  sort,
-  children_count,
-  children_count::text AS info
-FROM
-  objects
-UNION ALL
-SELECT
-  level,
-  cat_sort,
-  name,
-  id,
-  parent_id,
-  url,
-  sort,
-  children_count,
-  children_count::text AS info
-FROM
-  taxonomies
-UNION ALL
-SELECT
-  level,
-  cat_sort,
-  name,
-  id,
-  parent_id,
-  url,
-  sort,
-  children_count,
-  CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
-    children_count::text
-  ELSE
-    children_count::text || ' Taxonomien'
-  END AS info
-FROM
-  tree_categories
-ORDER BY
-  cat_sort,
-  sort;
+  unioned;
 
