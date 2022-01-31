@@ -95,45 +95,45 @@ objects AS (
       ARRAY[cat.name,
       ae.taxonomy.name,
       o.name] AS sort,
-      --concat(replace(cat.name, '/', '|'), '/', replace(ae.taxonomy.name, '/', '|'), '/', replace(o.name, '/', '|')) AS sort,
       (
         SELECT
           count(ae.object.id)
-          FROM ae.object
+        FROM
+          ae.object
         WHERE
           ae.object.parent_id = o.id) AS children_count,
+      'CmObject' AS menu_type
+    FROM
+      ae.object o
+      INNER JOIN ae.taxonomy
+      INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
+    WHERE
+      o.parent_id IS NULL
+      AND active_url @> ARRAY[cat.name,
+      ae.taxonomy.id::text]
+    UNION ALL
+    SELECT
+      o.id,
+      o.name,
+      o.parent_id,
+      a.level + 1,
+      cat.name AS category,
+      cat.sort AS cat_sort,
+      array_append(a.url, o.id::text) AS url,
+      array_append(a.sort, o.name) AS sort,
+    (
+      SELECT
+        count(ae.object.id)
+      FROM
+        ae.object
+      WHERE
+        ae.object.parent_id = o.id) AS children_count,
     'CmObject' AS menu_type
   FROM
     ae.object o
     INNER JOIN ae.taxonomy
     INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
-  WHERE
-    o.parent_id IS NULL
-    AND active_url @> ARRAY[cat.name,
-    ae.taxonomy.id::text]
-  UNION ALL
-  SELECT
-    o.id,
-    o.name,
-    o.parent_id,
-    a.level + 1,
-    cat.name AS category,
-    cat.sort AS cat_sort,
-    array_append(a.url, o.id::text) AS url,
-    array_append(a.sort, o.name) AS sort,
-  (
-    SELECT
-      count(ae.object.id)
-    FROM
-      ae.object
-    WHERE
-      ae.object.parent_id = o.id) AS children_count,
-  'CmObject' AS menu_type
-FROM
-  ae.object o
-  INNER JOIN ae.taxonomy
-  INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
-  JOIN a ON a.id = o.parent_id
+    JOIN a ON a.id = o.parent_id
   WHERE
     a.level <= 10
     AND active_url @> a.url
@@ -191,22 +191,22 @@ pcs_folders AS (
     pcs.cat_sort AS cat_sort,
     pcs.id || '_folder' AS id,
     pcs.id AS parent_id,
-    CASE WHEN folders.name = 'pc' THEN
+    CASE WHEN folders.name LIKE 'pc' THEN
       'Eigenschaften'
     ELSE
       'Beziehungen'
     END AS name,
-    CASE WHEN folders.name = 'pc' THEN
+    CASE WHEN folders.name LIKE 'pc' THEN
       array_append(pcs.url, 'Eigenschaften')
     ELSE
       array_append(pcs.url, 'Beziehungen')
     END AS url,
-    CASE WHEN folders.name = 'pc' THEN
+    CASE WHEN folders.name LIKE 'pc' THEN
       array_append(pcs.sort, '1')
     ELSE
       array_append(pcs.sort, '2')
     END AS sort,
-    CASE WHEN folders.name = 'pc' THEN
+    CASE WHEN folders.name LIKE 'pc' THEN
     (
       SELECT
         count(*)
@@ -223,7 +223,7 @@ pcs_folders AS (
         WHERE
           property_collection_id = pcs.id)
     END AS children_count,
-    CASE WHEN folders.name = 'pc' THEN
+    CASE WHEN folders.name LIKE 'pc' THEN
       'pCProperties'
     ELSE
       'pCRelations'
@@ -236,7 +236,7 @@ pcs_folders AS (
   WHERE
     active_url @> pcs.url
   ORDER BY
-    CASE WHEN folders.name = 'pc' THEN
+    CASE WHEN folders.name LIKE 'pc' THEN
       1
     ELSE
       2
