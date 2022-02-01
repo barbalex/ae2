@@ -33,8 +33,8 @@ const ButtonContainer = styled.div`
 `
 
 const orgUsersQuery = gql`
-  query orgUsersQuery($name: String!) {
-    organizationByName(name: $name) {
+  query orgUsersQuery($id: UUID!) {
+    organizationById(id: $id) {
       id
       name
       organizationUsersByOrganizationId {
@@ -65,20 +65,23 @@ const OrgUsers = () => {
   const client = useApolloClient()
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
-  const name = activeNodeArray.length > 1 ? activeNodeArray[1] : 'none'
+  const id =
+    activeNodeArray.length > 1
+      ? activeNodeArray[1]
+      : '99999999-9999-9999-9999-999999999999'
   const {
     data: orgUsersData,
     loading: orgUsersLoading,
     error: orgUsersError,
   } = useQuery(orgUsersQuery, {
     variables: {
-      name,
+      id,
     },
   })
 
   const orgUsers =
-    orgUsersData?.organizationByName?.organizationUsersByOrganizationId
-      ?.nodes ?? []
+    orgUsersData?.organizationById?.organizationUsersByOrganizationId?.nodes ??
+    []
   const orgUserSorted = sortBy(
     orgUsers,
     (orgUser) =>
@@ -87,8 +90,7 @@ const OrgUsers = () => {
       }`,
   )
   const organizationId =
-    orgUsersData?.organizationByName?.id ??
-    '99999999-9999-9999-9999-999999999999'
+    orgUsersData?.organizationById?.id ?? '99999999-9999-9999-9999-999999999999'
 
   const onClickNew = useCallback(async () => {
     await client.mutate({

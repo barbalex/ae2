@@ -1,7 +1,7 @@
 {
   "name": "artdaten",
   "description": "Eigenschaften von Flora, Fauna, Moosen und Lebensräumen: Sichten, exportieren, importieren",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "author": {
     "name": "Alexander Gabriel",
     "email": "alex@gabriel-software.ch",
@@ -44,7 +44,7 @@
     "gatsby-remark-emojis": "0.4.3",
     "gatsby-remark-external-links": "0.0.4",
     "gatsby-remark-images": "6.5.2",
-    "gatsby-remark-images-medium-zoom": "1.7.0",
+    "gatsby-remark-images-medium-zoom": "1.7.1",
     "gatsby-source-filesystem": "4.5.2",
     "gatsby-transformer-remark": "5.5.2",
     "gatsby-transformer-sharp": "4.5.0",
