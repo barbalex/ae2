@@ -1,22 +1,18 @@
-import React, {
-  useState,
-  useContext,
-  useCallback,
-  useEffect,
-  useRef,
-} from 'react'
+import React, { useState, useContext, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import Snackbar from '@mui/material/Snackbar'
 import { useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
-import { FixedSizeTree } from 'react-vtree'
-import AutoSizer from 'react-virtualized-auto-sizer'
+import { FixedSizeList as List } from 'react-window'
+import SimpleBar from 'simplebar-react'
+import findIndex from 'lodash/findIndex'
+import isEqual from 'lodash/isEqual'
+import { useResizeDetector } from 'react-resize-detector'
 
 import Row from './Row'
 import Filter from './Filter'
 import treeQuery from './treeQuery'
-import treeQueryVariables from './treeQueryVariables'
 import CmBenutzerFolder from './contextmenu/BenutzerFolder'
 import CmBenutzer from './contextmenu/Benutzer'
 import CmObject from './contextmenu/Object'
@@ -26,7 +22,10 @@ import CmPCFolder from './contextmenu/PCFolder'
 import CmPC from './contextmenu/PC'
 import storeContext from '../../storeContext'
 import ErrorBoundary from '../shared/ErrorBoundary'
-import buildLevel1Nodes from './nodes/level1'
+import getTreeDataVariables from './treeQueryVariables'
+import getConstants from '../../modules/constants'
+
+const constants = getConstants()
 
 const ErrorContainer = styled.div`
   padding: 24px;
@@ -121,6 +120,10 @@ const Container = styled.div`
     bottom: 3px;
   }
 `
+const AutoSizerContainer = styled.div`
+  height: calc(100vh - ${constants.appBarHeight}px - 39px);
+  padding: 0;
+`
 const StyledSnackbar = styled(Snackbar)`
   div {
     min-width: auto;
@@ -132,38 +135,42 @@ const StyledSnackbar = styled(Snackbar)`
     flex-grow: 0;
   }
 `
-const StyledTree = styled(FixedSizeTree)`
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px !important;
+const StyledList = styled(List)`
+  overflow-x: hidden !important;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  /* hide native scrollbar */
+  &::-webkit-scrollbar {
+    width: 1px;
   }
-  ::-webkit-scrollbar-thumb {
-    border-radius: 4px;
-    box-shadow: inset 0 0 7px #e65100;
-  }
-  ::-webkit-scrollbar-track {
-    border-radius: 1rem;
+  &::-webkit-scrollbar-track {
+    background: transparent;
     box-shadow: none;
   }
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    box-shadow: none;
+  }
+  /* &::-webkit-scrollbar-thumb:hover {
+    background: '#6B2500';
+  } */
 `
-
-const getNodeData = ({ node, nestingLevel }) => ({
-  data: {
-    ...node,
-    id: node.id.toString(), // mandatory
-    isLeaf: node?.childrenCount === 0,
-    isOpenByDefault: true, // mandatory
-    nestingLevel,
-  },
-  nestingLevel,
-  node,
-})
 
 const TreeComponent = () => {
   const store = useContext(storeContext)
   const { login } = store
   const activeNodeArray = getSnapshot(store.activeNodeArray)
-  //const activeNodeArray = store.activeNodeArray.slice()
+
+  const {
+    height = 250,
+    width = 250,
+    ref: sizeRef,
+  } = useResizeDetector({
+    refreshMode: 'debounce',
+    refreshRate: 500,
+    refreshOptions: { leading: true },
+  })
 
   const client = useApolloClient()
 
@@ -171,19 +178,18 @@ const TreeComponent = () => {
     treeData: undefined,
     error: undefined,
     loading: true,
-    nodes: buildLevel1Nodes({
-      treeData: undefined,
-      loading: true,
-      activeNodeArray,
-      store,
-    }),
+    nodes: [],
   })
 
   const { treeData, error, loading, nodes } = data
 
   const listRef = useRef(null)
+
   useEffect(() => {
-    listRef?.current?.scrollToItem(activeNodeArray?.at(-1))
+    const index = findIndex(nodes, (node) => isEqual(node.url, activeNodeArray))
+    listRef.current &&
+      listRef.current.scrollToItem &&
+      listRef.current.scrollToItem(index)
   }, [activeNodeArray, nodes])
 
   const userId = treeData?.userByName?.id
@@ -192,58 +198,17 @@ const TreeComponent = () => {
     client
       .query({
         query: treeQuery,
-        variables: {
-          ...treeQueryVariables({ activeNodeArray, store }),
-          username: login.username ?? 'no_user_with_this_name_exists',
-        },
+        variables: getTreeDataVariables(store),
       })
       .then(({ data: treeData, loading, error }) =>
         setData({
           treeData,
           error,
           loading,
-          nodes: buildLevel1Nodes({
-            treeData,
-            loading,
-            activeNodeArray,
-            store,
-          }),
+          nodes: treeData?.treeFunction?.nodes ?? [],
         }),
       )
-  }, [activeNodeArray, client, login.username, store])
-
-  const treeWalker = useCallback(
-    function* treeWalker() {
-      // Step [1]: Define the root node of our tree. There can be one or
-      // multiple nodes.
-      for (let i = 0; i < nodes.length; i++) {
-        yield getNodeData({
-          node: nodes[i],
-          nestingLevel: 0,
-          client,
-          nodes,
-        })
-      }
-
-      while (true) {
-        // Step [2]: Get the parent component back. It will be the object
-        // the `getNodeData` function constructed, so you can read any data from it.
-        const parent = yield
-
-        for (let i = 0; i < parent.node.children.length; i++) {
-          // Step [3]: Yielding all the children of the provided component. Then we
-          // will return for the step [2] with the first children.
-          yield getNodeData({
-            node: parent.node.children[i],
-            nestingLevel: parent.nestingLevel + 1,
-            client,
-            nodes,
-          })
-        }
-      }
-    },
-    [client, nodes],
-  )
+  }, [activeNodeArray, client, login.username, login.token, store])
 
   const userRoles = (
     treeData?.userByName?.organizationUsersByUserId?.nodes ?? []
@@ -261,22 +226,39 @@ const TreeComponent = () => {
     <ErrorBoundary>
       <Container>
         <Filter />
-        <AutoSizer>
-          {({ height, width }) => (
-            <StyledTree
-              treeWalker={treeWalker}
-              itemSize={23}
-              height={height - 38}
-              width={width}
-              async={true}
-              ref={listRef}
-            >
-              {(props) => (
-                <Row style={props.style} data={props.data} userId={userId} />
-              )}
-            </StyledTree>
-          )}
-        </AutoSizer>
+        <SimpleBar
+          style={{
+            height: `calc(100vh - ${constants.appBarHeight}px - 39px)`,
+            flex: '1 1 auto',
+            overflowY: 'auto',
+          }}
+        >
+          {({ scrollableNodeRef, contentNodeRef }) => {
+            return (
+              <AutoSizerContainer ref={sizeRef}>
+                <StyledList
+                  height={height}
+                  itemCount={nodes.length}
+                  itemSize={23}
+                  width={width}
+                  ref={listRef}
+                  innerRef={contentNodeRef}
+                  outerRef={scrollableNodeRef}
+                >
+                  {({ index, style }) => (
+                    <Row
+                      key={index}
+                      style={style}
+                      index={index}
+                      data={nodes[index]}
+                      userId={userId}
+                    />
+                  )}
+                </StyledList>
+              </AutoSizerContainer>
+            )
+          }}
+        </SimpleBar>
         <StyledSnackbar open={loading} message="lade Daten..." />
         <CmBenutzerFolder />
         <CmBenutzer />

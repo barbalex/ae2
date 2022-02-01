@@ -30,8 +30,8 @@ const StyledA = styled.a`
 `
 
 const pcsQuery = gql`
-  query orgPCsQuery($name: String!) {
-    organizationByName(name: $name) {
+  query orgPCsQuery($id: UUID!) {
+    organizationById(id: $id) {
       id
       propertyCollectionsByOrganizationId {
         totalCount
@@ -47,7 +47,10 @@ const pcsQuery = gql`
 const PCs = () => {
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
-  const name = activeNodeArray.length > 1 ? activeNodeArray[1] : 'none'
+  const id =
+    activeNodeArray.length > 1
+      ? activeNodeArray[1]
+      : '99999999-9999-9999-9999-999999999999'
 
   const {
     data: pcsData,
@@ -55,13 +58,12 @@ const PCs = () => {
     error: pcsError,
   } = useQuery(pcsQuery, {
     variables: {
-      name,
+      id,
     },
   })
 
   const pcs = sortBy(
-    pcsData?.organizationByName?.propertyCollectionsByOrganizationId?.nodes ??
-      [],
+    pcsData?.organizationById?.propertyCollectionsByOrganizationId?.nodes ?? [],
     'name',
   )
 

@@ -15,47 +15,116 @@
  * see postgresql.org/docs/current/sql-createfunction.html
  *
  * would need to pass in activeNodeArray to create full tree?
+ *
+ * TODO: how return exactly what is shown? (openNodes)
+ * needs to be queried with help of activeUrl:
+ * - break activeUrl up into parent levels
+ * - filter: 
+ *   - this object's url equals activeUrl 
+ *   - or: this object's url minus last element equals any of activeUrl's parents 
  */
-with
-tree_categories as (
-  select id, name, null::UUID as parent_id, 1::bigint as level, name as category
-  from ae.tree_category
+WITH tree_categories AS (
+  SELECT
+    id,
+    name,
+    NULL::uuid AS parent_id,
+    1::bigint AS level,
+    name AS category,
+    replace(name, '/', '|') AS url,
+    replace(name, '/', '|') AS sort
+  FROM
+    ae.tree_category
 ),
-taxonomies as (
-  select ae.taxonomy.id, ae.taxonomy.name, ae.taxonomy.tree_category as parent_id, 2::bigint as level, ae.tree_category.name as category
-  from ae.taxonomy
-  inner join ae.tree_category
-  on ae.taxonomy.tree_category = ae.tree_category.id
+taxonomies AS (
+  SELECT
+    tax.id,
+    tax.name,
+    tax.tree_category AS parent_id,
+    2::bigint AS level,
+    cat.name AS category,
+    concat(replace(cat.name, '/', '|'), '/', tax.id) AS url,
+    concat(replace(cat.name, '/', '|'), '/', tax.name) AS sort
+  FROM
+    ae.taxonomy tax
+    INNER JOIN ae.tree_category cat ON tax.tree_category = cat.id
 ),
-objects as (
-  with recursive a as (
-    select ae.object.id, ae.object.name, ae.object.parent_id, 3::bigint as level, ae.tree_category.name as category
-    from ae.object
-    inner join ae.taxonomy
-      inner join ae.tree_category
-      on ae.taxonomy.tree_category = ae.tree_category.id
-    on ae.object.taxonomy_id = ae.taxonomy.id
-    where 
-      ae.object.parent_id is null
-    union all
-    select o.id, o.name, o.parent_id, a.level +1, ae.tree_category.name as category
-    from ae.object o
-      inner join ae.taxonomy
-        inner join ae.tree_category
-        on ae.taxonomy.tree_category = ae.tree_category.id
-      on o.taxonomy_id = ae.taxonomy.id
-    join a on a.id = o.parent_id
-    where 
+objects AS (
+  WITH RECURSIVE a AS (
+    SELECT
+      ae.object.id,
+      ae.object.name,
+      ae.object.parent_id,
+      3::bigint AS level,
+      cat.name AS category,
+      concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id, '/', ae.object.id) AS url,
+      concat(replace(cat.name, '/', '|'), '/', replace(ae.taxonomy.name, '/', '|'), '/', replace(ae.object.name, '/', '|')) AS sort
+    FROM
+      ae.object
+      INNER JOIN ae.taxonomy
+      INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON ae.object.taxonomy_id = ae.taxonomy.id
+    WHERE
+      ae.object.parent_id IS NULL
+    UNION ALL
+    SELECT
+      o.id,
+      o.name,
+      o.parent_id,
+      a.level + 1,
+      cat.name AS category,
+      concat(a.url, '/', o.id) AS url,
+      concat(a.sort, '/', replace(o.name, '/', '|')) AS sort
+    FROM
+      ae.object o
+      INNER JOIN ae.taxonomy
+      INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
+      JOIN a ON a.id = o.parent_id
+    WHERE
       a.level <= 10
-  )
-  select level, category, name, id, parent_id
-  from a
 )
-select level, category, name, id, parent_id from objects
-union all
-select level, category, name, id, parent_id from taxonomies
-union all
-select level, category, name, id, parent_id from tree_categories
--- maybe not sort to make query faster?
-order by level, category, name;
+    SELECT
+      level,
+      category,
+      name,
+      id,
+      parent_id,
+      url,
+      sort
+    FROM
+      a
+)
+  SELECT
+    level,
+    category,
+    name,
+    id,
+    parent_id,
+    url,
+    sort
+  FROM
+    objects
+  UNION ALL
+  SELECT
+    level,
+    category,
+    name,
+    id,
+    parent_id,
+    url,
+    sort
+  FROM
+    taxonomies
+  UNION ALL
+  SELECT
+    level,
+    category,
+    name,
+    id,
+    parent_id,
+    url,
+    sort
+  FROM
+    tree_categories
+    -- maybe not sort to make query faster?
+  ORDER BY
+    sort;
 

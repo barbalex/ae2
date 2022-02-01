@@ -146,7 +146,7 @@ const Row = ({ index = 0, style, data, userId }) => {
     [client, userId, store],
   )
 
-  //console.log('Row, node:', node)
+  //console.log('Row, data:', data)
 
   return (
     <div key={index} style={style}>
@@ -188,7 +188,7 @@ const Row = ({ index = 0, style, data, userId }) => {
             <TextSpan data-nodeisinactivenodepath={nodeIsInActiveNodePath}>
               {data.label}
             </TextSpan>
-            <InfoSpan>{data.info || ''}</InfoSpan>
+            <InfoSpan>{data.info ? `(${data.info})` : ''}</InfoSpan>
           </StyledNode>
         </ContextMenuTrigger>
       </ErrorBoundary>
