@@ -188,7 +188,7 @@ const Row = ({ index = 0, style, data, userId }) => {
             <TextSpan data-nodeisinactivenodepath={nodeIsInActiveNodePath}>
               {data.label}
             </TextSpan>
-            <InfoSpan>{data.info ? `(${data.info.trim()})` : ''}</InfoSpan>
+            <InfoSpan>{data.info ? `(${data.info})` : ''}</InfoSpan>
           </StyledNode>
         </ContextMenuTrigger>
       </ErrorBoundary>

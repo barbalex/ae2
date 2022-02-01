@@ -252,7 +252,7 @@ unioned AS (
     url,
     sort,
     children_count,
-    to_char(children_count, '999G999') AS info,
+    to_char(children_count, 'FM999G999') AS info,
   menu_type
 FROM
   pcs_folders
@@ -266,7 +266,7 @@ SELECT
   url,
   sort,
   children_count,
-  to_char(children_count, '999G999') AS info,
+  to_char(children_count, 'FM999G999') AS info,
   menu_type
 FROM
   pcs
@@ -280,7 +280,7 @@ SELECT
   url,
   sort,
   children_count,
-  to_char(children_count, '999G999') AS info,
+  to_char(children_count, 'FM999G999') AS info,
 menu_type
 FROM
   objects
@@ -294,7 +294,7 @@ SELECT
   url,
   sort,
   children_count,
-  to_char(children_count, '999G999') AS info,
+  to_char(children_count, 'FM999G999') AS info,
   menu_type
 FROM
   taxonomies
@@ -309,9 +309,9 @@ SELECT
   ARRAY[sort::text] AS sort,
   children_count,
   CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
-    to_char(children_count, '999G999')
+    to_char(children_count, 'FM999G999')
   ELSE
-    to_char(children_count, '999G999') || ' Taxonomien'
+    to_char(children_count, 'FM999G999') || ' Taxonomien'
   END AS info,
   menu_type
 FROM
