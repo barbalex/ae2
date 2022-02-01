@@ -1,11 +1,9 @@
 DROP TYPE IF EXISTS ae.tree CASCADE;
 
 CREATE TYPE ae.tree AS (
-  level integer,
   label text,
   id text,
   url text[],
-  sort text[],
   children_count integer,
   info text,
   menu_type text
@@ -495,11 +493,9 @@ sorted AS (
     sort_string
 )
 SELECT
-  level,
   label,
   id,
   url,
-  sort,
   children_count,
   info,
   menu_type

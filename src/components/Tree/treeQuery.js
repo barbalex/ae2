@@ -13,11 +13,9 @@ export default gql`
     }
     treeFunction(activeUrl: $url, hasToken: $hasToken) {
       nodes {
-        level
         label
         id
         url
-        sort
         childrenCount
         info
         menuType
