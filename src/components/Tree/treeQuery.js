@@ -5,6 +5,7 @@ export default gql`
     $existsLevel2Benutzer: Boolean!
     $username: String!
     $url: [String]
+    $hasToken: Boolean!
   ) {
     userByName(name: $username) {
       id
@@ -41,7 +42,7 @@ export default gql`
         }
       }
     }
-    treeFunction(activeUrl: $url) {
+    treeFunction(activeUrl: $url, hasToken: $hasToken) {
       nodes {
         level
         label

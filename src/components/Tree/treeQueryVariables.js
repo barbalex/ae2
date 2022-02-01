@@ -8,6 +8,7 @@ const treeQueryVariables = (store) => {
       activeNodeArray[0] === 'Benutzer' && !!store.login.token,
     username: store.login.username ?? 'no_user_with_this_name_exists',
     url: activeNodeArray.filter((n) => n !== 0),
+    hasToken: !!store.login.token,
   }
 }
 

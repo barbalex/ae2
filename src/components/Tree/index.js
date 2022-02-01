@@ -24,6 +24,7 @@ import storeContext from '../../storeContext'
 import ErrorBoundary from '../shared/ErrorBoundary'
 import getTreeDataVariables from './treeQueryVariables'
 import getConstants from '../../modules/constants'
+import buildNodes from './buildNodes'
 
 const constants = getConstants()
 
@@ -205,7 +206,7 @@ const TreeComponent = () => {
           treeData,
           error,
           loading,
-          nodes: treeData?.treeFunction?.nodes ?? [],
+          nodes: buildNodes({ treeData, activeNodeArray, store }),
         }),
       )
   }, [activeNodeArray, client, login.username, login.token, store])

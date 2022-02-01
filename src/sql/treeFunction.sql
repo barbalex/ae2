@@ -11,14 +11,15 @@ CREATE TYPE ae.tree AS (
   menu_type text
 );
 
-CREATE OR REPLACE FUNCTION ae.tree_function (active_url text[])
+DROP FUNCTION IF EXISTS ae.tree_function;
+
+CREATE OR REPLACE FUNCTION ae.tree_function (active_url text[], has_token boolean)
   RETURNS SETOF ae.tree
   AS $$
   WITH tree_categories AS (
     SELECT
       id,
       name,
-      NULL::uuid AS parent_id,
       1::integer AS level,
       name AS category,
       ARRAY[name] AS url,
@@ -54,7 +55,6 @@ taxonomies AS (
   SELECT
     tax.id,
     tax.name,
-    tax.tree_category AS parent_id,
     2::integer AS level,
     cat.name AS category,
     ARRAY[cat.name,
@@ -85,7 +85,7 @@ objects AS (
     SELECT
       o.id,
       o.name,
-      o.parent_id,
+      o.parent_id::text,
       3::integer AS level,
       cat.name AS category,
       cat.sort AS cat_sort,
@@ -115,7 +115,7 @@ objects AS (
     SELECT
       o.id,
       o.name,
-      o.parent_id,
+      o.parent_id::text,
       a.level + 1,
       cat.name AS category,
       cat.sort AS cat_sort,
@@ -144,7 +144,6 @@ objects AS (
     cat_sort,
     name,
     id,
-    parent_id,
     url,
     sort,
     children_count,
@@ -157,7 +156,6 @@ pcs AS (
     2 AS level,
     cat.sort AS cat_sort,
     pc.id,
-    cat.id AS parent_id,
     pc.name,
     ARRAY[cat.name,
     pc.id::text] AS url,
@@ -203,7 +201,6 @@ pcs_folders AS (
     ELSE
       pcs.id || '_rel_folder'
     END AS id,
-    pcs.id AS parent_id,
     CASE WHEN pc_folder_values.name LIKE 'pc' THEN
       'Eigenschaften'
     ELSE
@@ -254,27 +251,97 @@ pcs_folders AS (
       2
     END
 ),
+users AS (
+  SELECT
+    2::integer AS level,
+    4::integer AS cat_sort,
+    us.id,
+    us.name,
+    ARRAY['Benutzer',
+    us.id]::text[] AS url,
+    ARRAY['Benutzer',
+    us.name]::text[] AS sort,
+    0::integer AS children_count,
+    'CmBenutzer' AS menu_type
+  FROM
+    ae.user us
+  WHERE
+    active_url @> ARRAY['Benutzer']::text[]
+    AND has_token IS TRUE
+  ORDER BY
+    us.name
+),
+users_folder AS (
+  SELECT
+    *
+  FROM (
+    VALUES (1::integer, 4::integer, 'userfolderid', 'Benutzer', ARRAY['Benutzer']::text[], ARRAY['Benutzer'], (
+          SELECT
+            count(*)::integer
+          FROM
+            ae.user
+          WHERE
+            has_token IS TRUE),
+          'CmBenutzerFolder')) AS users_folders (level,
+        cat_sort,
+        id,
+        name,
+        url,
+        sort,
+        children_count,
+        menu_type)
+),
 unioned AS (
   SELECT
     level,
     cat_sort,
     name,
     id::text,
-    parent_id,
     url,
     sort,
     children_count,
     to_char(info_count, 'FM999G999') AS info,
-    menu_type
-  FROM
-    pcs_folders
+  menu_type
+FROM
+  pcs_folders
+UNION ALL
+SELECT
+  level,
+  cat_sort,
+  name,
+  id::text,
+  url,
+  sort,
+  children_count,
+  NULL AS info,
+  menu_type
+FROM
+  users
+UNION ALL
+SELECT
+  level,
+  cat_sort,
+  name,
+  id::text,
+  url,
+  sort,
+  children_count,
+  CASE WHEN children_count > 0 THEN
+    to_char(children_count, 'FM999G999')
+  ELSE
+    NULL
+  END AS info,
+  menu_type
+FROM
+  users_folder
+  WHERE
+    has_token IS TRUE
   UNION ALL
   SELECT
     level,
     cat_sort,
     name,
     id::text,
-    parent_id,
     url,
     sort,
     children_count,
@@ -292,7 +359,6 @@ unioned AS (
     cat_sort,
     name,
     id::text,
-    parent_id,
     url,
     sort,
     children_count,
@@ -310,7 +376,6 @@ unioned AS (
     cat_sort,
     name,
     id::text,
-    parent_id,
     url,
     sort,
     children_count,
@@ -328,7 +393,6 @@ unioned AS (
     cat_sort,
     name,
     id::text,
-    parent_id,
     url,
     ARRAY[sort::text] AS sort,
     children_count,
@@ -349,14 +413,14 @@ sorted AS (
     url,
     sort,
     array_to_string(sort, '/') AS sort_string,
-    children_count,
-    info,
-    menu_type
-  FROM
-    unioned
-  ORDER BY
-    cat_sort,
-    sort_string
+  children_count,
+  info,
+  menu_type
+FROM
+  unioned
+ORDER BY
+  cat_sort,
+  sort_string
 )
 SELECT
   level,
@@ -373,5 +437,5 @@ $$
 LANGUAGE sql
 STABLE;
 
-ALTER FUNCTION ae.tree_function (url text[]) OWNER TO postgres;
+ALTER FUNCTION ae.tree_function (active_url text[], has_token boolean) OWNER TO postgres;
 
