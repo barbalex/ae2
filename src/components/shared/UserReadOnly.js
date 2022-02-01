@@ -40,6 +40,8 @@ const linkifyProperties = {
 }
 
 const UserReadOnly = ({ label, user }) => {
+  if (!user) return null
+  console.log('UserReadOnly, user:', user)
   const name = user ? user.name || '' : ''
   const email = user ? user.email || '' : ''
   const link = `${appBaseUrl}/Benutzer/${user.id}`

@@ -30,8 +30,8 @@ const StyledA = styled.a`
 `
 
 const tcsQuery = gql`
-  query orgTCsQuery($name: String!) {
-    organizationByName(name: $name) {
+  query orgTCsQuery($id: UUID!) {
+    organizationById(id: $id) {
       id
       taxonomiesByOrganizationId {
         totalCount
@@ -47,7 +47,10 @@ const tcsQuery = gql`
 const TCs = () => {
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
-  const name = activeNodeArray.length > 1 ? activeNodeArray[1] : 'none'
+  const id =
+    activeNodeArray.length > 1
+      ? activeNodeArray[1]
+      : '99999999-9999-9999-9999-999999999999'
 
   const {
     data: tcsData,
@@ -55,12 +58,12 @@ const TCs = () => {
     error: tcsError,
   } = useQuery(tcsQuery, {
     variables: {
-      name,
+      id,
     },
   })
 
   const tcs = sortBy(
-    tcsData?.organizationByName?.taxonomiesByOrganizationId?.nodes ?? [],
+    tcsData?.organizationById?.taxonomiesByOrganizationId?.nodes ?? [],
     'name',
   )
 

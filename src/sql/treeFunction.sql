@@ -291,6 +291,46 @@ users_folder AS (
         children_count,
         menu_type)
 ),
+orgs AS (
+  SELECT
+    2::integer AS level,
+    5::integer AS cat_sort,
+    org.id,
+    org.name,
+    ARRAY['Organisationen',
+    org.id]::text[] AS url,
+    ARRAY['Organisationen',
+    org.name]::text[] AS sort,
+    0::integer AS children_count,
+    'organization' AS menu_type
+  FROM
+    ae.organization org
+  WHERE
+    active_url @> ARRAY['Organisationen']::text[]
+    AND has_token IS TRUE
+  ORDER BY
+    org.name
+),
+orgs_folder AS (
+  SELECT
+    *
+  FROM (
+    VALUES (1::integer, 5::integer, 'orgsfolderid', 'Organisationen', ARRAY['Organisationen']::text[], ARRAY['Organisationen'], (
+          SELECT
+            count(*)::integer
+          FROM
+            ae.organization
+          WHERE
+            has_token IS TRUE),
+          'orgFolder')) AS orgs_folders (level,
+      cat_sort,
+      id,
+      name,
+      url,
+      sort,
+      children_count,
+      menu_type)
+),
 unioned AS (
   SELECT
     level,
@@ -301,39 +341,71 @@ unioned AS (
     sort,
     children_count,
     to_char(info_count, 'FM999G999') AS info,
-  menu_type
-FROM
-  pcs_folders
-UNION ALL
-SELECT
-  level,
-  cat_sort,
-  name,
-  id::text,
-  url,
-  sort,
-  children_count,
-  NULL AS info,
-  menu_type
-FROM
-  users
-UNION ALL
-SELECT
-  level,
-  cat_sort,
-  name,
-  id::text,
-  url,
-  sort,
-  children_count,
-  CASE WHEN children_count > 0 THEN
-    to_char(children_count, 'FM999G999')
-  ELSE
-    NULL
-  END AS info,
-  menu_type
-FROM
-  users_folder
+    menu_type
+  FROM
+    pcs_folders
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    url,
+    sort,
+    children_count,
+    NULL AS info,
+    menu_type
+  FROM
+    users
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    url,
+    sort,
+    children_count,
+    CASE WHEN children_count > 0 THEN
+      to_char(children_count, 'FM999G999')
+    ELSE
+      NULL
+    END AS info,
+    menu_type
+  FROM
+    users_folder
+  WHERE
+    has_token IS TRUE
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    url,
+    sort,
+    children_count,
+    NULL AS info,
+    menu_type
+  FROM
+    orgs
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    url,
+    sort,
+    children_count,
+    CASE WHEN children_count > 0 THEN
+      to_char(children_count, 'FM999G999')
+    ELSE
+      NULL
+    END AS info,
+    menu_type
+  FROM
+    orgs_folder
   WHERE
     has_token IS TRUE
   UNION ALL
@@ -413,14 +485,14 @@ sorted AS (
     url,
     sort,
     array_to_string(sort, '/') AS sort_string,
-  children_count,
-  info,
-  menu_type
-FROM
-  unioned
-ORDER BY
-  cat_sort,
-  sort_string
+    children_count,
+    info,
+    menu_type
+  FROM
+    unioned
+  ORDER BY
+    cat_sort,
+    sort_string
 )
 SELECT
   level,

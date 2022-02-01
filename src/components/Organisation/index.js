@@ -25,8 +25,8 @@ const StyledPaper = styled(Paper)`
 `
 
 const orgQuery = gql`
-  query orgQuery($orgName: String!) {
-    organizationByName(name: $orgName) {
+  query orgQuery($orgId: UUID!) {
+    organizationById(id: $orgId) {
       id
       name
       links
@@ -76,7 +76,7 @@ const Organization = () => {
     error: orgError,
   } = useQuery(orgQuery, {
     variables: {
-      orgName: activeNodeArray[1],
+      orgId: activeNodeArray[1],
     },
   })
 
@@ -86,7 +86,7 @@ const Organization = () => {
     setTab(value)
   }, [])
 
-  const org = orgData?.organizationByName ?? {}
+  const org = orgData?.organizationById ?? {}
 
   if (orgLoading) {
     return <Spinner />
