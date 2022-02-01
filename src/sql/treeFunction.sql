@@ -199,9 +199,9 @@ pcs_folders AS (
     3 AS level,
     pcs.cat_sort AS cat_sort,
     CASE WHEN pc_folder_values.name LIKE 'pc' THEN
-      pcs.id || '_pc'
+      pcs.id || '_pc_folder'
     ELSE
-      pcs.id || '_rel'
+      pcs.id || '_rel_folder'
     END AS id,
     pcs.id AS parent_id,
     CASE WHEN pc_folder_values.name LIKE 'pc' THEN
@@ -219,6 +219,7 @@ pcs_folders AS (
     ELSE
       array_append(pcs.sort, '2')
     END AS sort,
+    0 AS children_count,
     CASE WHEN pc_folder_values.name LIKE 'pc' THEN
     (
       SELECT
@@ -235,7 +236,7 @@ pcs_folders AS (
           ae.relation
         WHERE
           property_collection_id = pcs.id)
-    END AS children_count,
+    END AS info_count,
     CASE WHEN pc_folder_values.name LIKE 'pc' THEN
       'pCProperties'
     ELSE
@@ -263,7 +264,7 @@ unioned AS (
     url,
     sort,
     children_count,
-    to_char(children_count, 'FM999G999') AS info,
+    to_char(info_count, 'FM999G999') AS info,
     menu_type
   FROM
     pcs_folders
@@ -277,56 +278,68 @@ unioned AS (
     url,
     sort,
     children_count,
-    to_char(children_count, 'FM999G999') AS info,
-  menu_type
-FROM
-  pcs
-UNION ALL
-SELECT
-  level,
-  cat_sort,
-  name,
-  id::text,
-  parent_id,
-  url,
-  sort,
-  children_count,
-  to_char(children_count, 'FM999G999') AS info,
-  menu_type
-FROM
-  objects
-UNION ALL
-SELECT
-  level,
-  cat_sort,
-  name,
-  id::text,
-  parent_id,
-  url,
-  sort,
-  children_count,
-  to_char(children_count, 'FM999G999') AS info,
-menu_type
-FROM
-  taxonomies
-UNION ALL
-SELECT
-  level,
-  cat_sort,
-  name,
-  id::text,
-  parent_id,
-  url,
-  ARRAY[sort::text] AS sort,
-  children_count,
-  CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
-    to_char(children_count, 'FM999G999')
-  ELSE
-    to_char(children_count, 'FM999G999') || ' Taxonomien'
-  END AS info,
-  menu_type
-FROM
-  tree_categories
+    CASE WHEN children_count > 0 THEN
+      to_char(children_count, 'FM999G999')
+    ELSE
+      NULL
+    END AS info,
+    menu_type
+  FROM
+    pcs
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    parent_id,
+    url,
+    sort,
+    children_count,
+    CASE WHEN children_count > 0 THEN
+      to_char(children_count, 'FM999G999')
+    ELSE
+      NULL
+    END AS info,
+    menu_type
+  FROM
+    objects
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    parent_id,
+    url,
+    sort,
+    children_count,
+    CASE WHEN children_count > 0 THEN
+      to_char(children_count, 'FM999G999')
+    ELSE
+      NULL
+    END AS info,
+    menu_type
+  FROM
+    taxonomies
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    parent_id,
+    url,
+    ARRAY[sort::text] AS sort,
+    children_count,
+    CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
+      to_char(children_count, 'FM999G999')
+    ELSE
+      to_char(children_count, 'FM999G999') || ' Taxonomien'
+    END AS info,
+    menu_type
+  FROM
+    tree_categories
 ),
 sorted AS (
   SELECT
@@ -336,14 +349,14 @@ sorted AS (
     url,
     sort,
     array_to_string(sort, '/') AS sort_string,
-  children_count,
-  info,
-  menu_type
-FROM
-  unioned
-ORDER BY
-  cat_sort,
-  sort_string
+    children_count,
+    info,
+    menu_type
+  FROM
+    unioned
+  ORDER BY
+    cat_sort,
+    sort_string
 )
 SELECT
   level,
