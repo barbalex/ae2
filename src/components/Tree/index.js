@@ -171,7 +171,6 @@ const TreeComponent = () => {
     refreshRate: 500,
     refreshOptions: { leading: true },
   })
-  console.log('height:', height)
 
   const client = useApolloClient()
 

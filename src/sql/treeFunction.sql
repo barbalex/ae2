@@ -1,12 +1,12 @@
 DROP TYPE IF EXISTS ae.tree CASCADE;
 
 CREATE TYPE ae.tree AS (
-  level bigint,
+  level integer,
   label text,
   id text,
   url text[],
   sort text[],
-  children_count bigint,
+  children_count integer,
   info text,
   menu_type text
 );
@@ -19,7 +19,7 @@ CREATE OR REPLACE FUNCTION ae.tree_function (active_url text[])
       id,
       name,
       NULL::uuid AS parent_id,
-      1::bigint AS level,
+      1::integer AS level,
       name AS category,
       ARRAY[name] AS url,
       sort AS cat_sort,
@@ -27,13 +27,13 @@ CREATE OR REPLACE FUNCTION ae.tree_function (active_url text[])
       CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
       (
         SELECT
-          count(id)
+          count(id)::integer
         FROM
           ae.property_collection)
       ELSE
         (
           SELECT
-            count(tax.id)
+            count(tax.id)::integer
           FROM
             ae.taxonomy tax
             INNER JOIN ae.tree_category ON ae.tree_category.id = tax.tree_category
@@ -55,7 +55,7 @@ taxonomies AS (
     tax.id,
     tax.name,
     tax.tree_category AS parent_id,
-    2::bigint AS level,
+    2::integer AS level,
     cat.name AS category,
     ARRAY[cat.name,
     tax.id::text] AS url,
@@ -64,7 +64,7 @@ taxonomies AS (
     tax.name] AS sort,
     (
       SELECT
-        count(ae.object.id)
+        count(ae.object.id)::integer
       FROM
         ae.object
         INNER JOIN ae.taxonomy ON ae.object.taxonomy_id = ae.taxonomy.id
@@ -86,7 +86,7 @@ objects AS (
       o.id,
       o.name,
       o.parent_id,
-      3::bigint AS level,
+      3::integer AS level,
       cat.name AS category,
       cat.sort AS cat_sort,
       ARRAY[cat.name,
@@ -97,7 +97,7 @@ objects AS (
       o.name] AS sort,
       (
         SELECT
-          count(ae.object.id)
+          count(ae.object.id)::integer
         FROM
           ae.object
         WHERE
@@ -123,7 +123,7 @@ objects AS (
       array_append(a.sort, o.name) AS sort,
     (
       SELECT
-        count(ae.object.id)
+        count(ae.object.id)::integer
       FROM
         ae.object
       WHERE
@@ -165,13 +165,13 @@ pcs AS (
     pc.name] AS sort,
     (
       SELECT
-        count(*)
+        count(*)::integer
       FROM
         ae.property_collection_object
       WHERE
         property_collection_id = pc.id) + (
         SELECT
-          count(*)
+          count(*)::integer
         FROM
           ae.relation
         WHERE
@@ -209,7 +209,7 @@ pcs_folders AS (
     CASE WHEN folders.name LIKE 'pc' THEN
     (
       SELECT
-        count(*)
+        count(*)::integer
       FROM
         ae.property_collection_object
       WHERE
@@ -217,7 +217,7 @@ pcs_folders AS (
     ELSE
       (
         SELECT
-          count(*)
+          count(*)::integer
         FROM
           ae.relation
         WHERE
@@ -252,70 +252,70 @@ unioned AS (
     url,
     sort,
     children_count,
-    children_count::text AS info,
-    menu_type
-  FROM
-    pcs_folders
-  UNION ALL
-  SELECT
-    level,
-    cat_sort,
-    name,
-    id::text,
-    parent_id,
-    url,
-    sort,
-    children_count,
-    children_count::text AS info,
-    menu_type
-  FROM
-    pcs
-  UNION ALL
-  SELECT
-    level,
-    cat_sort,
-    name,
-    id::text,
-    parent_id,
-    url,
-    sort,
-    children_count,
-    children_count::text AS info,
-    menu_type
-  FROM
-    objects
-  UNION ALL
-  SELECT
-    level,
-    cat_sort,
-    name,
-    id::text,
-    parent_id,
-    url,
-    sort,
-    children_count,
-    children_count::text AS info,
-    menu_type
-  FROM
-    taxonomies
-  UNION ALL
-  SELECT
-    level,
-    cat_sort,
-    name,
-    id::text,
-    parent_id,
-    url,
-    ARRAY[sort::text] AS sort,
-    children_count,
-    CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
-      children_count::text
-    ELSE
-      children_count::text || ' Taxonomien'
-    END AS info,
-    menu_type
-  FROM
-    tree_categories
+    to_char(children_count, '999G999') AS info,
+  menu_type
+FROM
+  pcs_folders
+UNION ALL
+SELECT
+  level,
+  cat_sort,
+  name,
+  id::text,
+  parent_id,
+  url,
+  sort,
+  children_count,
+  to_char(children_count, '999G999') AS info,
+  menu_type
+FROM
+  pcs
+UNION ALL
+SELECT
+  level,
+  cat_sort,
+  name,
+  id::text,
+  parent_id,
+  url,
+  sort,
+  children_count,
+  to_char(children_count, '999G999') AS info,
+menu_type
+FROM
+  objects
+UNION ALL
+SELECT
+  level,
+  cat_sort,
+  name,
+  id::text,
+  parent_id,
+  url,
+  sort,
+  children_count,
+  to_char(children_count, '999G999') AS info,
+  menu_type
+FROM
+  taxonomies
+UNION ALL
+SELECT
+  level,
+  cat_sort,
+  name,
+  id::text,
+  parent_id,
+  url,
+  ARRAY[sort::text] AS sort,
+  children_count,
+  CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
+    to_char(children_count, '999G999')
+  ELSE
+    to_char(children_count, '999G999') || ' Taxonomien'
+  END AS info,
+  menu_type
+FROM
+  tree_categories
 ),
 sorted AS (
   SELECT
