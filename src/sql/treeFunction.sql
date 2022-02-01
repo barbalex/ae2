@@ -185,28 +185,41 @@ pcs AS (
     ORDER BY
       pc.name
 ),
+pc_folder_values AS (
+  SELECT
+    *
+  FROM (
+    VALUES ('pc'),
+      ('rel')) AS folders (name)
+ORDER BY
+  name
+),
 pcs_folders AS (
   SELECT
     3 AS level,
     pcs.cat_sort AS cat_sort,
-    pcs.id || '_folder' AS id,
+    CASE WHEN pc_folder_values.name LIKE 'pc' THEN
+      pcs.id || '_pc'
+    ELSE
+      pcs.id || '_rel'
+    END AS id,
     pcs.id AS parent_id,
-    CASE WHEN folders.name LIKE 'pc' THEN
+    CASE WHEN pc_folder_values.name LIKE 'pc' THEN
       'Eigenschaften'
     ELSE
       'Beziehungen'
     END AS name,
-    CASE WHEN folders.name LIKE 'pc' THEN
+    CASE WHEN pc_folder_values.name LIKE 'pc' THEN
       array_append(pcs.url, 'Eigenschaften')
     ELSE
       array_append(pcs.url, 'Beziehungen')
     END AS url,
-    CASE WHEN folders.name LIKE 'pc' THEN
+    CASE WHEN pc_folder_values.name LIKE 'pc' THEN
       array_append(pcs.sort, '1')
     ELSE
       array_append(pcs.sort, '2')
     END AS sort,
-    CASE WHEN folders.name LIKE 'pc' THEN
+    CASE WHEN pc_folder_values.name LIKE 'pc' THEN
     (
       SELECT
         count(*)::integer
@@ -223,20 +236,18 @@ pcs_folders AS (
         WHERE
           property_collection_id = pcs.id)
     END AS children_count,
-    CASE WHEN folders.name LIKE 'pc' THEN
+    CASE WHEN pc_folder_values.name LIKE 'pc' THEN
       'pCProperties'
     ELSE
       'pCRelations'
     END AS menu_type
   FROM
     pcs
-    INNER JOIN (
-      VALUES ('pc'),
-        ('rel')) AS folders (name) ON folders.name IN ('pc', 'rel')
+    INNER JOIN pc_folder_values ON pc_folder_values.name IN ('pc', 'rel')
   WHERE
     active_url @> pcs.url
   ORDER BY
-    CASE WHEN folders.name LIKE 'pc' THEN
+    CASE WHEN pc_folder_values.name LIKE 'pc' THEN
       1
     ELSE
       2
@@ -253,20 +264,20 @@ unioned AS (
     sort,
     children_count,
     to_char(children_count, 'FM999G999') AS info,
-  menu_type
-FROM
-  pcs_folders
-UNION ALL
-SELECT
-  level,
-  cat_sort,
-  name,
-  id::text,
-  parent_id,
-  url,
-  sort,
-  children_count,
-  to_char(children_count, 'FM999G999') AS info,
+    menu_type
+  FROM
+    pcs_folders
+  UNION ALL
+  SELECT
+    level,
+    cat_sort,
+    name,
+    id::text,
+    parent_id,
+    url,
+    sort,
+    children_count,
+    to_char(children_count, 'FM999G999') AS info,
   menu_type
 FROM
   pcs
@@ -281,7 +292,7 @@ SELECT
   sort,
   children_count,
   to_char(children_count, 'FM999G999') AS info,
-menu_type
+  menu_type
 FROM
   objects
 UNION ALL
@@ -295,7 +306,7 @@ SELECT
   sort,
   children_count,
   to_char(children_count, 'FM999G999') AS info,
-  menu_type
+menu_type
 FROM
   taxonomies
 UNION ALL
@@ -325,14 +336,14 @@ sorted AS (
     url,
     sort,
     array_to_string(sort, '/') AS sort_string,
-    children_count,
-    info,
-    menu_type
-  FROM
-    unioned
-  ORDER BY
-    cat_sort,
-    sort_string
+  children_count,
+  info,
+  menu_type
+FROM
+  unioned
+ORDER BY
+  cat_sort,
+  sort_string
 )
 SELECT
   level,
