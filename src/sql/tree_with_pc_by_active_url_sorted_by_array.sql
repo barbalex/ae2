@@ -1,11 +1,6 @@
 /**
- * this query is currently not in use
- * would be a very nice way to fetch data for the tree:
- * filter by passing activeNodeArray
  *
- * data for users and organizations could be added
- *
- * ISSUE: if used as view policies would not be respected :-(
+ * ISSUE: when used as view policies are not respected :-(
  * see: https://www.postgresql.org/docs/13/sql-createpolicy.html
  * "This does not change how views work, however. As with normal queries and views, 
  * permission checks and policies for the tables which are referenced by a view will 
@@ -15,8 +10,9 @@
  * would that respect policies?
  * Seems that yes: functions have SECURITY INVOKER set by default
  * see postgresql.org/docs/current/sql-createfunction.html
+ * Tried and always got all users :-(
  *
- * TODO: how return exactly what is shown? (openNodes)
+ * how return exactly what is shown? (openNodes)
  * needs to be queried with help of activeUrl:
  * - break activeUrl up into parent levels
  * - filter: 
@@ -24,7 +20,7 @@
  *   - or: this object's url minus last element equals any of activeUrl's parents 
  *
  */
--- https://stackoverflow.com/a/16552441/712005
+-- to use constants, see: https://stackoverflow.com/a/16552441/712005
 WITH constants (
   active_url
 ) AS (
@@ -110,53 +106,52 @@ objects AS (
         'CmObject' AS menu_type
       FROM
         ae.object o
-      LEFT JOIN taxonomies ON taxonomies.id = o.taxonomy_id
-      INNER JOIN ae.taxonomy
-      INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id,
-      constants c
-    WHERE
-      o.parent_id IS NULL
-      AND c.active_url LIKE concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id) || '%'
-    UNION ALL
-    SELECT
-      o.id,
-      o.name,
-      o.parent_id,
-      a.level + 1,
-      cat.name AS category,
-      array_append(a.url, o.id::text) AS url,
-      concat(a.sort_string, '/', lpad(ROW_NUMBER() OVER (ORDER BY o.name)::text, 6, '0')) AS sort_string,
-      (
-        SELECT
-          count(ae.object.id)
+        INNER JOIN taxonomies ON taxonomies.id = o.taxonomy_id
+        INNER JOIN ae.taxonomy
+        INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id,
+        constants c
+      WHERE
+        o.parent_id IS NULL
+        AND c.active_url LIKE concat(replace(cat.name, '/', '|'), '/', ae.taxonomy.id) || '%'
+      UNION ALL
+      SELECT
+        o.id,
+        o.name,
+        o.parent_id,
+        a.level + 1,
+        cat.name AS category,
+        array_append(a.url, o.id::text) AS url,
+        concat(a.sort_string, '/', lpad(ROW_NUMBER() OVER (ORDER BY o.name)::text, 6, '0')) AS sort_string,
+        (
+          SELECT
+            count(ae.object.id)
+          FROM
+            ae.object
+          WHERE
+            ae.object.parent_id = o.id) AS children_count,
+          'CmObject' AS menu_type
         FROM
-          ae.object
+          ae.object o
+          INNER JOIN ae.taxonomy
+          INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
+          JOIN a ON a.id = o.parent_id,
+          constants c
         WHERE
-          ae.object.parent_id = o.id) AS children_count,
-        'CmObject' AS menu_type
-      FROM
-        ae.object o
-      LEFT JOIN taxonomies ON taxonomies.id = o.taxonomy_id
-      INNER JOIN ae.taxonomy
-      INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id
-      JOIN a ON a.id = o.parent_id,
-      constants c
-    WHERE
-      a.level <= 10
-      AND c.active_url LIKE array_to_string(a.url, '/') || '%'
+          a.level <= 10
+          AND c.active_url LIKE array_to_string(a.url, '/') || '%'
 )
-    SELECT
-      level,
-      category,
-      name,
-      id,
-      parent_id,
-      url,
-      sort_string,
-      children_count,
-      menu_type
-    FROM
-      a
+        SELECT
+          level,
+          category,
+          name,
+          id,
+          parent_id,
+          url,
+          sort_string,
+          children_count,
+          menu_type
+        FROM
+          a
 ),
 pcs AS (
   SELECT
@@ -187,8 +182,6 @@ pcs AS (
       constants c
     WHERE
       c.active_url LIKE replace(cat.name, '/', '|') || '%'
-    ORDER BY
-      pc.name
 ),
 pcs_folders AS (
   SELECT
@@ -236,12 +229,6 @@ FROM
     constants c
   WHERE
     c.active_url LIKE concat(array_to_string(pcs.url, '/'), '%')
-  ORDER BY
-    CASE WHEN folders.name = 'pc' THEN
-      1
-    ELSE
-      2
-    END
 ),
 unioned AS (
   SELECT
