@@ -32,7 +32,7 @@ WITH constants (
 ),
 tree_categories AS (
   SELECT
-    id, name, NULL::uuid AS parent_id, 1::bigint AS level, name AS category, ARRAY[name] AS url, ARRAY[sort] AS sort, lpad(sort::text, 6, '0') AS sort_string,
+    id, name, NULL::uuid AS parent_id, 1::bigint AS level, name AS category, ARRAY[name] AS url, lpad(sort::text, 6, '0') AS sort_string,
     CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
     (
       SELECT
@@ -68,9 +68,7 @@ taxonomies AS (
     cat.name AS category,
     ARRAY[cat.name,
     tax.id::text] AS url,
-    ARRAY[cat.sort,
-    ROW_NUMBER() OVER (ORDER BY tax.name)] AS sort,
-    concat(lpad(cat.sort::text, 6), '/', lpad(ROW_NUMBER() OVER (ORDER BY tax.name)::text, 6, '0')) AS sort_string,
+    concat(lpad(cat.sort::text, 6, '0'), '/', lpad(ROW_NUMBER() OVER (ORDER BY tax.name)::text, 6, '0')) AS sort_string,
   (
     SELECT
       count(ae.object.id)
@@ -100,18 +98,17 @@ objects AS (
       ARRAY[cat.name,
       ae.taxonomy.id::text,
       o.id::text] AS url,
-      array_append(taxonomies.sort, ROW_NUMBER() OVER (ORDER BY o.name)) AS sort,
-    concat(taxonomies.sort_string, '/', lpad(ROW_NUMBER() OVER (ORDER BY o.name)::text, 6, '0')) AS sort_string,
-    (
-      SELECT
-        count(ae.object.id)
-      FROM
-        ae.object
-      WHERE
-        ae.object.parent_id = o.id) AS children_count,
-      'CmObject' AS menu_type,
-      ROW_NUMBER() OVER (ORDER BY o.name)
-    FROM ae.object o
+      concat(taxonomies.sort_string, '/', lpad(ROW_NUMBER() OVER (ORDER BY o.name)::text, 6, '0')) AS sort_string,
+      (
+        SELECT
+          count(ae.object.id)
+        FROM
+          ae.object
+        WHERE
+          ae.object.parent_id = o.id) AS children_count,
+        'CmObject' AS menu_type,
+        ROW_NUMBER() OVER (ORDER BY o.name)
+      FROM ae.object o
     LEFT JOIN taxonomies ON taxonomies.id = o.taxonomy_id
     INNER JOIN ae.taxonomy
     INNER JOIN ae.tree_category cat ON ae.taxonomy.tree_category = cat.id ON o.taxonomy_id = ae.taxonomy.id,
@@ -126,7 +123,6 @@ SELECT
   a.level + 1,
   cat.name AS category,
   array_append(a.url, o.id::text) AS url,
-  array_append(a.sort, ROW_NUMBER() OVER (ORDER BY o.name)) AS sort,
   concat(a.sort_string, '/', lpad(ROW_NUMBER() OVER (ORDER BY o.name)::text, 6, '0')) AS sort_string,
   (
     SELECT
@@ -153,7 +149,6 @@ SELECT
   id,
   parent_id,
   url,
-  sort,
   sort_string,
   children_count,
   menu_type,
@@ -168,8 +163,6 @@ pcs AS (
     pc.name,
     ARRAY[cat.name,
     pc.id::text] AS url,
-    ARRAY[3,
-    ROW_NUMBER() OVER (ORDER BY pc.name)] AS sort,
     concat('000003/', lpad(ROW_NUMBER() OVER (ORDER BY pc.name)::text, 6, '0')) AS sort_string,
     (
       SELECT
@@ -202,11 +195,6 @@ pcs_folders AS (
       'Beziehungen'
     END AS name,
     array_append(pcs.url, folders.name) AS url,
-  CASE WHEN folders.name = 'pc' THEN
-    array_append(pcs.sort, 1)
-  ELSE
-    array_append(pcs.sort, 2)
-  END AS sort,
   CASE WHEN folders.name = 'pc' THEN
     concat(pcs.sort_string, '/000001')
   ELSE
@@ -261,7 +249,6 @@ unioned AS (
     id::text,
     parent_id,
     url,
-    sort,
     sort_string,
     children_count,
     children_count::text AS info,
@@ -276,7 +263,6 @@ unioned AS (
     id::text,
     parent_id,
     url,
-    sort,
     sort_string,
     children_count,
     children_count::text AS info,
@@ -291,7 +277,6 @@ unioned AS (
     id::text,
     parent_id,
     url,
-    sort,
     sort_string,
     children_count,
     children_count::text AS info,
@@ -306,7 +291,6 @@ unioned AS (
     id::text,
     parent_id,
     url,
-    sort,
     sort_string,
     children_count,
     children_count::text AS info,
@@ -321,7 +305,6 @@ unioned AS (
     id::text,
     parent_id,
     url,
-    sort,
     sort_string,
     children_count,
     CASE WHEN name = 'Eigenschaften-Sammlungen' THEN
@@ -340,7 +323,6 @@ sorted AS (
     name AS label,
     id,
     url,
-    sort,
     sort_string,
     children_count,
     info,
@@ -356,7 +338,6 @@ SELECT
   label,
   id,
   url,
-  sort,
   sort_string,
   children_count,
   info,
