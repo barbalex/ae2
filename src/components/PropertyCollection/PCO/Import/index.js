@@ -952,7 +952,21 @@ const ImportPco = ({ setImport, pCO }) => {
           <DropzoneContainer>
             <Dropzone
               onDrop={onDrop}
-              accept=".xlsx, .xls, .csv, .ods, .dbf, .dif"
+              types={[
+                {
+                  description: 'spreadsheet files',
+                  accept: {
+                    'text/plain': ['.dif'],
+                    'application/dbf': ['.dbf'],
+                    'text/csv': ['.csv'],
+                    'application/vnd.oasis.opendocument.spreadsheet': ['.ods'],
+                    'application/vnd.ms-excel': ['.xls'],
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                      ['.xlsx'],
+                  },
+                },
+              ]}
+              excludeAcceptAllOption={true}
               multiple={false}
             >
               {({
