@@ -64,12 +64,8 @@ const getXlsxBuffer = async (jsonArray) => {
       style: 'thin',
     },
   }
-  let buffer
-  try {
-    buffer = await workbook.xlsx.writeBuffer()
-  } catch (error) {
-    throw error
-  }
+  const buffer = await workbook.xlsx.writeBuffer()
+
   return buffer
 }
 

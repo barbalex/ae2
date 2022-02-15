@@ -5,6 +5,7 @@ import MaterialCard from '@mui/material/Card'
 import styled from 'styled-components'
 import SimpleBar from 'simplebar-react'
 import { useResizeDetector } from 'react-resize-detector'
+import useResizeObserver from 'use-resize-observer'
 import { observer } from 'mobx-react-lite'
 
 import storeContext from '../storeContext'

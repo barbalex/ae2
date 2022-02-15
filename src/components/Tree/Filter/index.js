@@ -90,15 +90,12 @@ const TreeFilter = () => {
   const { setTreeFilter } = treeFilter
 
   const treeFilterId = treeFilter.id ?? '99999999-9999-9999-9999-999999999999'
-  const { data: objectUrlData, error: objectUrlError } = useQuery(
-    objectUrlQuery,
-    {
-      variables: {
-        treeFilterId,
-        run: !!treeFilter.id,
-      },
+  const { data: objectUrlData } = useQuery(objectUrlQuery, {
+    variables: {
+      treeFilterId,
+      run: !!treeFilter.id,
     },
-  )
+  })
 
   const onInputChange = useCallback(
     (option) => {
@@ -152,11 +149,6 @@ const TreeFilter = () => {
       setTreeFilter({ id: null, text: '' })
     }
   }, [treeFilterId, setTreeFilter, objectUrlData?.objectById])
-
-  const renderSectionTitle = useCallback(
-    (section) => <strong>{section.title}</strong>,
-    [],
-  )
 
   const buildOptionsDebounced = useDebouncedCallback(({ cb, val }) => {
     buildOptions({ client, treeFilter, cb, val })

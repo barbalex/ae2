@@ -14,7 +14,7 @@ import {
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import Dropzone from 'react-dropzone'
-import XLSX from 'xlsx'
+import { read, utils } from 'xlsx'
 import ReactDataGrid from 'react-data-grid'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -357,12 +357,12 @@ const ImportPco = ({ setImport, pCO }) => {
       const reader = new FileReader()
       reader.onload = async () => {
         const fileAsBinaryString = reader.result
-        const workbook = XLSX.read(fileAsBinaryString, {
+        const workbook = read(fileAsBinaryString, {
           type: 'binary',
         })
         const sheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[sheetName]
-        const data = XLSX.utils
+        const data = utils
           .sheet_to_json(worksheet)
           .map((d) => omit(d, ['__rowNum__']))
         // test the data
@@ -952,7 +952,21 @@ const ImportPco = ({ setImport, pCO }) => {
           <DropzoneContainer>
             <Dropzone
               onDrop={onDrop}
-              accept=".xlsx, .xls, .csv, .ods, .dbf, .dif"
+              types={[
+                {
+                  description: 'spreadsheet files',
+                  accept: {
+                    'text/plain': ['.dif'],
+                    'application/dbf': ['.dbf'],
+                    'text/csv': ['.csv'],
+                    'application/vnd.oasis.opendocument.spreadsheet': ['.ods'],
+                    'application/vnd.ms-excel': ['.xls'],
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                      ['.xlsx'],
+                  },
+                },
+              ]}
+              excludeAcceptAllOption={true}
               multiple={false}
             >
               {({
