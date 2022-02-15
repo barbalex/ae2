@@ -9,7 +9,7 @@ import Button from '@mui/material/Button'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
-import { useResizeDetector } from 'react-resize-detector'
+import useResizeObserver from 'use-resize-observer'
 
 import ImportPco from './Import'
 import booleanToJaNein from '../../../modules/booleanToJaNein'
@@ -134,7 +134,8 @@ const PCO = () => {
   const [sortDirection, setSortDirection] = useState('asc')
   const [importing, setImport] = useState(false)
 
-  const { width = 200, height = 200, ref: resizeRef } = useResizeDetector()
+  const { width, height, ref: resizeRef } = useResizeObserver()
+  //console.log('PCO', { width, height })
 
   const [pCO, allKeys, pCORaw] = useMemo(() => {
     let pCO = []
@@ -226,14 +227,16 @@ const PCO = () => {
       )}
       {!importing && pCO.length > 0 && (
         <>
-          <ReactDataGrid
-            onGridSort={onGridSort}
-            columns={columns}
-            rowGetter={rowGetter}
-            rowsCount={pCO.length}
-            minHeight={height - 26 - 46}
-            minWidth={width}
-          />
+          {width && height && (
+            <ReactDataGrid
+              onGridSort={onGridSort}
+              columns={columns}
+              rowGetter={rowGetter}
+              rowsCount={pCO.length}
+              minHeight={height - 26 - 46}
+              minWidth={width}
+            />
+          )}
           <ButtonsContainer>
             <ExportButtons>
               <StyledButton

@@ -9,7 +9,7 @@ import Button from '@mui/material/Button'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
-import { useResizeDetector } from 'react-resize-detector'
+import useResizeObserver from 'use-resize-observer'
 
 import ImportRco from './Import'
 import booleanToJaNein from '../../../modules/booleanToJaNein'
@@ -139,7 +139,8 @@ const RCO = () => {
   const [sortDirection, setSortDirection] = useState('asc')
   const [importing, setImport] = useState(false)
 
-  const { width = 200, height = 200, ref: resizeRef } = useResizeDetector()
+  const { width, height, ref: resizeRef } = useResizeObserver()
+  console.log('RCO', { width, height })
 
   const [rCO, allKeys, rCORaw] = useMemo(() => {
     let rCO = []
@@ -239,7 +240,7 @@ const RCO = () => {
           rCO.length > 0 ? ':' : ''
         }`}</TotalDiv>
       )}
-      {!importing && rCO.length > 0 && (
+      {!importing && rCO.length > 0 && width && height && (
         <>
           <ReactDataGrid
             onGridSort={onGridSort}
