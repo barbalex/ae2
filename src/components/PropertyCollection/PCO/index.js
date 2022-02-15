@@ -135,7 +135,6 @@ const PCO = () => {
   const [importing, setImport] = useState(false)
 
   const { width = 200, height = 200, ref: resizeRef } = useResizeDetector()
-  console.log('PCO, height:', height)
 
   const [pCO, allKeys, pCORaw] = useMemo(() => {
     let pCO = []

@@ -14,7 +14,7 @@ import {
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import Dropzone from 'react-dropzone'
-import XLSX from 'xlsx'
+import { read, utils } from 'xlsx'
 import isUuid from 'is-uuid'
 import ReactDataGrid from 'react-data-grid'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
@@ -416,12 +416,12 @@ const ImportRco = ({ setImport, pCO }) => {
       const reader = new FileReader()
       reader.onload = () => {
         const fileAsBinaryString = reader.result
-        const workbook = XLSX.read(fileAsBinaryString, {
+        const workbook = read(fileAsBinaryString, {
             type: 'binary',
           }),
           sheetName = workbook.SheetNames[0],
           worksheet = workbook.Sheets[sheetName]
-        const data = XLSX.utils
+        const data = utils
           .sheet_to_json(worksheet)
           .map((d) => omit(d, ['__rowNum__']))
         // test the data
