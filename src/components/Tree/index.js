@@ -187,27 +187,32 @@ const TreeComponent = () => {
 
   useEffect(() => {
     const index = findIndex(nodes, (node) => isEqual(node.url, activeNodeArray))
-    listRef.current &&
-      listRef.current.scrollToItem &&
-      listRef.current.scrollToItem(index)
+    listRef?.current?.scrollToItem(index)
   }, [activeNodeArray, nodes])
 
   const userId = treeData?.userByName?.id
 
   useEffect(() => {
+    let isActive = true
     client
       .query({
         query: treeQuery,
         variables: getTreeDataVariables(store),
       })
-      .then(({ data: treeData, loading, error }) =>
+      .then(({ data: treeData, loading, error }) => {
+        if (!isActive) return
+
         setData({
           treeData,
           error,
           loading,
           nodes: treeData?.treeFunction?.nodes ?? [],
-        }),
-      )
+        })
+      })
+
+    return () => {
+      isActive = false
+    }
   }, [activeNodeArray, client, login.username, login.token, store])
 
   const userRoles = (
