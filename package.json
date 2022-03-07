@@ -123,7 +123,7 @@
     "postgraphile": "4.12.9",
     "postgraphile-plugin-connection-filter": "2.2.2",
     "rimraf": "3.0.2",
-    "vercel": "23.1.2"
+    "vercel": "24.0.0"
   },
   "resolutions": {
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest",
