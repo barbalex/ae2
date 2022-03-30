@@ -140,6 +140,7 @@ SELECT DISTINCT
   tax.name AS taxonomie_name,
   ae.object.id,
   cast(ae.object.properties ->> 'Taxonomie ID' AS integer) AS taxid,
+  cast(ae.object.properties ->> 'Taxonomie ID intern' AS integer) AS taxid_intern,
   ae.object.properties ->> 'Familie' AS familie,
   ae.object.name AS artname,
   coalesce(cast(objartwert.properties ->> 'Artwert' AS integer), cast(synobjartwert.properties ->> 'Artwert' AS integer), cast(synobjartwert2.properties ->> 'Artwert' AS integer)) AS artwert
