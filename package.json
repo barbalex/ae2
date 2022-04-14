@@ -103,7 +103,8 @@
     "prop-types": "is peer",
     "react-is": "is peer",
     "typescript": "is peer",
-    "webpack": "is peer"
+    "webpack": "is peer",
+    "react": "upgrading to v18 errored"
   },
   "devDependencies": {
     "@babel/core": "7.17.9",
