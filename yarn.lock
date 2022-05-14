@@ -4995,7 +4995,7 @@ __metadata:
     graphiql: 1.8.10
     graphql: 16.5.0
     graphql-tag: 2.12.6
-    graphql-ws: ^5.8.2
+    graphql-ws: 5.8.2
     is-uuid: 1.0.2
     isomorphic-fetch: 3.0.0
     js-file-download: 0.4.12
@@ -5013,7 +5013,7 @@ __metadata:
     react-autosuggest: 10.1.0
     react-data-grid: 6.1.0
     react-dom: 17.0.2
-    react-dropzone: 12.1.0
+    react-dropzone: 14.2.1
     react-error-boundary: 3.1.4
     react-helmet: 6.1.0
     react-highlight-words: 0.18.0
@@ -5025,7 +5025,7 @@ __metadata:
     react-select: 5.3.2
     react-swipeable-views: 0.14.0
     react-typography: 0.16.20
-    react-virtualized-auto-sizer: ^1.0.6
+    react-virtualized-auto-sizer: 1.0.6
     react-vtree: 3.0.0-beta.3
     react-window: 1.8.7
     rimraf: 3.0.2
@@ -5034,7 +5034,7 @@ __metadata:
     typescript: 4.6.4
     typography: 0.16.21
     use-debounce: 8.0.1
-    use-resize-observer: ^8.0.0
+    use-resize-observer: 8.0.0
     use-subscription: 1.7.0
     vercel: 24.2.3
     webpack: 5.72.1
@@ -8650,12 +8650,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-selector@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "file-selector@npm:0.5.0"
+"file-selector@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "file-selector@npm:0.6.0"
   dependencies:
-    tslib: ^2.0.3
-  checksum: f95a06938123a2b765d136a4430cc8b19165f06a53e7ae1dcca4947716d61e9181453fcfeb2358c2660cbcecf96d7334f0528ba60071fed81f8bd358ea08454a
+    tslib: ^2.4.0
+  checksum: 7d051b6e5d793f3c6e2ab287ba5e7c2c6a0971bccc9d56e044c8047ba483e18f60fc0b5771c951dc707c0d15f4f36ccb4f1f1aaf385d21ec8f7700dadf8325ba
   languageName: node
   linkType: hard
 
@@ -10297,6 +10297,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graphql-ws@npm:5.8.2":
+  version: 5.8.2
+  resolution: "graphql-ws@npm:5.8.2"
+  peerDependencies:
+    graphql: ">=0.11 <=16"
+  checksum: 2f7701ffc531f053c47fd42ea1fa4555775195f621f1ff767d668eef41ab1376900c1ef166c0063dbc81aa49a2aabd60becb517b8d1b7bc0b3dd687bd4d319a6
+  languageName: node
+  linkType: hard
+
 "graphql-ws@npm:^4.4.1":
   version: 4.9.0
   resolution: "graphql-ws@npm:4.9.0"
@@ -10312,15 +10321,6 @@ __metadata:
   peerDependencies:
     graphql: ">=0.11 <=16"
   checksum: 8bcd3e82332f34f1f38b7e32673e6cd0125b3aae47f91b7371211a3d5859129d4c8d46611092b21decbd24702eb9f368353ac68220cf8927d5cdb0fd6d14e806
-  languageName: node
-  linkType: hard
-
-"graphql-ws@npm:^5.8.2":
-  version: 5.8.2
-  resolution: "graphql-ws@npm:5.8.2"
-  peerDependencies:
-    graphql: ">=0.11 <=16"
-  checksum: 2f7701ffc531f053c47fd42ea1fa4555775195f621f1ff767d668eef41ab1376900c1ef166c0063dbc81aa49a2aabd60becb517b8d1b7bc0b3dd687bd4d319a6
   languageName: node
   linkType: hard
 
@@ -15824,16 +15824,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dropzone@npm:12.1.0":
-  version: 12.1.0
-  resolution: "react-dropzone@npm:12.1.0"
+"react-dropzone@npm:14.2.1":
+  version: 14.2.1
+  resolution: "react-dropzone@npm:14.2.1"
   dependencies:
     attr-accept: ^2.2.2
-    file-selector: ^0.5.0
+    file-selector: ^0.6.0
     prop-types: ^15.8.1
   peerDependencies:
-    react: ">= 16.8"
-  checksum: 1be37433cf42b8a9f98c8f59678e30fffc1e9b8e3fdb20f3a376557948f727156123ca0a7e45cd3882606184d945ea1139f17da0e1e5ba0b646a23be0ed65fb3
+    react: ">= 16.8 || 18.0.0"
+  checksum: 8556d997d66bad79fe165a30d6dc8f917c67d8c7d23069c417eb2a0da6df824ba71b84b532707711e184da105122f6a6e81104341dc5b8c0f96e318267fdda91
   languageName: node
   linkType: hard
 
@@ -16105,7 +16105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-virtualized-auto-sizer@npm:^1.0.6":
+"react-virtualized-auto-sizer@npm:1.0.6":
   version: 1.0.6
   resolution: "react-virtualized-auto-sizer@npm:1.0.6"
   peerDependencies:
@@ -18294,6 +18294,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:^2.4.0":
+  version: 2.4.0
+  resolution: "tslib@npm:2.4.0"
+  checksum: 8c4aa6a3c5a754bf76aefc38026134180c053b7bd2f81338cb5e5ebf96fefa0f417bff221592bf801077f5bf990562f6264fecbc42cd3309b33872cb6fc3b113
+  languageName: node
+  linkType: hard
+
 "tslib@npm:~2.0.1":
   version: 2.0.3
   resolution: "tslib@npm:2.0.3"
@@ -18901,7 +18908,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-resize-observer@npm:^8.0.0":
+"use-resize-observer@npm:8.0.0":
   version: 8.0.0
   resolution: "use-resize-observer@npm:8.0.0"
   dependencies:
