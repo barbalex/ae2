@@ -5505,7 +5505,7 @@ __metadata:
     typescript: 4.6.4
     typography: 0.16.21
     use-debounce: 8.0.1
-    use-resize-observer: 8.0.0
+    use-resize-observer: 9.0.0
     use-subscription: 1.7.0
     vercel: 24.2.4
     webpack: 5.72.1
@@ -19281,15 +19281,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-resize-observer@npm:8.0.0":
-  version: 8.0.0
-  resolution: "use-resize-observer@npm:8.0.0"
+"use-resize-observer@npm:9.0.0":
+  version: 9.0.0
+  resolution: "use-resize-observer@npm:9.0.0"
   dependencies:
     "@juggle/resize-observer": ^3.3.1
   peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 944ce47811f6056b481ce2f1550c2881bd5c25838cae2e0fb0bc0ed4aad7b5f2e55dcc0fc52107998ecfb602446465f94b2e728d3f3259fe8e6d4a3031cfb24a
+    react: 16.8.0 - 18
+    react-dom: 16.8.0 - 18
+  checksum: ddec370dcb8147ad2b9d30dcefe55be8cb6b7c56b5574c8c4bb8a325ffa9570636fd208894016d05314964e200102229fc1df1a835b45e06d90a8030d5f661bb
   languageName: node
   linkType: hard
 
