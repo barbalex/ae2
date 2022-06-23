@@ -1,6 +1,7 @@
 -- for:
 -- all synonyms of objects from taxonomy "SISF (2005)" contained in "ZH Artwert (2020)":
 -- remove dataset included in "ZH Artwert (aktuell)"
+--
 -- 1. list all synonyms of objects contained in "ZH Artwert (2020)"
 SELECT
   object.id,
