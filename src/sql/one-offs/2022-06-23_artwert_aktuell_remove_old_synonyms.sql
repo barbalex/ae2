@@ -16,7 +16,8 @@ FROM
   ORDER BY
     object.name;
 
-WITH (
+-- 2. list all property_collection_object's to delte
+WITH synonym_objects AS (
   SELECT
     object.id
   FROM
@@ -29,11 +30,28 @@ WITH (
       AND pc.name = 'ZH Artwert (2020)'
     ORDER BY
       object.name
-) AS objects_of_interest select * FROM ae.property_collection_object pc_object
-WHERE pc_object.object_id IN (
-    objects_of_interest);
+),
+pc_objects_to_delete AS (
+  SELECT
+    pc_object.id
+  FROM
+    ae.property_collection_object pc_object
+  INNER JOIN ae.property_collection pc ON pc.id = pc_object.property_collection_id
+  WHERE
+    pc_object.object_id IN (
+      SELECT
+        id
+      FROM
+        synonym_objects)
+      AND pc.name = 'ZH Artwert (aktuell)'
+)
+SELECT
+  id
+FROM
+  pc_objects_to_delete;
 
-WITH (
+-- 3. delete using above list
+WITH synonym_objects AS (
   SELECT
     object.id
   FROM
@@ -46,7 +64,24 @@ WITH (
       AND pc.name = 'ZH Artwert (2020)'
     ORDER BY
       object.name
-) AS objects_of_interest DELETE FROM ae.property_collection_object pc_object
-WHERE pc_object.object_id IN (
-    objects_of_interest);
+),
+pc_objects_to_delete AS (
+  SELECT
+    pc_object.id
+  FROM
+    ae.property_collection_object pc_object
+  INNER JOIN ae.property_collection pc ON pc.id = pc_object.property_collection_id
+  WHERE
+    pc_object.object_id IN (
+      SELECT
+        id
+      FROM
+        synonym_objects)
+      AND pc.name = 'ZH Artwert (aktuell)')
+DELETE FROM ae.property_collection_object
+WHERE ae.property_collection_object.id IN (
+    SELECT
+      id
+    FROM
+      pc_objects_to_delete);
 
