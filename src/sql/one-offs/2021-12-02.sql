@@ -4,7 +4,7 @@ SELECT
 FROM
   ae.property_collection
 WHERE
-  links = '{http://naturschutz.zh.ch}'
+  links = '{http://www.naturschutz.zh.ch}'
 ORDER BY
   name ASC;
 
@@ -14,5 +14,5 @@ UPDATE
 SET
   links = '{https://zh.ch/naturschutz}'
 WHERE
-  links = '{http://naturschutz.zh.ch}';
+  links = '{http://www.naturschutz.zh.ch}';
 
