@@ -91,12 +91,6 @@ module.exports = {
               },
             },
           },
-          {
-            resolve: `gatsby-remark-images-medium-zoom`, // point!
-            options: {
-              background: 'rgba(128,128,128,0.5)',
-            },
-          },
           'gatsby-remark-copy-linked-files',
         ],
       },

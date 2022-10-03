@@ -42,7 +42,6 @@
     "gatsby-remark-copy-linked-files": "5.24.0",
     "gatsby-remark-emojis": "0.4.3",
     "gatsby-remark-images": "6.24.0",
-    "gatsby-remark-images-medium-zoom": "1.7.0",
     "gatsby-source-filesystem": "4.24.0",
     "gatsby-transformer-remark": "5.24.0",
     "gatsby-transformer-sharp": "4.24.0",
