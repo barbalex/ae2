@@ -1,4 +1,4 @@
-import Dexie from 'dexie'
+import { Dexie } from 'dexie'
 
 const initializeIdb = () => {
   if (typeof window === 'undefined') return {}
