@@ -35,14 +35,7 @@ exports.createPages = async ({ actions, graphql }) => {
   })
 }
 
-exports.onCreateWebpackConfig = ({
-  stage,
-  rules,
-  loaders,
-  plugins,
-  actions,
-  getConfig,
-}) => {
+exports.onCreateWebpackConfig = ({ actions }) => {
   actions.setWebpackConfig({
     resolve: { fallback: { fs: false } },
     /*module: {
@@ -54,14 +47,4 @@ exports.onCreateWebpackConfig = ({
       ],
     },*/
   })
-  // https://github.com/gatsbyjs/gatsby/issues/11934#issuecomment-646966955
-  if (stage.startsWith('develop')) {
-    actions.setWebpackConfig({
-      resolve: {
-        alias: {
-          'react-dom': '@hot-loader/react-dom',
-        },
-      },
-    })
-  }
 }

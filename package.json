@@ -60,16 +60,16 @@
     "mobx-state-tree": "5.1.6",
     "polished": "1.x",
     "prop-types": "15.8.1",
-    "react": "17.0.2",
+    "react": "18.2.0",
     "react-autosuggest": "10.1.0",
     "react-data-grid": "6.1.0",
-    "react-dom": "17.0.2",
+    "react-dom": "18.2.0",
     "react-dropzone": "14.2.2",
     "react-error-boundary": "3.1.4",
     "react-helmet": "6.1.0",
     "react-highlight-words": "0.18.0",
     "react-icons": "4.4.0",
-    "react-is": "17.0.2",
+    "react-is": "18.2.0",
     "react-linkify": "0.x",
     "react-reflex": "4.0.9",
     "react-resize-detector": "7.1.2",
@@ -101,8 +101,7 @@
     "react-is": "is peer",
     "typescript": "is peer",
     "webpack": "is peer",
-    "graphql-ws": "is UNDECLARED dependency of graphiql, see: https://github.com/graphql/graphiql/issues/2405#issuecomment-1126009181",
-    "react": "upgrading to v18 errored"
+    "graphql-ws": "is UNDECLARED dependency of graphiql, see: https://github.com/graphql/graphiql/issues/2405#issuecomment-1126009181"
   },
   "devDependencies": {
     "@babel/core": "7.19.3",
@@ -111,7 +110,6 @@
     "@babel/plugin-transform-react-jsx": "7.19.0",
     "@babel/preset-react": "7.18.6",
     "@graphile-contrib/pg-order-by-related": "1.0.0-beta.6",
-    "@hot-loader/react-dom": "17.0.2",
     "copyfiles": "2.4.1",
     "eslint": "8.24.0",
     "eslint-plugin-import": "2.x",
@@ -122,7 +120,7 @@
     "postgraphile": "4.12.11",
     "postgraphile-plugin-connection-filter": "2.3.0",
     "rimraf": "3.0.2",
-    "vercel": "28.4.5"
+    "vercel": "28.4.6"
   },
   "resolutions": {
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest"

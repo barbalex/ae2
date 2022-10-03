@@ -2823,19 +2823,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hot-loader/react-dom@npm:17.0.2":
-  version: 17.0.2
-  resolution: "@hot-loader/react-dom@npm:17.0.2"
-  dependencies:
-    loose-envify: ^1.1.0
-    object-assign: ^4.1.1
-    scheduler: ^0.20.2
-  peerDependencies:
-    react: 17.0.2
-  checksum: 180de3211aff1d60fd9d2a9130ba7977e2e356b1ecd2e7c50a98e6507bb7873f0523b44fa63142f0ffdc629d2933994f4add86e1f19288941f9d223bd28f5e48
-  languageName: node
-  linkType: hard
-
 "@humanwhocodes/config-array@npm:^0.10.5":
   version: 0.10.7
   resolution: "@humanwhocodes/config-array@npm:0.10.7"
@@ -4652,10 +4639,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vercel/next@npm:3.2.1":
-  version: 3.2.1
-  resolution: "@vercel/next@npm:3.2.1"
-  checksum: 4384b6ef1bfe2d6abefa4c37c8b6d8831d886c7baa1fb0b219b2954d933b0c4ff35c7aaa2daf99bcc927ee829a87b3cdb99133b6da0c6460a7044650d9ffb1a1
+"@vercel/next@npm:3.2.2":
+  version: 3.2.2
+  resolution: "@vercel/next@npm:3.2.2"
+  checksum: cd956a3cd6af78940ddfc56ddf1b63562829681b235c2ff2d32b94fd4ad55f6e1263129ea6c95277c28548a2607f461b90f0e93dc388e9c3c5c45928bfca0795
   languageName: node
   linkType: hard
 
@@ -5521,7 +5508,6 @@ __metadata:
     "@babel/preset-react": 7.18.6
     "@fontsource/roboto": 4.5.8
     "@graphile-contrib/pg-order-by-related": 1.0.0-beta.6
-    "@hot-loader/react-dom": 17.0.2
     "@loadable/component": 5.15.2
     "@mui/material": 5.8.7
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest"
@@ -5574,16 +5560,16 @@ __metadata:
     postgraphile: 4.12.11
     postgraphile-plugin-connection-filter: 2.3.0
     prop-types: 15.8.1
-    react: 17.0.2
+    react: 18.2.0
     react-autosuggest: 10.1.0
     react-data-grid: 6.1.0
-    react-dom: 17.0.2
+    react-dom: 18.2.0
     react-dropzone: 14.2.2
     react-error-boundary: 3.1.4
     react-helmet: 6.1.0
     react-highlight-words: 0.18.0
     react-icons: 4.4.0
-    react-is: 17.0.2
+    react-is: 18.2.0
     react-linkify: 0.x
     react-reflex: 4.0.9
     react-resize-detector: 7.1.2
@@ -5601,7 +5587,7 @@ __metadata:
     use-debounce: 8.0.4
     use-resize-observer: 9.0.2
     use-subscription: 1.8.0
-    vercel: 28.4.5
+    vercel: 28.4.6
     webpack: 5.74.0
     xlsx: 0.18.5
   languageName: unknown
@@ -16242,16 +16228,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:17.0.2":
-  version: 17.0.2
-  resolution: "react-dom@npm:17.0.2"
+"react-dom@npm:18.2.0":
+  version: 18.2.0
+  resolution: "react-dom@npm:18.2.0"
   dependencies:
     loose-envify: ^1.1.0
-    object-assign: ^4.1.1
-    scheduler: ^0.20.2
+    scheduler: ^0.23.0
   peerDependencies:
-    react: 17.0.2
-  checksum: 1c1eaa3bca7c7228d24b70932e3d7c99e70d1d04e13bb0843bbf321582bc25d7961d6b8a6978a58a598af2af496d1cedcfb1bf65f6b0960a0a8161cb8dab743c
+    react: ^18.2.0
+  checksum: 7d323310bea3a91be2965f9468d552f201b1c27891e45ddc2d6b8f717680c95a75ae0bc1e3f5cf41472446a2589a75aed4483aee8169287909fcd59ad149e8cc
   languageName: node
   linkType: hard
 
@@ -16369,10 +16354,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:17.0.2, react-is@npm:^17.0.2":
-  version: 17.0.2
-  resolution: "react-is@npm:17.0.2"
-  checksum: 9d6d111d8990dc98bc5402c1266a808b0459b5d54830bbea24c12d908b536df7883f268a7868cfaedde3dd9d4e0d574db456f84d2e6df9c4526f99bb4b5344d8
+"react-is@npm:18.2.0":
+  version: 18.2.0
+  resolution: "react-is@npm:18.2.0"
+  checksum: e72d0ba81b5922759e4aff17e0252bd29988f9642ed817f56b25a3e217e13eea8a7f2322af99a06edb779da12d5d636e9fda473d620df9a3da0df2a74141d53e
   languageName: node
   linkType: hard
 
@@ -16380,6 +16365,13 @@ __metadata:
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: f7a19ac3496de32ca9ae12aa030f00f14a3d45374f1ceca0af707c831b2a6098ef0d6bdae51bd437b0a306d7f01d4677fcc8de7c0d331eb47ad0f46130e53c5f
+  languageName: node
+  linkType: hard
+
+"react-is@npm:^17.0.2":
+  version: 17.0.2
+  resolution: "react-is@npm:17.0.2"
+  checksum: 9d6d111d8990dc98bc5402c1266a808b0459b5d54830bbea24c12d908b536df7883f268a7868cfaedde3dd9d4e0d574db456f84d2e6df9c4526f99bb4b5344d8
   languageName: node
   linkType: hard
 
@@ -16658,13 +16650,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:17.0.2":
-  version: 17.0.2
-  resolution: "react@npm:17.0.2"
+"react@npm:18.2.0":
+  version: 18.2.0
+  resolution: "react@npm:18.2.0"
   dependencies:
     loose-envify: ^1.1.0
-    object-assign: ^4.1.1
-  checksum: b254cc17ce3011788330f7bbf383ab653c6848902d7936a87b09d835d091e3f295f7e9dd1597c6daac5dc80f90e778c8230218ba8ad599f74adcc11e33b9d61b
+  checksum: 88e38092da8839b830cda6feef2e8505dec8ace60579e46aa5490fc3dc9bba0bd50336507dc166f43e3afc1c42939c09fe33b25fae889d6f402721dcd78fca1b
   languageName: node
   linkType: hard
 
@@ -17300,13 +17291,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"scheduler@npm:^0.20.2":
-  version: 0.20.2
-  resolution: "scheduler@npm:0.20.2"
+"scheduler@npm:^0.23.0":
+  version: 0.23.0
+  resolution: "scheduler@npm:0.23.0"
   dependencies:
     loose-envify: ^1.1.0
-    object-assign: ^4.1.1
-  checksum: c4b35cf967c8f0d3e65753252d0f260271f81a81e427241295c5a7b783abf4ea9e905f22f815ab66676f5313be0a25f47be582254db8f9241b259213e999b8fc
+  checksum: d79192eeaa12abef860c195ea45d37cbf2bbf5f66e3c4dcd16f54a7da53b17788a70d109ee3d3dde1a0fd50e6a8fc171f4300356c5aee4fc0171de526bf35f8a
   languageName: node
   linkType: hard
 
@@ -19452,14 +19442,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vercel@npm:28.4.5":
-  version: 28.4.5
-  resolution: "vercel@npm:28.4.5"
+"vercel@npm:28.4.6":
+  version: 28.4.6
+  resolution: "vercel@npm:28.4.6"
   dependencies:
     "@vercel/build-utils": 5.5.3
     "@vercel/go": 2.2.11
     "@vercel/hydrogen": 0.0.24
-    "@vercel/next": 3.2.1
+    "@vercel/next": 3.2.2
     "@vercel/node": 2.5.21
     "@vercel/python": 3.1.20
     "@vercel/redwood": 1.0.29
@@ -19470,7 +19460,7 @@ __metadata:
   bin:
     vc: dist/index.js
     vercel: dist/index.js
-  checksum: b96cedcb98e848134654b8bbc901a08eef518772348c48e2b3f3c6ff9450df3e57e7ef216e2d3fcfe1e1f7a05a4dd4fa8b8d5256f7a0817809ce25ca345e2c68
+  checksum: c13be9801bb5cf928313836d6086ef795d6bf86db1f20281746b1c595b301697ab9f9e71b566417659c8463092c93b7dc3226f20d0fdf722842b5a5237a4b4a5
   languageName: node
   linkType: hard
 
