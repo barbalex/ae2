@@ -48,7 +48,7 @@
     "gatsby-source-filesystem": "4.24.0",
     "gatsby-transformer-remark": "5.24.0",
     "gatsby-transformer-sharp": "4.24.0",
-    "graphiql": "1.11.5",
+    "graphiql": "2.0.8",
     "graphql": "16.6.0",
     "graphql-tag": "2.12.6",
     "graphql-ws": "5.11.2",
