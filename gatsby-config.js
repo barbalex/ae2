@@ -4,19 +4,6 @@ module.exports = {
   },
   plugins: [
     {
-      resolve: 'gatsby-plugin-create-client-paths',
-      options: {
-        prefixes: [
-          `/Arten/*`,
-          `/Lebensräume/*`,
-          `/Eigenschaften-Sammlungen/*`,
-          `/Export/*`,
-          `/Benutzer/*`,
-          `/Organisationen/*`,
-        ],
-      },
-    },
-    {
       resolve: 'gatsby-source-filesystem',
       options: {
         path: `${__dirname}/src/docs`,

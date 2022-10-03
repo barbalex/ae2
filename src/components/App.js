@@ -5,7 +5,7 @@ import Snackbar from '@mui/material/Snackbar'
 import debounce from 'lodash/debounce'
 import { observer } from 'mobx-react-lite'
 import loadable from '@loadable/component'
-import { getSnapshot } from 'mobx-state-tree'
+import { Router } from '@reach/router'
 
 import ErrorBoundary from './shared/ErrorBoundary'
 import Layout from './Layout'
@@ -33,36 +33,8 @@ const GraphIql = loadable(() => import('./GraphIql'))
 const App = () => {
   const store = useContext(storeContext)
   const { updateAvailable, setWindowWidth, setWindowHeight } = store
-  const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const [stacked, setStacked] = useState(false)
-
-  const url0 =
-    activeNodeArray[0] && activeNodeArray[0].toLowerCase()
-      ? activeNodeArray[0].toLowerCase()
-      : null
-  const show404 = ![
-    null,
-    'arten',
-    'lebensräume',
-    'eigenschaften-sammlungen',
-    'organisationen',
-    'export',
-    'login',
-    'benutzer',
-    'graphiql',
-  ].includes(url0)
-  const showData = [
-    null,
-    'arten',
-    'lebensräume',
-    'eigenschaften-sammlungen',
-    'benutzer',
-    'organisationen',
-  ].includes(url0)
-  const showExport = url0 === 'export'
-  const showLogin = url0 === 'login'
-  const showGraphIql = url0 === 'graphiql'
 
   const updateStacked = useCallback(() => {
     if (typeof window === 'undefined') return
@@ -100,11 +72,13 @@ const App = () => {
     <ErrorBoundary>
       <Container>
         <Layout>
-          {showData && <Data stacked={stacked} />}
-          {showExport && <Export stacked={stacked} />}
-          {showLogin && <Login />}
-          {show404 && <FourOhFour />}
-          {showGraphIql && <GraphIql />}
+          <Router>
+            <Data stacked={stacked} path="/*" />
+            <Export stacked={stacked} path="Export" />
+            <Login path="/Login" />
+            <GraphIql path="/graphiql" />
+            <FourOhFour default />
+          </Router>
           <Snackbar
             open={updateAvailable}
             message={

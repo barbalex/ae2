@@ -7,11 +7,11 @@ import Tab from '@mui/material/Tab'
 import SwipeableViews from 'react-swipeable-views'
 import { observer } from 'mobx-react-lite'
 
-import Layout from '../components/Layout'
-import ErrorBoundary from '../components/shared/ErrorBoundary'
-import Sidebar from '../templates/Sidebar'
-import useLocation from '../modules/useLocation'
-import storeContext from '../storeContext'
+import Layout from '../../components/Layout'
+import ErrorBoundary from '../../components/shared/ErrorBoundary'
+import Sidebar from '../../templates/Sidebar'
+import useLocation from '../../modules/useLocation'
+import storeContext from '../../storeContext'
 
 const Container = styled.div`
   height: calc(100vh - 64px);
