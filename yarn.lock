@@ -5560,7 +5560,6 @@ __metadata:
     gatsby-remark-autolink-headers: 5.24.0
     gatsby-remark-copy-linked-files: 5.24.0
     gatsby-remark-emojis: 0.4.3
-    gatsby-remark-external-links: 0.0.4
     gatsby-remark-images: 6.24.0
     gatsby-remark-images-medium-zoom: 1.7.0
     gatsby-source-filesystem: 4.24.0
@@ -10307,18 +10306,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gatsby-remark-external-links@npm:0.0.4":
-  version: 0.0.4
-  resolution: "gatsby-remark-external-links@npm:0.0.4"
-  dependencies:
-    babel-runtime: ^6.26.0
-    is-relative-url: ^2.0.0
-    unist-util-find: ^1.0.1
-    unist-util-visit: ^1.1.3
-  checksum: 2117ce7fa66f7c67f05765761f70a3bcca6c294843cd8503b78b62650964c8ac917dcc75aa267d18d6920cb99cf0c7b13c740be2eca93d90e0ad35f015c55eae
-  languageName: node
-  linkType: hard
-
 "gatsby-remark-images-medium-zoom@npm:1.7.0":
   version: 1.7.0
   resolution: "gatsby-remark-images-medium-zoom@npm:1.7.0"
@@ -11787,13 +11774,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-absolute-url@npm:^2.0.0":
-  version: 2.1.0
-  resolution: "is-absolute-url@npm:2.1.0"
-  checksum: 781e8cf8a2af54b1b7a92f269244d96c66224030d91120e734ebeebbce044c167767e1389789d8aaf82f9e429cb20ae93d6d0acfe6c4b53d2bd6ebb47a236d76
-  languageName: node
-  linkType: hard
-
 "is-absolute-url@npm:^3.0.0":
   version: 3.0.3
   resolution: "is-absolute-url@npm:3.0.3"
@@ -12119,15 +12099,6 @@ __metadata:
   version: 1.0.0
   resolution: "is-regexp@npm:1.0.0"
   checksum: be692828e24cba479ec33644326fa98959ec68ba77965e0291088c1a741feaea4919d79f8031708f85fd25e39de002b4520622b55460660b9c369e6f7187faef
-  languageName: node
-  linkType: hard
-
-"is-relative-url@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "is-relative-url@npm:2.0.0"
-  dependencies:
-    is-absolute-url: ^2.0.0
-  checksum: 5acb66d6374a0c89fb68a770c94eeee3061b7d2e94d1fdff4d780b3054caf681ad33ed9d554eebeaedd897d90b781684c84ed85c7581d5d50767e857af3a199e
   languageName: node
   linkType: hard
 
@@ -13178,13 +13149,6 @@ __metadata:
   version: 3.0.1
   resolution: "lodash.isundefined@npm:3.0.1"
   checksum: 52b4d99a47bd41daa4e2860200258f56b1f2c99263c11a5f607fbbd91d6447fe674bdafc172735d099908a09136d4a0f98cf79715e38ca4b490fdda7162be289
-  languageName: node
-  linkType: hard
-
-"lodash.iteratee@npm:^4.5.0":
-  version: 4.7.0
-  resolution: "lodash.iteratee@npm:4.7.0"
-  checksum: 900e8f9c2f37361aa50f880139e92a00a5c1a000a45c78f00f64f83591090ccd9644800d6869fc563ef47907d9914ec19e871433d7be8e272b7b0516b44910d7
   languageName: node
   linkType: hard
 
@@ -19143,27 +19107,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unist-util-find@npm:^1.0.1":
-  version: 1.0.2
-  resolution: "unist-util-find@npm:1.0.2"
-  dependencies:
-    lodash.iteratee: ^4.5.0
-    unist-util-visit: ^1.1.0
-  checksum: d13b92e65a94f8f8280ddddb030456e080d64179c6594e028f0a22c8c86b98744fc2336dfa322c817d7f356b42e46eab13321f7824e4529a5b51e538566587a5
-  languageName: node
-  linkType: hard
-
 "unist-util-generated@npm:^1.0.0":
   version: 1.1.6
   resolution: "unist-util-generated@npm:1.1.6"
   checksum: 86239ff88a08800d52198f2f0e15911f05bab2dad17cef95550f7c2728f15ebb0344694fcc3101d05762d88adaf86cb85aa7a3300fedabd0b6d7d00b41cdcb7f
-  languageName: node
-  linkType: hard
-
-"unist-util-is@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "unist-util-is@npm:3.0.0"
-  checksum: d24a5dd80c670f763b2ae608651cf062317456aa81be51f66f45cbd7d440a2ab18356e4f48aeac6b5e3d391c69d3c3452ade5fe5aa9574bec4a2de0b10122ed5
   languageName: node
   linkType: hard
 
@@ -19228,15 +19175,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unist-util-visit-parents@npm:^2.0.0":
-  version: 2.1.2
-  resolution: "unist-util-visit-parents@npm:2.1.2"
-  dependencies:
-    unist-util-is: ^3.0.0
-  checksum: 048edbb590a8c4bc0043eec9f50d3fe76faa58f1ac663a7e6dee5e895ddd0ce8bc52f2cfe2e633849fa93671e8de021070667acb1518e3d40220768c7f70a3d3
-  languageName: node
-  linkType: hard
-
 "unist-util-visit-parents@npm:^3.0.0, unist-util-visit-parents@npm:^3.1.1":
   version: 3.1.1
   resolution: "unist-util-visit-parents@npm:3.1.1"
@@ -19244,15 +19182,6 @@ __metadata:
     "@types/unist": ^2.0.0
     unist-util-is: ^4.0.0
   checksum: 1170e397dff88fab01e76d5154981666eb0291019d2462cff7a2961a3e76d3533b42eaa16b5b7e2d41ad42a5ea7d112301458283d255993e660511387bf67bc3
-  languageName: node
-  linkType: hard
-
-"unist-util-visit@npm:^1.1.0, unist-util-visit@npm:^1.1.3":
-  version: 1.4.1
-  resolution: "unist-util-visit@npm:1.4.1"
-  dependencies:
-    unist-util-visit-parents: ^2.0.0
-  checksum: e9395205b6908c8d0fe71bc44e65d89d4781d1bb2d453a33cb67ed4124bad0b89d6b1d526ebaecb82a7c48e211bdf6f24351449b8cc115327b345f4617c18728
   languageName: node
   linkType: hard
 

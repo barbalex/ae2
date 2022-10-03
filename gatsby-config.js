@@ -92,13 +92,6 @@ module.exports = {
             },
           },
           {
-            resolve: 'gatsby-remark-external-links',
-            options: {
-              target: '_self',
-              rel: 'nofollow',
-            },
-          },
-          {
             resolve: `gatsby-remark-images-medium-zoom`, // point!
             options: {
               background: 'rgba(128,128,128,0.5)',
