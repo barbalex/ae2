@@ -47,7 +47,7 @@ SELECT
   name,
   taxonomy_id,
   parent_id,
-  json_build_object('Taxonomie ID', o.taxonomie_id, 'Code', o.code, 'Gattung', o.gattung, 'Art', o.art, 'Unterart', o.unterart, 'Name Deutsch', 'Artname vollständig', o.name, o.name_deutsch, 'Synonym', o.synonym, 'CAPTX', o.captx)::jsonb
+  json_build_object('Taxonomie ID', o.taxonomie_id, 'Code', o.code, 'Gattung', o.gattung, 'Art', o.art, 'Unterart', o.unterart, 'Name Deutsch', o.name_deutsch, 'Artname vollständig', o.name, 'Synonym', o.synonym, 'CAPTX', o.captx, 'Taxon ID VDC', CONCAT('infospecies.ch:infofauna:', o.taxonomie_id))::jsonb
 FROM
   ae.tmp_object o;
 
@@ -135,14 +135,13 @@ WHERE
 --   taxonomy_id = '62a9144f-c0cd-4d31-8bf0-cf808ebcc832'
 --   AND properties ->> 'Taxonomie ID' IS NOT NULL;
 --
--- 10. add Taxon ID VDC
-UPDATE
-  ae.object
-SET
-  "properties" = jsonb_set("properties"::jsonb, '{"Taxon ID VDC"}', to_jsonb (CONCAT('infospecies.ch:infofauna:', properties ->> 'Taxonomie ID')))
-WHERE
-  taxonomy_id = '62a9144f-c0cd-4d31-8bf0-cf808ebcc832'
-  AND properties ->> 'Taxonomie ID' IS NOT NULL;
-
+-- 10. add Taxon ID VDC (only first time)
+-- UPDATE
+--   ae.object
+-- SET
+--   "properties" = jsonb_set("properties"::jsonb, '{"Taxon ID VDC"}', to_jsonb (CONCAT('infospecies.ch:infofauna:', properties ->> 'Taxonomie ID')))
+-- WHERE
+--   taxonomy_id = '62a9144f-c0cd-4d31-8bf0-cf808ebcc832'
+--   AND properties ->> 'Taxonomie ID' IS NOT NULL;
 --
 -- TODO: remove tmp tables
