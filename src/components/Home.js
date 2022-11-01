@@ -5,7 +5,6 @@ import MaterialCard from '@mui/material/Card'
 import styled from 'styled-components'
 import SimpleBar from 'simplebar-react'
 import { useResizeDetector } from 'react-resize-detector'
-import useResizeObserver from 'use-resize-observer'
 import { observer } from 'mobx-react-lite'
 
 import storeContext from '../storeContext'
@@ -94,7 +93,7 @@ const bgImageStyle = {
   zIndex: -1,
 }
 
-const Home = ({ data }) => {
+const Home = () => {
   // trick to prevent with from being reset on routing
   const store = useContext(storeContext)
   const { homeWidth, setHomeWidth } = store
