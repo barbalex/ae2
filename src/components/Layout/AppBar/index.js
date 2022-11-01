@@ -8,17 +8,13 @@ import styled from 'styled-components'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { navigate, Link } from 'gatsby'
-import loadable from '@loadable/component'
 import { Location } from '@reach/router'
 import { getSnapshot } from 'mobx-state-tree'
 
 import getActiveObjectIdFromNodeArray from '../../../modules/getActiveObjectIdFromNodeArray'
 import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
-
-// ReactDOMServer does not yet support Suspense
-//const MoreMenu = lazy(() => import('./MoreMenu'))
-const MoreMenu = loadable(() => import('./MoreMenu'))
+import MoreMenu from './MoreMenu'
 
 /**
  * For unknown reason appbar does not follow display flex when

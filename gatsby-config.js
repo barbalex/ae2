@@ -27,7 +27,6 @@ module.exports = {
         omitGoogleFont: true,
       },
     },
-    'gatsby-plugin-react-helmet',
     'gatsby-plugin-styled-components',
     {
       resolve: 'gatsby-plugin-manifest',

@@ -4,31 +4,22 @@ import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import debounce from 'lodash/debounce'
 import { observer } from 'mobx-react-lite'
-import loadable from '@loadable/component'
 import { Router } from '@reach/router'
 
 import ErrorBoundary from './shared/ErrorBoundary'
 import Layout from './Layout'
-//import LazyImportFallback from './shared/LazyImportFallback'
 import storeContext from '../storeContext'
+import Export from './Export'
+import Login from './Login'
+import Data from './Data'
+import FourOhFour from './FourOhFour'
+import GraphIql from './GraphIql'
 
 const Container = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
 `
-
-// ReactDOMServer does not yet support Suspense
-//const Export = lazy(() => import('./Export'))
-const Export = loadable(() => import('./Export'))
-//const Login = lazy(() => import('./Login'))
-const Login = loadable(() => import('./Login'))
-//const Data = lazy(() => import('./Data'))
-const Data = loadable(() => import('./Data'))
-//const FourOhFour = lazy(() => import('./FourOhFour'))
-const FourOhFour = loadable(() => import('./FourOhFour'))
-//const GraphIql = lazy(() => import('./GraphIql'))
-const GraphIql = loadable(() => import('./GraphIql'))
 
 const App = () => {
   const store = useContext(storeContext)

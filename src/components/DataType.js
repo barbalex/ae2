@@ -1,26 +1,17 @@
 import React, { useContext } from 'react'
 import { observer } from 'mobx-react-lite'
-import loadable from '@loadable/component'
 import { getSnapshot } from 'mobx-state-tree'
 
 //import LazyImportFallback from './shared/LazyImportFallback'
 import storeContext from '../storeContext'
-
-//const Pco = lazy(() => import('./PropertyCollection/PCO'))
-const Pco = loadable(() => import('./PropertyCollection/PCO'))
-//const Rco = lazy(() => import('./PropertyCollection/RCO'))
-const Rco = loadable(() => import('./PropertyCollection/RCO'))
-//const Objekt = lazy(() => import('./Objekt'))
-const Objekt = loadable(() => import('./Objekt'))
-//const Taxonomy = lazy(() => import('./Taxonomy'))
-const Taxonomy = loadable(() => import('./Taxonomy'))
-//const PropertyCollection = lazy(() => import('./PropertyCollection'))
-const PropertyCollection = loadable(() => import('./PropertyCollection'))
-//const Benutzer = lazy(() => import('./Benutzer'))
-const Benutzer = loadable(() => import('./Benutzer'))
-//const Organisation = lazy(() => import('./Organisation'))
-const Organisation = loadable(() => import('./Organisation'))
-const Home = loadable(() => import('./Home'))
+import Pco from './PropertyCollection/PCO'
+import Rco from './PropertyCollection/RCO'
+import Objekt from './Objekt'
+import Taxonomy from './Taxonomy'
+import PropertyCollection from './PropertyCollection'
+import Benutzer from './Benutzer'
+import Organisation from './Organisation'
+import Home from './Home'
 
 const DataType = ({ stacked = false }) => {
   const store = useContext(storeContext)

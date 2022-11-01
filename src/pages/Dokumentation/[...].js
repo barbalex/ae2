@@ -12,6 +12,7 @@ import ErrorBoundary from '../../components/shared/ErrorBoundary'
 import Sidebar from '../../templates/Sidebar'
 import useLocation from '../../modules/useLocation'
 import storeContext from '../../storeContext'
+import Header from '../../components/Head'
 
 const Container = styled.div`
   height: calc(100vh - 64px);
@@ -141,3 +142,5 @@ export const pageQuery = graphql`
 `
 
 export default observer(Dokumentation)
+
+export const Head = () => <Header />

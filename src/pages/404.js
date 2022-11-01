@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import Button from '@mui/material/Button'
 
 import Layout from '../components/Layout'
+import Header from '../components/Head'
 import ErrorBoundary from '../components/shared/ErrorBoundary'
 
 const Container = styled.div`
@@ -69,3 +70,5 @@ const FourOFour = () => {
 }
 
 export default FourOFour
+
+export const Head = () => <Header />
