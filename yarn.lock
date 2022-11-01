@@ -1175,7 +1175,7 @@
   "resolved" "https://registry.npmjs.org/@emotion/sheet/-/sheet-1.2.0.tgz"
   "version" "1.2.0"
 
-"@emotion/styled@^11.10.5", "@emotion/styled@^11.3.0":
+"@emotion/styled@^11.3.0", "@emotion/styled@11.10.5":
   "integrity" "sha512-8EP6dD7dMkdku2foLoruPCNkRevzdcBaY6q0l0OsbyJK+x8D9HWjX27ARiSIKNF634hY9Zdoedh8bJCiva8yZw=="
   "resolved" "https://registry.npmjs.org/@emotion/styled/-/styled-11.10.5.tgz"
   "version" "11.10.5"
@@ -9049,9 +9049,6 @@
     "prop-types" "^15.6.0"
     "warning" "^4.0.1"
 
-"react-fast-compare@^3.1.1":
-  "version" "3.2.0"
-
 "react-focus-lock@^2.5.2":
   "integrity" "sha512-pSWOQrUmiKLkffPO6BpMXN7SNKXMsuOakl652IBuALAu1esk+IcpJyM+ALcYzPTTFz1rD0R54aB9A4HuP5t1Wg=="
   "resolved" "https://registry.npmjs.org/react-focus-lock/-/react-focus-lock-2.9.1.tgz"
@@ -9063,14 +9060,6 @@
     "react-clientside-effect" "^1.2.6"
     "use-callback-ref" "^1.3.0"
     "use-sidecar" "^1.1.2"
-
-"react-helmet@6.1.0":
-  "version" "6.1.0"
-  dependencies:
-    "object-assign" "^4.1.1"
-    "prop-types" "^15.7.2"
-    "react-fast-compare" "^3.1.1"
-    "react-side-effect" "^2.1.0"
 
 "react-highlight-words@0.18.0":
   "version" "0.18.0"
@@ -9179,9 +9168,6 @@
     "loose-envify" "^1.1.0"
     "neo-async" "^2.6.1"
 
-"react-side-effect@^2.1.0":
-  "version" "2.1.1"
-
 "react-style-singleton@^2.2.1":
   "integrity" "sha512-ZWj0fHEMyWkHzKYUr2Bs/4zU6XLmq9HsgBURm7g5pAVfyn49DgUiNgY2d4lXRlYSiCif9YBGpQleewkcqddc7g=="
   "resolved" "https://registry.npmjs.org/react-style-singleton/-/react-style-singleton-2.2.1.tgz"
@@ -9251,7 +9237,7 @@
     "@babel/runtime" "^7.0.0"
     "memoize-one" ">=3.1.1 <6"
 
-"react@*", "react@^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0", "react@^0.14.0 || ^15.0.0 || ^16.0.0-0 || ^17.0.0-0 || ^18.0.0-0", "react@^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0 || ^17.0 || ^18.0.0", "react@^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0", "react@^15.3.0 || ^16.0.0 || ^17.0.0", "react@^15.3.0 || ^16.0.0 || ^17.0.0 || ^18.0.0", "react@^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0-rc", "react@^16.0.0", "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.3.0", "react@^16.3.0 || ^17.0.0", "react@^16.8.0 || ^17 || ^18", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || 17.x", "react@^16.9.0 || ^17.0.0 || ^18.0.0 || ^0.0.0", "react@^17.0.0", "react@^17.0.0 || ^18.0.0", "react@^18.2.0", "react@>= 16.8", "react@>= 16.8 || 18.0.0", "react@>= 16.8.0", "react@>=16.13.1", "react@>=16.3.0", "react@>=16.6.0", "react@>=16.8.0", "react@>0.13.0", "react@0.0.0-experimental-c8b778b7f-20220825", "react@15.x || 16.x || 17.x || 18.x", "react@16.8.0 - 18", "react@18.2.0":
+"react@*", "react@^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0", "react@^0.14.0 || ^15.0.0 || ^16.0.0-0 || ^17.0.0-0 || ^18.0.0-0", "react@^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0 || ^17.0 || ^18.0.0", "react@^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0", "react@^15.3.0 || ^16.0.0 || ^17.0.0", "react@^15.3.0 || ^16.0.0 || ^17.0.0 || ^18.0.0", "react@^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0-rc", "react@^16.0.0", "react@^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16.3.0", "react@^16.8.0 || ^17 || ^18", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || 17.x", "react@^16.9.0 || ^17.0.0 || ^18.0.0 || ^0.0.0", "react@^17.0.0", "react@^17.0.0 || ^18.0.0", "react@^18.2.0", "react@>= 16.8", "react@>= 16.8 || 18.0.0", "react@>= 16.8.0", "react@>=16.13.1", "react@>=16.3.0", "react@>=16.6.0", "react@>=16.8.0", "react@>0.13.0", "react@0.0.0-experimental-c8b778b7f-20220825", "react@15.x || 16.x || 17.x || 18.x", "react@16.8.0 - 18", "react@18.2.0":
   "version" "18.2.0"
   dependencies:
     "loose-envify" "^1.1.0"

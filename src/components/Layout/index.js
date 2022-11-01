@@ -1,10 +1,4 @@
-/**
- * Cant move Helmet to App
- * because neither StaticQuery nor AppQuery
- * work there :-(
- */
 import React from 'react'
-import { Helmet } from 'react-helmet'
 import styled from 'styled-components'
 
 import AppBar from './AppBar'
@@ -18,21 +12,7 @@ const Container = styled.div`
 
 const Layout = ({ children }) => (
   <Container>
-    <Helmet
-      title="arteigenschaften v1.7.19"
-      meta={[
-        {
-          name: 'description',
-          content: 'Arteigenschaften sammeln',
-        },
-        {
-          name: 'keywords',
-          content: 'Naturschutz, Artenschutz, Flora, Pflanzen, Pilze, Moose',
-        },
-      ]}
-    >
-      <html lang="de" />
-    </Helmet>
+    <html lang="de" />
     <AppBar />
     {children}
   </Container>
