@@ -41,7 +41,7 @@ const PropertiesTitleValue = styled.p`
   width: 100%;
 `
 
-const Properties = ({ id, properties, objectData, stacked }) => {
+const Properties = ({ id, properties, stacked }) => {
   const store = useContext(storeContext)
   const { editingTaxonomies } = store
 
