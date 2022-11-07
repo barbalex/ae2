@@ -29,7 +29,7 @@
     "dexie": "3.2.2",
     "exceljs": "4.3.0",
     "file-saver": "2.0.5",
-    "gatsby": "4.24.6",
+    "gatsby": "4.24.7",
     "gatsby-plugin-image": "2.24.0",
     "gatsby-plugin-manifest": "4.24.0",
     "gatsby-plugin-offline": "5.24.0",
@@ -69,7 +69,7 @@
     "react-linkify": "0.x",
     "react-reflex": "4.0.9",
     "react-resize-detector": "7.1.2",
-    "react-select": "5.5.9",
+    "react-select": "5.6.0",
     "react-swipeable-views": "0.14.0",
     "react-typography": "0.16.20",
     "react-virtualized-auto-sizer": "1.0.7",
@@ -101,14 +101,14 @@
     "rimraf": "removing v3.0.2 caused apollo error"
   },
   "devDependencies": {
-    "@babel/core": "7.19.6",
+    "@babel/core": "7.20.2",
     "@babel/eslint-parser": "7.19.1",
     "@babel/plugin-syntax-flow": "7.18.6",
     "@babel/plugin-transform-react-jsx": "7.19.0",
     "@babel/preset-react": "7.18.6",
     "@graphile-contrib/pg-order-by-related": "1.0.0-beta.6",
     "copyfiles": "2.4.1",
-    "eslint": "8.26.0",
+    "eslint": "8.27.0",
     "eslint-plugin-import": "2.x",
     "eslint-plugin-react": "7.x",
     "eslint-plugin-react-hooks": "4.6.0",
@@ -117,7 +117,7 @@
     "postgraphile": "4.12.11",
     "postgraphile-plugin-connection-filter": "2.3.0",
     "rimraf": "3.0.2",
-    "vercel": "28.4.12"
+    "vercel": "28.4.14"
   },
   "resolutions": {
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest"
