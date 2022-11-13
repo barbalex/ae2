@@ -1,7 +1,7 @@
 ---
-path: '/Dokumentation/Schnittstellen'
-date: '2021-10-25'
-title: 'Schnittstellen'
+path: "/Dokumentation/Schnittstellen"
+date: "2021-10-25"
+title: "Schnittstellen"
 sort1: 5
 ---
 

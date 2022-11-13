@@ -1,7 +1,7 @@
 ---
-path: '/Dokumentation/Neue-Art-erfassen'
-date: '2021-11-02'
-title: 'Neue Art erfassen'
+path: "/Dokumentation/Neue-Art-erfassen"
+date: "2021-11-02"
+title: "Neue Art erfassen"
 sort1: 4
 ---
 

@@ -1,7 +1,7 @@
 ---
-path: '/Dokumentation/Projektbeschreibung'
-date: '2019-09-29'
-title: 'Projektbeschreibung'
+path: "/Dokumentation/Projektbeschreibung"
+date: "2019-09-29"
+title: "Projektbeschreibung"
 sort1: 1
 ---
 
@@ -90,7 +90,7 @@ Es gibt ein paar (nachfolgend erklärte) Grundbegriffe. Daraus leiten sich diese
 - Taxonomien mit Objekten und Synonymen
 - Eigenschaften-Sammlungen mit Eigenschaften und Beziehungen
 
-Ja, das ist alles :-)<br/><br/>
+Ja, das ist alles.<br/><br/>
 
 ### Taxonomien
 
