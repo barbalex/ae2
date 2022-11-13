@@ -59,7 +59,8 @@ const DocTemplate = ({ data, height, width }) => {
   const { windowWidth } = store
 
   const { markdownRemark, allMarkdownRemark } = data
-  const { frontmatter, html } = markdownRemark
+  const frontmatter = markdownRemark?.frontmatter
+  const html = markdownRemark?.html ?? `<div>no data</div>`
   const { edges } = allMarkdownRemark
 
   const { pathname } = useLocation()
@@ -124,8 +125,8 @@ const DocTemplate = ({ data, height, width }) => {
               style={{ maxHeight: height, height: '100%', width: '100%' }}
             >
               <Doku>
-                <h1>{frontmatter.title}</h1>
-                <DokuDate>{frontmatter.date}</DokuDate>
+                <h1>{frontmatter?.title ?? 'no title'}</h1>
+                <DokuDate>{frontmatter.date ?? 'no date'}</DokuDate>
                 <div dangerouslySetInnerHTML={{ __html: html }} />
               </Doku>
             </SimpleBar>
@@ -148,8 +149,8 @@ const DocTemplate = ({ data, height, width }) => {
             style={{ maxHeight: height, height: '100%', width: '100%' }}
           >
             <Doku>
-              <h1>{frontmatter.title}</h1>
-              <DokuDate>{frontmatter.date}</DokuDate>
+              <h1>{frontmatter?.title ?? 'no title'}</h1>
+              <DokuDate>{frontmatter.date ?? 'no date'}</DokuDate>
               <div dangerouslySetInnerHTML={{ __html: html }} />
             </Doku>
           </SimpleBar>
@@ -170,7 +171,7 @@ export const pageQuery = graphql`
       }
     }
     allMarkdownRemark(
-      sort: { order: ASC, fields: [frontmatter___sort1] }
+      sort: { frontmatter: { sort1: ASC } }
       filter: { fileAbsolutePath: { regex: "/(/docs)/.*.md$/" } }
     ) {
       edges {
