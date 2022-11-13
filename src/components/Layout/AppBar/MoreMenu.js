@@ -29,9 +29,9 @@ const Version = styled.div`
   color: rgba(0, 0, 0, 0.4);
   user-select: none;
 `
-const TwoLineMenuItem = styled(MenuItem)`
-  line-height: 1.3 !important;
-`
+// const TwoLineMenuItem = styled(MenuItem)`
+//   line-height: 1.3 !important;
+// `
 
 const ITEM_HEIGHT = 48
 const paperProps = {
@@ -67,10 +67,10 @@ const MoreMenu = () => {
       window.open('https://github.com/FNSKtZH/ae2/issues')
     setAnchorEl(null)
   }, [])
-  const onClickGqlQuery = useCallback(() => {
-    navigate('/graphiql')
-    setAnchorEl(null)
-  }, [])
+  // const onClickGqlQuery = useCallback(() => {
+  //   navigate('/graphiql')
+  //   setAnchorEl(null)
+  // }, [])
   const hostname =
     typeof window !== 'undefined' ? window.location.hostname : 'artdaten.ch'
   const onClickUptime = useCallback(() => {
@@ -114,11 +114,11 @@ const MoreMenu = () => {
         <MenuItem key="melden" onClick={onClickMelden}>
           Fehler oder Wünsche melden
         </MenuItem>
-        <TwoLineMenuItem key="graphiql" onClick={onClickGqlQuery}>
+        {/* <TwoLineMenuItem key="graphiql" onClick={onClickGqlQuery}>
           GrahpQL-Abfragetool
           <br />
           inkl. Schnittstellen-Dokumentation
-        </TwoLineMenuItem>
+        </TwoLineMenuItem> */}
         <MenuItem onClick={onClickUptime}>
           {`Verfügbarkeit der Server von ${hostname}`}
         </MenuItem>

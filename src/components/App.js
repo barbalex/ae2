@@ -13,7 +13,7 @@ import Export from './Export'
 import Login from './Login'
 import Data from './Data'
 import FourOhFour from './FourOhFour'
-import GraphIql from './GraphIql'
+// import GraphIql from './GraphIql'
 
 const Container = styled.div`
   height: 100%;
@@ -67,7 +67,7 @@ const App = () => {
             <Data stacked={stacked} path="/*" />
             <Export stacked={stacked} path="Export" />
             <Login path="/Login" />
-            <GraphIql path="/graphiql" />
+            {/* <GraphIql path="/graphiql" /> */}
             <FourOhFour default />
           </Router>
           <Snackbar
