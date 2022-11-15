@@ -4,7 +4,6 @@ import omit from 'lodash/omit'
 import forOwn from 'lodash/forOwn'
 import union from 'lodash/union'
 import orderBy from 'lodash/orderBy'
-import ReactDataGrid from 'react-data-grid'
 import Button from '@mui/material/Button'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -20,6 +19,8 @@ import treeQueryVariables from '../../Tree/treeQueryVariables'
 import deletePcoOfPcMutation from './deletePcoOfPcMutation'
 import storeContext from '../../../storeContext'
 import Spinner from '../../shared/Spinner'
+
+const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
 
 const Container = styled.div`
   height: 100%;
@@ -108,6 +109,7 @@ const pcoQuery = gql`
 `
 
 const PCO = () => {
+  const isSSR = typeof window === 'undefined'
   const client = useApolloClient()
   const store = useContext(storeContext)
   const { login } = store
@@ -227,15 +229,17 @@ const PCO = () => {
       )}
       {!importing && pCO.length > 0 && (
         <>
-          {width && height && (
-            <ReactDataGrid
-              onGridSort={onGridSort}
-              columns={columns}
-              rowGetter={rowGetter}
-              rowsCount={pCO.length}
-              minHeight={height - 26 - 46}
-              minWidth={width}
-            />
+          {width && height && !isSSR && (
+            <React.Suspense fallback={<div />}>
+              <ReactDataGridLazy
+                onGridSort={onGridSort}
+                columns={columns}
+                rowGetter={rowGetter}
+                rowsCount={pCO.length}
+                minHeight={height - 26 - 46}
+                minWidth={width}
+              />
+            </React.Suspense>
           )}
           <ButtonsContainer>
             <ExportButtons>

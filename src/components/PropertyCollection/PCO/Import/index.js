@@ -15,7 +15,6 @@ import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import Dropzone from 'react-dropzone'
 import { read, utils } from 'xlsx'
-import ReactDataGrid from 'react-data-grid'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
@@ -25,6 +24,8 @@ import createPCOMutation from './createPCOMutation'
 import updatePCOMutation from './updatePCOMutation'
 import storeContext from '../../../../storeContext'
 import isUuid from '../../../../modules/isUuid'
+
+const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
 
 const Container = styled.div`
   height: 100%;
@@ -200,6 +201,7 @@ const importPcoQuery = gql`
 `
 
 const ImportPco = ({ setImport, pCO }) => {
+  const isSSR = typeof window === 'undefined'
   const client = useApolloClient()
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
@@ -1021,15 +1023,19 @@ const ImportPco = ({ setImport, pCO }) => {
             )} Feld${propertyFields.length === 1 ? '' : 'er'}${
               importData.length > 0 ? ':' : ''
             }`}</TotalDiv>
-            <ReactDataGrid
-              columns={importDataFields.map((k) => ({
-                key: k,
-                name: k,
-                resizable: true,
-              }))}
-              rowGetter={rowGetter}
-              rowsCount={importData.length}
-            />
+            {!isSSR && (
+              <React.Suspense fallback={<div />}>
+                <ReactDataGridLazy
+                  columns={importDataFields.map((k) => ({
+                    key: k,
+                    name: k,
+                    resizable: true,
+                  }))}
+                  rowGetter={rowGetter}
+                  rowsCount={importData.length}
+                />
+              </React.Suspense>
+            )}
           </>
         )}
         <StyledSnackbar open={importPcoLoading} message="lade Daten..." />

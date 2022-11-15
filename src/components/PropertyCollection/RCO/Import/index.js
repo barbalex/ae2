@@ -16,7 +16,6 @@ import Snackbar from '@mui/material/Snackbar'
 import Dropzone from 'react-dropzone'
 import { read, utils } from 'xlsx'
 import isUuid from 'is-uuid'
-import ReactDataGrid from 'react-data-grid'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
@@ -26,6 +25,8 @@ import createRCOMutation from './createRCOMutation'
 import updateRCOMutation from './updateRCOMutation'
 import storeContext from '../../../../storeContext'
 //import importWorker from './import.worker.js'
+
+const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
 
 const Container = styled.div`
   height: 100%;
@@ -215,6 +216,7 @@ const importRcoQuery = gql`
 `
 
 const ImportRco = ({ setImport, pCO }) => {
+  const isSSR = typeof window === 'undefined'
   const client = useApolloClient()
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
@@ -1235,15 +1237,19 @@ const ImportRco = ({ setImport, pCO }) => {
             )} Feld${propertyFields.length === 1 ? '' : 'er'}${
               importData.length > 0 ? ':' : ''
             }`}</TotalDiv>
-            <ReactDataGrid
-              columns={importDataFields.map((k) => ({
-                key: k,
-                name: k,
-                resizable: true,
-              }))}
-              rowGetter={rowGetter}
-              rowsCount={importData.length}
-            />
+            {!isSSR && (
+              <React.Suspense fallback={<div />}>
+                <ReactDataGridLazy
+                  columns={importDataFields.map((k) => ({
+                    key: k,
+                    name: k,
+                    resizable: true,
+                  }))}
+                  rowGetter={rowGetter}
+                  rowsCount={importData.length}
+                />
+              </React.Suspense>
+            )}
           </>
         )}
         <StyledSnackbar open={importRcoLoading} message="lade Daten..." />

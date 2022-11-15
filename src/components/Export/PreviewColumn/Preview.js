@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useContext } from 'react'
-import ReactDataGrid from 'react-data-grid'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import styled from 'styled-components'
@@ -13,6 +12,8 @@ import exportCsv from '../../../modules/exportCsv'
 import rowsFromObjects from './rowsFromObjects'
 import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
+
+const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
 
 const Container = styled.div`
   padding-top: 5px;
@@ -176,6 +177,7 @@ const synonymQuery = gql`
 `
 
 const Preview = () => {
+  const isSSR = typeof window === 'undefined'
   const store = useContext(storeContext)
   const {
     onlyRowsWithProperties: exportOnlyRowsWithProperties,
@@ -253,7 +255,7 @@ const Preview = () => {
 
   const onSetMessage = useCallback((message) => {
     setMessage(message)
-    if (!!message) {
+    if (message) {
       setTimeout(() => setMessage(''), 5000)
     }
   }, [])
@@ -347,14 +349,18 @@ const Preview = () => {
             )} Datensätze, ${anzFelder.toLocaleString('de-CH')} ${
               anzFelder === 1 ? 'Feld' : 'Felder'
             }`}</TotalDiv>
-            <ReactDataGrid
-              onGridSort={onGridSort}
-              columns={pvColumns}
-              rowGetter={(i) => rows[i]}
-              rowsCount={rows.length}
-              minHeight={500}
-              minColumnWidth={120}
-            />
+            {!isSSR && (
+              <React.Suspense fallback={<div />}>
+                <ReactDataGridLazy
+                  onGridSort={onGridSort}
+                  columns={pvColumns}
+                  rowGetter={(i) => rows[i]}
+                  rowsCount={rows.length}
+                  minHeight={500}
+                  minColumnWidth={120}
+                />
+              </React.Suspense>
+            )}
           </SpreadsheetContainer>
         )}
         {rows.length === 0 && (
