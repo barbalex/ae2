@@ -26,6 +26,7 @@ import updateRCOMutation from './updateRCOMutation'
 import storeContext from '../../../../storeContext'
 //import importWorker from './import.worker.js'
 
+// react-data-grid calls window!
 const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
 
 const Container = styled.div`

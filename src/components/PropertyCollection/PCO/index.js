@@ -20,6 +20,7 @@ import deletePcoOfPcMutation from './deletePcoOfPcMutation'
 import storeContext from '../../../storeContext'
 import Spinner from '../../shared/Spinner'
 
+// react-data-grid calls window!
 const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
 
 const Container = styled.div`

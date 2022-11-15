@@ -25,6 +25,7 @@ import updatePCOMutation from './updatePCOMutation'
 import storeContext from '../../../../storeContext'
 import isUuid from '../../../../modules/isUuid'
 
+// react-data-grid calls window!
 const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
 
 const Container = styled.div`
