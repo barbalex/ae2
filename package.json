@@ -97,7 +97,7 @@
     "webpack": "is peer",
     "graphql-ws": "is UNDECLARED dependency of graphiql, see: https://github.com/graphql/graphiql/issues/2405#issuecomment-1126009181",
     "rimraf": "removing v3.0.2 caused apollo error",
-    "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583",
+    "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583. Also: as react cant be upgraded to 18, can't upgrade gatsby",
     "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why."
   },
   "devDependencies": {
