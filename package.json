@@ -56,15 +56,15 @@
     "mobx-state-tree": "5.1.6",
     "polished": "1.x",
     "prop-types": "15.8.1",
-    "react": "18.2.0",
+    "react": "17.0.2",
     "react-autosuggest": "10.1.0",
     "react-data-grid": "6.1.0",
-    "react-dom": "18.2.0",
+    "react-dom": "17.0.2",
     "react-dropzone": "14.2.3",
     "react-error-boundary": "3.1.4",
     "react-highlight-words": "0.18.0",
     "react-icons": "4.6.0",
-    "react-is": "18.2.0",
+    "react-is": "17.0.2",
     "react-linkify": "0.x",
     "react-reflex": "4.0.9",
     "react-resize-detector": "7.1.2",
@@ -97,7 +97,8 @@
     "webpack": "is peer",
     "graphql-ws": "is UNDECLARED dependency of graphiql, see: https://github.com/graphql/graphiql/issues/2405#issuecomment-1126009181",
     "rimraf": "removing v3.0.2 caused apollo error",
-    "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583"
+    "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583",
+    "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why."
   },
   "devDependencies": {
     "@babel/core": "7.20.2",
