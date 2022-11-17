@@ -67,7 +67,7 @@ const App = () => {
             <Data stacked={stacked} path="/*" />
             <Export stacked={stacked} path="Export" />
             <Login path="/Login" />
-            {/* <GraphIql path="/graphiql" /> */}
+            {/* <GraphIql path="/graphiql" /> */} 
             <FourOhFour default />
           </Router>
           <Snackbar
