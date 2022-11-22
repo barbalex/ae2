@@ -84,7 +84,6 @@
     "babel-plugin-styled-components": "is peer",
     "@babel/plugin-transform-react-jsx": "is peer",
     "@babel/plugin-syntax-flow": "is peer",
-    "create-react-class": "is peer",
     "polished": "is peer",
     "prop-types": "is peer",
     "typescript": "is peer",
