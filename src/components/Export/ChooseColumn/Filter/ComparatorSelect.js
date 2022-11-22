@@ -11,6 +11,7 @@ const StyledSelect = styled(Select)`
 `
 const MenuItemRow = styled.div`
   display: flex;
+  align-items: center;
 `
 const Value = styled.span`
   flex-basis: 85px;
@@ -20,7 +21,7 @@ const Comment = styled.span`
   font-size: 0.7em;
 `
 
-const ComparatorSelect = ({ comparator, onChange, classes }) => (
+const ComparatorSelect = ({ comparator, onChange }) => (
   <StyledSelect
     value={comparator}
     onChange={onChange}

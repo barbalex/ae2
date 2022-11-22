@@ -1,5 +1,4 @@
 import React, { useCallback, useContext } from 'react'
-import withStyles from '@mui/styles/withStyles'
 import InputLabel from '@mui/material/InputLabel'
 import FormControl from '@mui/material/FormControl'
 import styled from 'styled-components'
@@ -9,6 +8,8 @@ import ComparatorSelect from '../../ComparatorSelect'
 import storeContext from './../../../../../../storeContext'
 
 const Container = styled.div`
+  display: flex;
+  flew-wrap: wrap;
   flex-basis: 150px;
   flex-shrink: 0;
   flex-grow: 1;
@@ -16,25 +17,13 @@ const Container = styled.div`
 const StyledFormControl = styled(FormControl)`
   margin: 0 !important;
   width: 100%;
+  min-width: 120px;
   > label {
     padding-left: 8px;
   }
 `
-const styles = (theme) => ({
-  container: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  formControl: {
-    margin: theme.spacing(1),
-    minWidth: 120,
-  },
-  selectEmpty: {
-    marginTop: theme.spacing(2),
-  },
-})
 
-const Comparator = ({ comparator, classes, taxname, pname, value }) => {
+const Comparator = ({ comparator, taxname, pname, value }) => {
   const store = useContext(storeContext)
   const { setTaxFilters } = store.export
 
@@ -51,7 +40,7 @@ const Comparator = ({ comparator, classes, taxname, pname, value }) => {
 
   return (
     <Container>
-      <StyledFormControl className={classes.formControl} variant="standard">
+      <StyledFormControl variant="standard">
         <InputLabel htmlFor="v-op">Vergleichs-Operator</InputLabel>
         <ComparatorSelect comparator={comparator} onChange={onChange} />
       </StyledFormControl>
@@ -59,4 +48,4 @@ const Comparator = ({ comparator, classes, taxname, pname, value }) => {
   )
 }
 
-export default withStyles(styles)(observer(Comparator))
+export default observer(Comparator)
