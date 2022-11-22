@@ -71,7 +71,6 @@
     "react-window": "1.8.8",
     "simplebar-react": "2.4.3",
     "styled-components": "5.3.6",
-    "typescript": "4.9.3",
     "typography": "0.16.21",
     "use-debounce": "8.0.4",
     "use-resize-observer": "9.0.2",
@@ -83,7 +82,6 @@
     "@babel/plugin-transform-react-jsx": "is peer",
     "@babel/plugin-syntax-flow": "is peer",
     "polished": "is peer",
-    "typescript": "is peer",
     "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583. Also: as react cant be upgraded to 18, can't upgrade gatsby",
     "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why."
   },
