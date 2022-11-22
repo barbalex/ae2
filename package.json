@@ -76,7 +76,6 @@
     "use-debounce": "8.0.4",
     "use-resize-observer": "9.0.2",
     "use-subscription": "1.8.0",
-    "webpack": "5.75.0",
     "xlsx": "0.18.5"
   },
   "dependenciesComments": {
@@ -85,7 +84,6 @@
     "@babel/plugin-syntax-flow": "is peer",
     "polished": "is peer",
     "typescript": "is peer",
-    "webpack": "is peer",
     "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583. Also: as react cant be upgraded to 18, can't upgrade gatsby",
     "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why."
   },
