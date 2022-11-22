@@ -7,6 +7,10 @@
 // import Spinner from '../shared/Spinner'
 // import ErrorBoundary from '../shared/ErrorBoundary'
 
+// when using this, need to also install graphql-ws
+// uninstalled because uses graphql@15, which is not compatible with graphql@16
+// "graphql-ws": "is UNDECLARED dependency of graphiql, see: https://github.com/graphql/graphiql/issues/2405#issuecomment-1126009181"
+
 // const Container = styled.div`
 //   height: calc(100vh - 64px);
 // `
