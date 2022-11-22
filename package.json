@@ -50,7 +50,6 @@
     "mobx": "6.7.0",
     "mobx-react-lite": "3.4.0",
     "mobx-state-tree": "5.1.6",
-    "polished": "1.x",
     "react": "17.0.2",
     "react-autosuggest": "10.1.0",
     "react-data-grid": "6.1.0",
@@ -77,7 +76,6 @@
     "xlsx": "0.18.5"
   },
   "dependenciesComments": {
-    "polished": "is peer",
     "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583. Also: as react cant be upgraded to 18, can't upgrade gatsby",
     "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why."
   },
