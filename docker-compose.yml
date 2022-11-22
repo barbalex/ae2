@@ -1,0 +1,38 @@
+version: '3.7'
+services:
+  graphql:
+    container_name: ae_graphql
+    restart: unless-stopped
+    build:
+      context: ./graphql
+    networks:
+      - network
+    expose:
+      - '5000'
+    ports:
+      - '5000:5000'
+    env_file:
+      - ./.env
+    command:
+      [
+        '--connection',
+        '${DATABASE_URL}',
+        '--schema',
+        'ae',
+        '--append-plugins',
+        'postgraphile-plugin-connection-filter,@graphile-contrib/pg-order-by-related',
+        '--jwt-token-identifier',
+        'auth.jwt_token',
+        '--default-role',
+        'anon',
+        '--jwt-secret',
+        '${JWT_SECRET}',
+        '--body-size-limit',
+        '300kb',
+        '--cors',
+        '--disable-query-log',
+        '--enable-query-batching',
+        '--retry-on-init-fail',
+      ]
+networks:
+  network:
