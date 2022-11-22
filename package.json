@@ -79,7 +79,6 @@
   },
   "dependenciesComments": {
     "babel-plugin-styled-components": "is peer",
-    "@babel/plugin-transform-react-jsx": "is peer",
     "polished": "is peer",
     "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583. Also: as react cant be upgraded to 18, can't upgrade gatsby",
     "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why."
@@ -87,7 +86,6 @@
   "devDependencies": {
     "@babel/core": "7.20.2",
     "@babel/eslint-parser": "7.19.1",
-    "@babel/plugin-transform-react-jsx": "7.19.0",
     "@babel/preset-react": "7.18.6",
     "copyfiles": "2.4.1",
     "eslint": "8.28.0",
