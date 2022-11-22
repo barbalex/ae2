@@ -12,7 +12,8 @@ const Container = styled.div`
   align-content: stretch;
   padding: 4px 16px;
   width: ${(props) => `${props['data-width']}%`};
-  > div {
+  .react-autosuggest__container {
+    flex-grow: 1;
     height: auto;
   }
 `

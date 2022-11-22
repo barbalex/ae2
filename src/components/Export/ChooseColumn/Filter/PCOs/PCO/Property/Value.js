@@ -5,7 +5,6 @@ import parse from 'autosuggest-highlight/parse'
 import TextField from '@mui/material/TextField'
 import Paper from '@mui/material/Paper'
 import MenuItem from '@mui/material/MenuItem'
-import withStyles from '@mui/styles/withStyles'
 import styled from 'styled-components'
 import trimStart from 'lodash/trimStart'
 import { useQuery, gql } from '@apollo/client'
@@ -26,6 +25,57 @@ const StyledTextField = styled(TextField)`
   white-space: nowrap !important;
   overflow: hidden !important;
   width: 100%;
+`
+
+const styles = () => ({
+  // container: {
+  //   flexGrow: 1,
+  //   position: 'relative',
+  //   height: 200,
+  // },
+  // suggestionsContainerOpen: {
+  //   position: 'absolute',
+  //   marginTop: theme.spacing(1),
+  //   marginBottom: theme.spacing(3),
+  //   left: 0,
+  //   right: 0,
+  // },
+  // suggestion: {
+  //   display: 'block',
+  //   margin: 0,
+  // },
+  // suggestionsList: {
+  //   margin: 0,
+  //   padding: 0,
+  //   listStyleType: 'none',
+  //   maxHeight: '500px',
+  //   overflow: 'auto',
+  // },
+})
+const StyledAutosuggest = styled(Autosuggest)`
+  .react-autosuggest__container {
+    flex-grow: 1;
+    position: relative;
+    height: 200px;
+  }
+  .react-autosuggest__suggestions-container--open {
+    position: absolute;
+    margin-top: 8px;
+    margin-bottom: 24px;
+    left: 0;
+    right: 0;
+  }
+  .react-autosuggest__suggestion {
+    display: block;
+    margin: 0;
+  }
+  .react-autosuggest__suggestions-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    max-height: 500px;
+    overflow: auto;
+  }
 `
 
 function renderSuggestion(suggestion, { query, isHighlighted }) {
@@ -68,32 +118,6 @@ function getSuggestionValue(suggestion) {
 function shouldRenderSuggestions() {
   return true
 }
-
-const styles = (theme) => ({
-  container: {
-    flexGrow: 1,
-    position: 'relative',
-    height: 200,
-  },
-  suggestionsContainerOpen: {
-    position: 'absolute',
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(3),
-    left: 0,
-    right: 0,
-  },
-  suggestion: {
-    display: 'block',
-    margin: 0,
-  },
-  suggestionsList: {
-    margin: 0,
-    padding: 0,
-    listStyleType: 'none',
-    maxHeight: '500px',
-    overflow: 'auto',
-  },
-})
 
 const pcoFieldPropQuery = gql`
   query propDataQuery(
@@ -245,7 +269,7 @@ const IntegrationAutosuggest = ({
   if (propDataError) return `Error loading data: ${propDataError.message}`
 
   return (
-    <Autosuggest
+    <StyledAutosuggest
       theme={{
         container: classes.container,
         suggestionsContainerOpen: classes.suggestionsContainerOpen,
@@ -272,4 +296,4 @@ const IntegrationAutosuggest = ({
   )
 }
 
-export default withStyles(styles)(observer(IntegrationAutosuggest))
+export default observer(IntegrationAutosuggest)

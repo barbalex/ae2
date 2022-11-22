@@ -8,8 +8,8 @@ import ComparatorSelect from '../../../ComparatorSelect'
 import storeContext from '../../../../../../../storeContext'
 
 const Container = styled.div`
-display: flex;
-flew-wrap: wrap;
+  display: flex;
+  flew-wrap: wrap;
   flex-basis: 150px;
   flex-shrink: 0;
   flex-grow: 1;
@@ -61,7 +61,7 @@ const RcoComparator = ({
 
   return (
     <Container>
-      <StyledFormControl  variant="standard">
+      <StyledFormControl variant="standard">
         <InputLabel htmlFor="v-op">Vergleichs-Operator</InputLabel>
         <ComparatorSelect comparator={comparator} onChange={onChange} />
       </StyledFormControl>
@@ -69,4 +69,4 @@ const RcoComparator = ({
   )
 }
 
-export default (observer(RcoComparator))
+export default observer(RcoComparator)

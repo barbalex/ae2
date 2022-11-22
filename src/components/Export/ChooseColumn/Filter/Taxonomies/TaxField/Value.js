@@ -11,7 +11,6 @@ import parse from 'autosuggest-highlight/parse'
 import TextField from '@mui/material/TextField'
 import Paper from '@mui/material/Paper'
 import MenuItem from '@mui/material/MenuItem'
-import withStyles from '@mui/styles/withStyles'
 import styled from 'styled-components'
 import trimStart from 'lodash/trimStart'
 import { useQuery, gql } from '@apollo/client'
@@ -21,13 +20,36 @@ import readableType from '../../../../../../modules/readableType'
 import storeContext from '../../../../../../storeContext'
 
 const StyledAutosuggest = styled(Autosuggest)`
+  .react-autosuggest__suggestions-container {
+    position: relative;
+    height: 200px;
+  }
   .react-autosuggest__suggestion {
+    display: block;
+    margin: 0;
     cursor: pointer;
     padding: 5px 20px !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
   }
+  .react-autosuggest__suggestions-container--open {
+    position: absolute;
+    margin-top: 8px;
+    margin-bottom: 24px;
+    left: 0;
+    right: 0;
+    // minWidth: that of parent
+    min-width: ${(props) => props['data-width']}px;
+  }
+  .react-autosuggest__suggestions-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    max-height: 500px;
+    overflow: auto;
+  }
 `
+
 const StyledPaper = styled(Paper)`
   z-index: 1;
   /* need this so text is visible when overflowing */
@@ -83,25 +105,6 @@ function shouldRenderSuggestions() {
   return true
 }
 
-const styles = () => ({
-  container: {
-    flexGrow: 1,
-    position: 'relative',
-    height: 200,
-  },
-  suggestion: {
-    display: 'block',
-    margin: 0,
-  },
-  suggestionsList: {
-    margin: 0,
-    padding: 0,
-    listStyleType: 'none',
-    maxHeight: '500px',
-    overflow: 'auto',
-  },
-})
-
 const taxFieldPropQuery = gql`
   query propDataQuery(
     $tableName: String!
@@ -131,7 +134,6 @@ const IntegrationAutosuggest = ({
   jsontype,
   comparator,
   value: propsValue,
-  classes,
   width,
 }) => {
   const store = useContext(storeContext)
@@ -142,6 +144,8 @@ const IntegrationAutosuggest = ({
   const [suggestions, setSuggestions] = useState([])
   const [propValues, setPropValues] = useState([])
   const [value, setValue] = useState(propsValue || '')
+
+  console.log('TaxFieldValue', { propValues, suggestions, dataFetched, value })
 
   const { data: propData, error: propDataError } = useQuery(taxFieldPropQuery, {
     variables: {
@@ -237,17 +241,12 @@ const IntegrationAutosuggest = ({
           fullWidth
           value={value || ''}
           inputRef={ref}
-          InputProps={{
-            classes: {
-              input: classes.input,
-            },
-            ...other,
-          }}
           variant="standard"
+          InputProps={other}
         />
       )
     },
-    [pname, jsontype, value, classes.input],
+    [pname, jsontype, value],
   )
   const inputProps = useMemo(
     () => ({
@@ -260,32 +259,15 @@ const IntegrationAutosuggest = ({
     }),
     [handleBlur, handleChange, onFocus, value],
   )
-  const { container, suggestionsList, suggestion } = classes
-  const theme = useMemo(
-    () => ({
-      container: container,
-      suggestionsContainerOpen: {
-        position: 'absolute',
-        marginTop: 8,
-        marginBottom: 8 * 3,
-        left: 0,
-        right: 0,
-        // minWidth: that of parent
-        minWidth: width,
-      },
-      suggestionsList: suggestionsList,
-      suggestion: suggestion,
-    }),
-    [container, suggestion, suggestionsList, width],
-  )
 
   if (propDataError) {
     return `Error loading data: ${propDataError.message}`
   }
 
+  console.log('TaxField, width:', width)
+
   return (
     <StyledAutosuggest
-      theme={theme}
       renderInputComponent={renderInput}
       suggestions={suggestions}
       onSuggestionsFetchRequested={handleSuggestionsFetchRequested}
@@ -295,8 +277,10 @@ const IntegrationAutosuggest = ({
       renderSuggestion={renderSuggestion}
       shouldRenderSuggestions={shouldRenderSuggestions}
       inputProps={inputProps}
+      data-width={width}
+      className="styled_autossuggest"
     />
   )
 }
 
-export default withStyles(styles)(observer(IntegrationAutosuggest))
+export default observer(IntegrationAutosuggest)
