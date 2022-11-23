@@ -27,34 +27,29 @@ const StyledTextField = styled(TextField)`
   width: 100%;
 `
 
-const styles = () => ({
-  // container: {
-  //   flexGrow: 1,
-  //   position: 'relative',
-  //   height: 200,
-  // },
-  // suggestionsContainerOpen: {
-  //   position: 'absolute',
-  //   marginTop: theme.spacing(1),
-  //   marginBottom: theme.spacing(3),
-  //   left: 0,
-  //   right: 0,
-  // },
-  // suggestion: {
-  //   display: 'block',
-  //   margin: 0,
-  // },
-  // suggestionsList: {
-  //   margin: 0,
-  //   padding: 0,
-  //   listStyleType: 'none',
-  //   maxHeight: '500px',
-  //   overflow: 'auto',
-  // },
-})
-const StyledAutosuggest = styled(Autosuggest)`
+// somehow need container and style Autosuggest to get css to work well
+const Container = styled.div`
+  flex-grow: 1;
   .react-autosuggest__container {
-    flex-grow: 1;
+    width: 100%;
+  }
+  .react-autosuggest__suggestions-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    max-height: 500px;
+    overflow: auto;
+  }
+  .react-autosuggest__suggestion {
+    display: block;
+    cursor: pointer;
+    margin: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+`
+const StyledAutosuggest = styled(Autosuggest)`
+  .react-autosuggest__suggestions-container {
     position: relative;
     height: 200px;
   }
@@ -64,17 +59,8 @@ const StyledAutosuggest = styled(Autosuggest)`
     margin-bottom: 24px;
     left: 0;
     right: 0;
-  }
-  .react-autosuggest__suggestion {
-    display: block;
-    margin: 0;
-  }
-  .react-autosuggest__suggestions-list {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-    max-height: 500px;
-    overflow: auto;
+    // minWidth: that of parent
+    min-width: ${(props) => props['data-width']}px;
   }
 `
 
@@ -148,7 +134,6 @@ const IntegrationAutosuggest = ({
   jsontype,
   comparator,
   value: propsValue,
-  classes,
 }) => {
   const store = useContext(storeContext)
   const { addFilterFields, setPcoFilter, addPcoProperty } = store.export
@@ -253,46 +238,37 @@ const IntegrationAutosuggest = ({
           fullWidth
           value={value || ''}
           inputRef={ref}
-          InputProps={{
-            classes: {
-              input: classes.input,
-            },
-            ...other,
-          }}
+          InputProps={other}
           variant="standard"
         />
       )
     },
-    [pname, jsontype, value, classes.input],
+    [pname, jsontype, value],
   )
 
   if (propDataError) return `Error loading data: ${propDataError.message}`
 
   return (
-    <StyledAutosuggest
-      theme={{
-        container: classes.container,
-        suggestionsContainerOpen: classes.suggestionsContainerOpen,
-        suggestionsList: classes.suggestionsList,
-        suggestion: classes.suggestion,
-      }}
-      renderInputComponent={renderInput}
-      suggestions={suggestions}
-      onSuggestionsFetchRequested={handleSuggestionsFetchRequested}
-      onSuggestionsClearRequested={handleSuggestionsClearRequested}
-      renderSuggestionsContainer={renderSuggestionsContainer}
-      getSuggestionValue={getSuggestionValue}
-      renderSuggestion={renderSuggestion}
-      shouldRenderSuggestions={shouldRenderSuggestions}
-      inputProps={{
-        value,
-        autoFocus: true,
-        placeholder: 'Für Auswahlliste: Leerschlag tippen',
-        onChange: handleChange,
-        onBlur: handleBlur,
-        onFocus: onFocus,
-      }}
-    />
+    <Container>
+      <StyledAutosuggest
+        renderInputComponent={renderInput}
+        suggestions={suggestions}
+        onSuggestionsFetchRequested={handleSuggestionsFetchRequested}
+        onSuggestionsClearRequested={handleSuggestionsClearRequested}
+        renderSuggestionsContainer={renderSuggestionsContainer}
+        getSuggestionValue={getSuggestionValue}
+        renderSuggestion={renderSuggestion}
+        shouldRenderSuggestions={shouldRenderSuggestions}
+        inputProps={{
+          value,
+          autoFocus: true,
+          placeholder: 'Für Auswahlliste: Leerschlag tippen',
+          onChange: handleChange,
+          onBlur: handleBlur,
+          onFocus: onFocus,
+        }}
+      />
+    </Container>
   )
 }
 

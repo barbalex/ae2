@@ -26,20 +26,12 @@ const StyledTextField = styled(TextField)`
   overflow: hidden !important;
   width: 100%;
 `
-const StyledAutosuggest = styled(Autosuggest)`
+
+// somehow need container and style Autosuggest to get css to work well
+const Container = styled.div`
+  flex-grow: 1;
   .react-autosuggest__container {
-    flex-grow: 1;
-    position: relative;
-  }
-  .react-autosuggest__suggestions-container--open {
-    position: absolute;
-    margin-top: 0;
-    margin-bottom: 0;
-    left: 0;
-  }
-  .react-autosuggest__suggestion {
-    display: block;
-    margin: 0;
+    width: 100%;
   }
   .react-autosuggest__suggestions-list {
     margin: 0;
@@ -48,33 +40,29 @@ const StyledAutosuggest = styled(Autosuggest)`
     max-height: 500px;
     overflow: auto;
   }
+  .react-autosuggest__suggestion {
+    display: block;
+    cursor: pointer;
+    margin: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
 `
-
-const styles = () => ({
-  // container: {
-  //   flexGrow: 1,
-  //   position: 'relative',
-  // },
-  // suggestionsContainerOpen: {
-  //   position: 'absolute',
-  //   //position: 'relative',
-  //   marginTop: theme.spacing(0),
-  //   marginBottom: theme.spacing(0),
-  //   left: 0,
-  //   //right: 0,
-  // },
-  // suggestion: {
-  //   display: 'block',
-  //   margin: 0,
-  // },
-  // suggestionsList: {
-  //   margin: 0,
-  //   padding: 0,
-  //   listStyleType: 'none',
-  //   maxHeight: '500px',
-  //   overflow: 'auto',
-  // },
-})
+const StyledAutosuggest = styled(Autosuggest)`
+  .react-autosuggest__suggestions-container {
+    position: relative;
+    height: 200px;
+  }
+  .react-autosuggest__suggestions-container--open {
+    position: absolute;
+    margin-top: 8px;
+    margin-bottom: 24px;
+    left: 0;
+    right: 0;
+    // minWidth: that of parent
+    min-width: ${(props) => props['data-width']}px;
+  }
+`
 
 function renderSuggestion(suggestion, { query, isHighlighted }) {
   const matches = match(suggestion, query)
@@ -147,7 +135,6 @@ const IntegrationAutosuggest = ({
   jsontype,
   comparator,
   value: propValue,
-  classes,
 }) => {
   const store = useContext(storeContext)
   const { addFilterFields, setRcoFilters, addRcoProperty } = store.export
@@ -261,17 +248,12 @@ const IntegrationAutosuggest = ({
           fullWidth
           value={value || ''}
           inputRef={ref}
-          InputProps={{
-            classes: {
-              input: classes.input,
-            },
-            ...other,
-          }}
+          InputProps={other}
           variant="standard"
         />
       )
     },
-    [pname, jsontype, value, classes.input],
+    [pname, jsontype, value],
   )
 
   if (propDataError) {
@@ -279,30 +261,26 @@ const IntegrationAutosuggest = ({
   }
 
   return (
-    <StyledAutosuggest
-      theme={{
-        container: classes.container,
-        suggestionsContainerOpen: classes.suggestionsContainerOpen,
-        suggestionsList: classes.suggestionsList,
-        suggestion: classes.suggestion,
-      }}
-      renderInputComponent={renderInput}
-      suggestions={suggestions}
-      onSuggestionsFetchRequested={handleSuggestionsFetchRequested}
-      onSuggestionsClearRequested={handleSuggestionsClearRequested}
-      renderSuggestionsContainer={renderSuggestionsContainer}
-      getSuggestionValue={getSuggestionValue}
-      renderSuggestion={renderSuggestion}
-      shouldRenderSuggestions={shouldRenderSuggestions}
-      inputProps={{
-        value,
-        autoFocus: true,
-        placeholder: 'Für Auswahlliste: Leerschlag tippen',
-        onChange: handleChange,
-        onBlur: handleBlur,
-        onFocus: onFocus,
-      }}
-    />
+    <Container>
+      <StyledAutosuggest
+        renderInputComponent={renderInput}
+        suggestions={suggestions}
+        onSuggestionsFetchRequested={handleSuggestionsFetchRequested}
+        onSuggestionsClearRequested={handleSuggestionsClearRequested}
+        renderSuggestionsContainer={renderSuggestionsContainer}
+        getSuggestionValue={getSuggestionValue}
+        renderSuggestion={renderSuggestion}
+        shouldRenderSuggestions={shouldRenderSuggestions}
+        inputProps={{
+          value,
+          autoFocus: true,
+          placeholder: 'Für Auswahlliste: Leerschlag tippen',
+          onChange: handleChange,
+          onBlur: handleBlur,
+          onFocus: onFocus,
+        }}
+      />
+    </Container>
   )
 }
 

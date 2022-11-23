@@ -19,18 +19,31 @@ import { observer } from 'mobx-react-lite'
 import readableType from '../../../../../../modules/readableType'
 import storeContext from '../../../../../../storeContext'
 
+// somehow need container and style Autosuggest to get css to work well
+const Container = styled.div`
+  flex-grow: 1;
+  .react-autosuggest__container {
+    width: 100%;
+  }
+  .react-autosuggest__suggestions-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    max-height: 500px;
+    overflow: auto;
+  }
+  .react-autosuggest__suggestion {
+    display: block;
+    cursor: pointer;
+    margin: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+`
 const StyledAutosuggest = styled(Autosuggest)`
   .react-autosuggest__suggestions-container {
     position: relative;
     height: 200px;
-  }
-  .react-autosuggest__suggestion {
-    display: block;
-    margin: 0;
-    cursor: pointer;
-    padding: 5px 20px !important;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
   }
   .react-autosuggest__suggestions-container--open {
     position: absolute;
@@ -40,13 +53,6 @@ const StyledAutosuggest = styled(Autosuggest)`
     right: 0;
     // minWidth: that of parent
     min-width: ${(props) => props['data-width']}px;
-  }
-  .react-autosuggest__suggestions-list {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-    max-height: 500px;
-    overflow: auto;
   }
 `
 
@@ -267,19 +273,21 @@ const IntegrationAutosuggest = ({
   console.log('TaxField, width:', width)
 
   return (
-    <StyledAutosuggest
-      renderInputComponent={renderInput}
-      suggestions={suggestions}
-      onSuggestionsFetchRequested={handleSuggestionsFetchRequested}
-      onSuggestionsClearRequested={handleSuggestionsClearRequested}
-      renderSuggestionsContainer={renderSuggestionsContainer}
-      getSuggestionValue={getSuggestionValue}
-      renderSuggestion={renderSuggestion}
-      shouldRenderSuggestions={shouldRenderSuggestions}
-      inputProps={inputProps}
-      data-width={width}
-      className="styled_autossuggest"
-    />
+    <Container>
+      <StyledAutosuggest
+        renderInputComponent={renderInput}
+        suggestions={suggestions}
+        onSuggestionsFetchRequested={handleSuggestionsFetchRequested}
+        onSuggestionsClearRequested={handleSuggestionsClearRequested}
+        renderSuggestionsContainer={renderSuggestionsContainer}
+        getSuggestionValue={getSuggestionValue}
+        renderSuggestion={renderSuggestion}
+        shouldRenderSuggestions={shouldRenderSuggestions}
+        inputProps={inputProps}
+        data-width={width}
+        className="styled_autossuggest"
+      />
+    </Container>
   )
 }
 
