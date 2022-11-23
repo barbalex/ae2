@@ -151,7 +151,7 @@ const IntegrationAutosuggest = ({
   const [propValues, setPropValues] = useState([])
   const [value, setValue] = useState(propsValue || '')
 
-  console.log('TaxFieldValue', { propValues, suggestions, dataFetched, value })
+  // console.log('TaxFieldValue', { propValues, suggestions, dataFetched, value })
 
   const { data: propData, error: propDataError } = useQuery(taxFieldPropQuery, {
     variables: {
@@ -270,7 +270,7 @@ const IntegrationAutosuggest = ({
     return `Error loading data: ${propDataError.message}`
   }
 
-  console.log('TaxField, width:', width)
+  // console.log('TaxField, width:', width)
 
   return (
     <Container>
