@@ -1,7 +1,4 @@
 module.exports = {
-  siteMetadata: {
-    title: 'arteigenschaften',
-  },
   plugins: [
     {
       resolve: 'gatsby-source-filesystem',
@@ -94,6 +91,11 @@ module.exports = {
         ],
       },
     },
-    'gatsby-plugin-offline',
+    {
+      resolve: 'gatsby-plugin-offline',
+      options: {
+        precachePages: ['/Dokumentation/', '/Dokumentation/*'],
+      },
+    },
   ],
 }
