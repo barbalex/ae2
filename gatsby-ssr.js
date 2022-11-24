@@ -9,3 +9,7 @@ import React from 'react'
 import App from './src/App'
 
 export const wrapRootElement = ({ element }) => <App element={element} />
+
+export const onRenderBody = ({ setHtmlAttributes }) => {
+  setHtmlAttributes({ lang: 'de' })
+}
