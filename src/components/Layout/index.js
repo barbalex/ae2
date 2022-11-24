@@ -12,7 +12,6 @@ const Container = styled.div`
 
 const Layout = ({ children }) => (
   <Container>
-    <html lang="de" />
     <AppBar />
     {children}
   </Container>
