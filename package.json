@@ -76,7 +76,8 @@
   "dependenciesComments": {
     "babel-plugin-styled-components": "is recommended by styled components: https://styled-components.com/docs/tooling#babel-plugin",
     "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583. Also: as react cant be upgraded to 18, can't upgrade gatsby",
-    "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why. react-autosuggest? react-reflex?"
+    "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why. react-autosuggest? react-reflex? react-swipeable-views? react-vtree?",
+    "react-swipeable-views": "not supported any more. See what material-ui does: https://github.com/mui/material-ui/issues/33274#issuecomment-1272359307, https://mui.com/material-ui/react-tabs/#fixed-tabs. Or do without swiping?"
   },
   "devDependencies": {
     "@babel/core": "7.20.2",
