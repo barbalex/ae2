@@ -3,7 +3,7 @@
   "parserOptions": {
     "requireConfigFile": false,
     "babelOptions": {
-       "presets": ["@babel/preset-react"]
+      "presets": ["@babel/preset-react"]
     }
   },
   "rules": {
@@ -22,7 +22,7 @@
     "node": true,
     "es6": true
   },
-  "plugins": ["react", "react-hooks"],
+  "plugins": ["babel-plugin-styled-components", "react", "react-hooks"],
   "settings": {
     "react": {
       "version": "999.999.999"

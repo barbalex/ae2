@@ -21,6 +21,7 @@
     "@mui/styled-engine": "npm:@mui/styled-engine-sc@latest",
     "@mui/styled-engine-sc": "5.10.14",
     "autosuggest-highlight": "3.3.4",
+    "babel-plugin-styled-components": "^2.0.7",
     "copy-to-clipboard": "3.3.3",
     "date-fns": "2.29.3",
     "dexie": "3.2.2",
@@ -75,6 +76,7 @@
     "xlsx": "0.18.5"
   },
   "dependenciesComments": {
+    "babel-plugin-styled-components": "is recommended by styled components: https://styled-components.com/docs/tooling#babel-plugin",
     "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583. Also: as react cant be upgraded to 18, can't upgrade gatsby",
     "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why."
   },
