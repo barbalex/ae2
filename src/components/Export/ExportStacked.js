@@ -3,7 +3,6 @@ import Paper from '@mui/material/Paper'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import styled from 'styled-components'
-import SwipeableViews from 'react-swipeable-views'
 import { observer } from 'mobx-react-lite'
 
 import ChooseColumn from './ChooseColumn'
@@ -13,11 +12,8 @@ import storeContext from '../../storeContext'
 const StyledPaper = styled(Paper)`
   background-color: #ffcc80 !important;
 `
-const StyledSwipeableViews = styled(SwipeableViews)`
+const Content = styled.div`
   height: 100%;
-  .react-swipeable-view-container {
-    height: 100%;
-  }
 `
 
 const ExportStacked = () => {
@@ -42,14 +38,10 @@ const ExportStacked = () => {
           <Tab label="Vorschau" />
         </Tabs>
       </StyledPaper>
-      <StyledSwipeableViews
-        axis="x"
-        index={tab}
-        onChangeIndex={(i) => setTab(i)}
-      >
-        <ChooseColumn dimensions={{ width: windowWidth }} />
-        <PreviewColumn dimensions={{ width: windowWidth }} />
-      </StyledSwipeableViews>
+      <Content>
+        {tab === 0 && <ChooseColumn dimensions={{ width: windowWidth }} />}
+        {tab === 1 && <PreviewColumn dimensions={{ width: windowWidth }} />}
+      </Content>
     </>
   )
 }
