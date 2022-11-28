@@ -20,6 +20,7 @@ import styled from 'styled-components'
 import trimStart from 'lodash/trimStart'
 import { useQuery, gql, useLazyQuery, useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
+import { getSnapshot } from 'mobx-state-tree'
 
 import readableType from '../../../../../../modules/readableType'
 import storeContext from '../../../../../../storeContext'
@@ -48,6 +49,9 @@ const StyledSelect = styled(Select)`
     border-radius: 0;
     padding-left: 0 !important;
   }
+  .react-select__value-container {
+    padding-left: 0 !important;
+  }
   .react-select__control:hover {
     border-bottom-width: 2px;
   }
@@ -58,10 +62,16 @@ const StyledSelect = styled(Select)`
   .react-select__input-container {
     padding-left: 0;
   }
+  .react-select__option {
+    font-size: small;
+  }
   .react-select__menu,
   .react-select__menu-list {
     height: 130px;
     height: ${(props) => (props.maxheight ? `${props.maxheight}px` : 'unset')};
+  }
+  .react-select__indicator {
+    color: rgba(0, 0, 0, 0.4);
   }
 `
 
@@ -106,18 +116,28 @@ const IntegrationAutosuggest = ({
 }) => {
   const client = useApolloClient()
   const store = useContext(storeContext)
-  const { addFilterFields, addTaxProperty, setTaxFilters } = store.export
+  const {
+    addFilterFields,
+    addTaxProperty,
+    setTaxFilters,
+    taxFilters: taxFiltersPassed,
+  } = store.export
+  const taxFilters = getSnapshot(taxFiltersPassed)
+  const taxFilter = taxFilters.find(
+    (f) => f.taxname === taxname && f.pname === pname,
+  )
 
-  // console.log('TaxFieldValue', {
-  //   pname,
-  //   taxname,
-  //   jsontype,
-  //   comparator,
-  // })
+  console.log('TaxFieldValue', {
+    pname,
+    taxname,
+    taxFilters,
+    taxFilter,
+    propsValue,
+  })
 
   // console.log('TaxFieldValue', { propData, pname, taxname })
 
-  const [value, setValue] = useState(propsValue || '')
+  const [value, setValue] = useState(propsValue ?? '')
 
   const loadOptions = useCallback(async (val, cb) => {
     const { data, error } = await client.query({
@@ -136,18 +156,18 @@ const IntegrationAutosuggest = ({
       label: n.value,
     }))
     setValue(val)
-    console.log('loadOptions', { value: val, data, returnData })
+    // console.log('loadOptions', { value: val, data, returnData })
     return returnData
   }, [])
 
   const onBlur = useCallback(() => {
-    console.log('onBlur, value:', value)
+    // console.log('onBlur, value:', value)
+    setFilter(value)
   }, [value])
 
   const onChange = useCallback((newValue, actionMeta) => {
     let value
-    console.log('onInputChange', { newValue, actionMeta })
-
+    // console.log('onInputChange', { newValue, actionMeta })
     switch (actionMeta.action) {
       case 'clear':
         value = ''
@@ -156,12 +176,13 @@ const IntegrationAutosuggest = ({
         value = newValue?.value
         break
     }
+    setValue(newValue?.value)
     setFilter(newValue?.value)
   }, [])
 
   const setFilter = useCallback(
     (val) => {
-      console.log('setFilter, value:', val)
+      // console.log('setFilter, value:', val)
       // 1. change filter value
       let comparatorValue = comparator
       if (!comparator && val) comparatorValue = 'ILIKE'
@@ -192,14 +213,14 @@ const IntegrationAutosuggest = ({
 
   const customStyles = useMemo(
     () => ({
-      control: (provided) => ({
-        ...provided,
-        border: 'none',
-        borderRadius: '3px',
-        backgroundColor: '#FFCC8042',
-        marginLeft: 0,
-        paddingLeft: singleColumnView ? '2px' : '25px',
-      }),
+      // control: (provided) => ({
+      //   ...provided,
+      //   border: 'none',
+      //   borderRadius: '3px',
+      //   backgroundColor: '#FFCC8042',
+      //   marginLeft: 0,
+      //   paddingLeft: singleColumnView ? '2px' : '25px',
+      // }),
       valueContainer: (provided) => ({
         ...provided,
         borderRadius: '3px',
@@ -290,8 +311,7 @@ const IntegrationAutosuggest = ({
       <Label>{`${pname} (${readableType(jsontype)})`}</Label>
       <StyledSelect
         value={{ value, label: value }}
-        styles={customStyles}
-        // onInputChange={onInputChange}
+        // styles={customStyles}
         onChange={onChange}
         onBlur={onBlur}
         formatGroupLabel={formatGroupLabel}

@@ -5,6 +5,7 @@ import MenuItem from '@mui/material/MenuItem'
 import styled from 'styled-components'
 
 const StyledSelect = styled(Select)`
+  height: 39px;
   > div {
     padding-left: 8px;
   }
