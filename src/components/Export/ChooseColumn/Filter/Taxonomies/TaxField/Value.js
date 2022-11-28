@@ -4,6 +4,7 @@ import React, {
   useState,
   useMemo,
   useContext,
+  useRef,
 } from 'react'
 import Autosuggest from 'react-autosuggest'
 import Select from 'react-select/async'
@@ -99,9 +100,8 @@ const taxFieldPropQuery = gql`
   }
 `
 
-const noOptionsMessage = () => null
-const loadingMessage = () => null
-const formatGroupLabel = (data) => <div>{data.label}</div>
+const noOptionsMessage = () => 'Keine Daten entsprechen dem Filter'
+const loadingMessage = () => 'lade...'
 const formatOptionLabel = ({ label }, { inputValue }) => (
   <Highlighter searchWords={[inputValue]} textToHighlight={label} />
 )
@@ -127,6 +127,14 @@ const IntegrationAutosuggest = ({
     (f) => f.taxname === taxname && f.pname === pname,
   )
 
+  // Problem with loading data
+  // Want to load all data when user focuses on input
+  // But is not possible to programmatically call loadOptions (https://github.com/JedWatson/react-select/discussions/5389#discussioncomment-3911824)
+  // So need to set key on Select and update it on focus
+  // TODO: maybe better to not use AsyncSelect: https://github.com/JedWatson/react-select/discussions/5389#discussioncomment-3911837
+  const ref = useRef()
+  const [focusCount, setFocusCount] = useState(0)
+
   // console.log('TaxFieldValue', {
   //   pname,
   //   taxname,
@@ -138,30 +146,35 @@ const IntegrationAutosuggest = ({
   const [value, setValue] = useState(propsValue ?? '')
   const [error, setError] = useState(undefined)
 
-  const loadOptions = useCallback(async (val, cb) => {
-    const { data, error } = await client.query({
-      query: taxFieldPropQuery,
-      variables: {
-        tableName: 'object',
-        propName: pname,
-        pcFieldName: 'taxonomy_id',
-        pcTableName: 'taxonomy',
-        pcName: taxname,
-        propValue: val ?? '',
-      },
-    })
-    const returnData = data?.propValuesFilteredFunction?.nodes?.map((n) => ({
-      value: n.value,
-      label: n.value,
-    }))
-    setValue(val)
-    setError(error)
-    return returnData
-  }, [])
+  const loadOptions = useCallback(
+    async (val) => {
+      if (!focusCount) return []
+      const { data, error } = await client.query({
+        query: taxFieldPropQuery,
+        variables: {
+          tableName: 'object',
+          propName: pname,
+          pcFieldName: 'taxonomy_id',
+          pcTableName: 'taxonomy',
+          pcName: taxname,
+          propValue: val ?? '',
+        },
+      })
+      const returnData = data?.propValuesFilteredFunction?.nodes?.map((n) => ({
+        value: n.value,
+        label: n.value,
+      }))
+      setValue(val)
+      setError(error)
+      return returnData
+    },
+    [focusCount],
+  )
 
   const onBlur = useCallback(() => setFilter(value), [value])
 
   const onChange = useCallback((newValue, actionMeta) => {
+    console.log('onChange', { newValue, actionMeta })
     let value
     switch (actionMeta.action) {
       case 'clear':
@@ -206,21 +219,36 @@ const IntegrationAutosuggest = ({
     return `Error loading data: ${error.message}`
   }
 
+  // TODO: use https://github.com/JedWatson/react-select/discussions/5389#discussioncomment-3911837 to enable loading all on focus
   return (
     <Container>
       <Label>{`${pname} (${readableType(jsontype)})`}</Label>
       <StyledSelect
-        value={{ value, label: value }}
+        key={focusCount}
+        ref={ref}
+        value={value ? { value, label: value } : undefined}
+        defaultOptions={true}
         onChange={onChange}
         onBlur={onBlur}
-        formatGroupLabel={formatGroupLabel}
+        onFocus={() => {
+          if (focusCount === 0) {
+            setFocusCount(1)
+            setTimeout(() => {
+              ref.current.onMenuOpen()
+              ref.current.focus()
+            })
+          }
+        }}
         formatOptionLabel={formatOptionLabel}
-        placeholder={`${pname} (${readableType(jsontype)})`}
+        placeholder={''}
         noOptionsMessage={noOptionsMessage}
         loadingMessage={loadingMessage}
         classNamePrefix="react-select"
         loadOptions={loadOptions}
+        cacheOptions
         isClearable
+        isFocused
+        openMenuOnFocus={true}
         spellCheck={false}
         data-width={width}
       />
