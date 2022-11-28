@@ -42,7 +42,7 @@ const StyledSelect = styled(Select)`
   .react-select__control {
     border-bottom: 1px solid;
     background-color: rgba(0, 0, 0, 0) !important;
-    border-bottom-color: rgba(0, 0, 0, 0.4);
+    border-bottom-color: rgba(0, 0, 0, 0.3);
     border-top: none;
     border-left: none;
     border-right: none;
@@ -127,17 +127,16 @@ const IntegrationAutosuggest = ({
     (f) => f.taxname === taxname && f.pname === pname,
   )
 
-  console.log('TaxFieldValue', {
-    pname,
-    taxname,
-    taxFilters,
-    taxFilter,
-    propsValue,
-  })
-
-  // console.log('TaxFieldValue', { propData, pname, taxname })
+  // console.log('TaxFieldValue', {
+  //   pname,
+  //   taxname,
+  //   taxFilters,
+  //   taxFilter,
+  //   propsValue,
+  // })
 
   const [value, setValue] = useState(propsValue ?? '')
+  const [error, setError] = useState(undefined)
 
   const loadOptions = useCallback(async (val, cb) => {
     const { data, error } = await client.query({
@@ -156,18 +155,14 @@ const IntegrationAutosuggest = ({
       label: n.value,
     }))
     setValue(val)
-    // console.log('loadOptions', { value: val, data, returnData })
+    setError(error)
     return returnData
   }, [])
 
-  const onBlur = useCallback(() => {
-    // console.log('onBlur, value:', value)
-    setFilter(value)
-  }, [value])
+  const onBlur = useCallback(() => setFilter(value), [value])
 
   const onChange = useCallback((newValue, actionMeta) => {
     let value
-    // console.log('onInputChange', { newValue, actionMeta })
     switch (actionMeta.action) {
       case 'clear':
         value = ''
@@ -182,7 +177,6 @@ const IntegrationAutosuggest = ({
 
   const setFilter = useCallback(
     (val) => {
-      // console.log('setFilter, value:', val)
       // 1. change filter value
       let comparatorValue = comparator
       if (!comparator && val) comparatorValue = 'ILIKE'
@@ -208,110 +202,15 @@ const IntegrationAutosuggest = ({
     ],
   )
 
-  // TODO: replace with real value
-  const singleColumnView = false
-
-  const customStyles = useMemo(
-    () => ({
-      // control: (provided) => ({
-      //   ...provided,
-      //   border: 'none',
-      //   borderRadius: '3px',
-      //   backgroundColor: '#FFCC8042',
-      //   marginLeft: 0,
-      //   paddingLeft: singleColumnView ? '2px' : '25px',
-      // }),
-      valueContainer: (provided) => ({
-        ...provided,
-        borderRadius: '3px',
-        paddingLeft: 0,
-      }),
-      singleValue: (provided) => ({
-        ...provided,
-        color: 'rgba(0,0,0,0.8)',
-      }),
-      option: (provided) => ({
-        ...provided,
-        color: 'rgba(0,0,0,0.8)',
-        fontSize: '0.8em',
-        paddingTop: '5px',
-        paddingBottom: '5px',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-      }),
-      groupHeading: (provided) => ({
-        ...provided,
-        lineHeight: '1em',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        color: 'rgba(0, 0, 0, 0.8)',
-        fontWeight: '700',
-        userSelect: 'none',
-        textTransform: 'none',
-      }),
-      input: (provided) => ({
-        ...provided,
-        color: 'rgba(0, 0, 0, 0.8)',
-      }),
-      menuList: (provided) => ({
-        ...provided,
-        maxHeight: `calc(100vh - ${constants.appBarHeight}px - 39px)`,
-        '::-webkit-scrollbar': {
-          width: '6px',
-        },
-        '::-webkit-scrollbar-thumb': {
-          borderRadius: '4px',
-          boxShadow: 'inset 0 0 7px #e65100',
-          background: 'rgba(85, 85, 85, 0.05)',
-        },
-        '::-webkit-scrollbar-track': {
-          background: 'rgba(0, 0, 0, 0) !important',
-          borderRadius: '1rem',
-        },
-        // '::-webkit-scrollbar-thumb:hover': {
-        //   background: '#6B2500',
-        // },
-      }),
-      menu: (provided) => ({
-        ...provided,
-        width: 'auto',
-        maxWidth: '100%',
-        marginTop: 0,
-      }),
-      placeholder: (provided) => ({
-        ...provided,
-        color: 'rgba(0,0,0,0.4)',
-      }),
-      indicatorSeparator: (provided) => ({
-        ...provided,
-        display: 'none',
-      }),
-      dropdownIndicator: (provided) => ({
-        ...provided,
-        display: 'none',
-      }),
-      clearIndicator: (provided) => ({
-        ...provided,
-        color: 'rgba(0,0,0,0.8)',
-      }),
-    }),
-    [singleColumnView],
-  )
-
-  // if (propDataError) {
-  //   return `Error loading data: ${propDataError.message}`
-  // }
-
-  // console.log('TaxField, width:', width)
+  if (error) {
+    return `Error loading data: ${error.message}`
+  }
 
   return (
     <Container>
       <Label>{`${pname} (${readableType(jsontype)})`}</Label>
       <StyledSelect
         value={{ value, label: value }}
-        // styles={customStyles}
         onChange={onChange}
         onBlur={onBlur}
         formatGroupLabel={formatGroupLabel}
