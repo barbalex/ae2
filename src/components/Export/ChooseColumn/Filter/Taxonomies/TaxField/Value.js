@@ -6,110 +6,64 @@ import React, {
   useContext,
 } from 'react'
 import Autosuggest from 'react-autosuggest'
+import Select from 'react-select/async'
+import Highlighter from 'react-highlight-words'
 import match from 'autosuggest-highlight/match'
 import parse from 'autosuggest-highlight/parse'
 import TextField from '@mui/material/TextField'
+import Autocomplete from '@mui/material/Autocomplete'
 import Paper from '@mui/material/Paper'
 import MenuItem from '@mui/material/MenuItem'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
 import styled from 'styled-components'
 import trimStart from 'lodash/trimStart'
-import { useQuery, gql } from '@apollo/client'
+import { useQuery, gql, useLazyQuery, useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
 import readableType from '../../../../../../modules/readableType'
 import storeContext from '../../../../../../storeContext'
+import constants from '../../../../../../modules/constants'
 
 // somehow need container and style Autosuggest to get css to work well
 const Container = styled.div`
   flex-grow: 1;
-  .react-autosuggest__container {
-    width: 100%;
-  }
-  .react-autosuggest__suggestions-list {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-    max-height: 500px;
-    overflow: auto;
-  }
-  .react-autosuggest__suggestion {
-    display: block;
-    cursor: pointer;
-    margin: 0;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-  }
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
 `
-const StyledAutosuggest = styled(Autosuggest)`
-  .react-autosuggest__suggestions-container {
-    position: relative;
-    height: 200px;
-  }
-  .react-autosuggest__suggestions-container--open {
-    position: absolute;
-    margin-top: 8px;
-    margin-bottom: 24px;
-    left: 0;
-    right: 0;
-    // minWidth: that of parent
-    min-width: ${(props) => props['data-width']}px;
-  }
+const Label = styled.div`
+  font-size: 12px;
+  color: rgb(0, 0, 0, 0.54);
 `
-
-const StyledPaper = styled(Paper)`
-  z-index: 1;
-  /* need this so text is visible when overflowing */
-  > ul > li > div {
-    overflow: inherit;
-  }
-`
-const StyledTextField = styled(TextField)`
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
+const StyledSelect = styled(Select)`
   width: 100%;
+  .react-select__control {
+    border-bottom: 1px solid;
+    background-color: rgba(0, 0, 0, 0) !important;
+    border-bottom-color: rgba(0, 0, 0, 0.4);
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    padding-left: 0 !important;
+  }
+  .react-select__control:hover {
+    border-bottom-width: 2px;
+  }
+  .react-select__control:focus-within {
+    border-bottom-color: rgba(230, 81, 0, 0.6) !important;
+    box-shadow: none;
+  }
+  .react-select__input-container {
+    padding-left: 0;
+  }
+  .react-select__menu,
+  .react-select__menu-list {
+    height: 130px;
+    height: ${(props) => (props.maxheight ? `${props.maxheight}px` : 'unset')};
+  }
 `
-
-function renderSuggestion(suggestion, { query, isHighlighted }) {
-  const matches = match(suggestion, query)
-  const parts = parse(suggestion, matches)
-
-  return (
-    <MenuItem selected={isHighlighted} component="div">
-      <>
-        {parts.map((part, index) => {
-          return part.highlight ? (
-            <strong key={String(index)} style={{ fontWeight: 700 }}>
-              {part.text}
-            </strong>
-          ) : (
-            <span key={String(index)} style={{ fontWeight: 400 }}>
-              {part.text}
-            </span>
-          )
-        })}
-      </>
-    </MenuItem>
-  )
-}
-
-function renderSuggestionsContainer(options) {
-  const { containerProps, children } = options
-
-  return (
-    <StyledPaper {...containerProps} square>
-      {children}
-    </StyledPaper>
-  )
-}
-
-function getSuggestionValue(suggestion) {
-  return suggestion
-}
-
-function shouldRenderSuggestions() {
-  return true
-}
 
 const taxFieldPropQuery = gql`
   query propDataQuery(
@@ -118,21 +72,29 @@ const taxFieldPropQuery = gql`
     $pcFieldName: String!
     $pcTableName: String!
     $pcName: String!
-    $fetchData: Boolean!
+    $propValue: String!
   ) {
-    propValuesFunction(
+    propValuesFilteredFunction(
       tableName: $tableName
       propName: $propName
       pcFieldName: $pcFieldName
       pcTableName: $pcTableName
       pcName: $pcName
-    ) @include(if: $fetchData) {
+      propValue: $propValue
+    ) {
       nodes {
         value
       }
     }
   }
 `
+
+const noOptionsMessage = () => null
+const loadingMessage = () => null
+const formatGroupLabel = (data) => <div>{data.label}</div>
+const formatOptionLabel = ({ label }, { inputValue }) => (
+  <Highlighter searchWords={[inputValue]} textToHighlight={label} />
+)
 
 const IntegrationAutosuggest = ({
   taxname,
@@ -142,150 +104,206 @@ const IntegrationAutosuggest = ({
   value: propsValue,
   width,
 }) => {
+  const client = useApolloClient()
   const store = useContext(storeContext)
   const { addFilterFields, addTaxProperty, setTaxFilters } = store.export
 
-  const [fetchData, setFetchData] = useState(false)
-  const [dataFetched, setDataFetched] = useState(false)
-  const [suggestions, setSuggestions] = useState([])
-  const [propValues, setPropValues] = useState([])
+  // console.log('TaxFieldValue', {
+  //   pname,
+  //   taxname,
+  //   jsontype,
+  //   comparator,
+  // })
+
+  // console.log('TaxFieldValue', { propData, pname, taxname })
+
   const [value, setValue] = useState(propsValue || '')
 
-  // console.log('TaxFieldValue', { propValues, suggestions, dataFetched, value })
+  const loadOptions = useCallback(async (val, cb) => {
+    const { data, error } = await client.query({
+      query: taxFieldPropQuery,
+      variables: {
+        tableName: 'object',
+        propName: pname,
+        pcFieldName: 'taxonomy_id',
+        pcTableName: 'taxonomy',
+        pcName: taxname,
+        propValue: val ?? '',
+      },
+    })
+    const returnData = data?.propValuesFilteredFunction?.nodes?.map((n) => ({
+      value: n.value,
+      label: n.value,
+    }))
+    setValue(val)
+    console.log('loadOptions', { value: val, data, returnData })
+    return returnData
+  }, [])
 
-  const { data: propData, error: propDataError } = useQuery(taxFieldPropQuery, {
-    variables: {
-      tableName: 'object',
-      propName: pname,
-      pcFieldName: 'taxonomy_id',
-      pcTableName: 'taxonomy',
-      pcName: taxname,
-      fetchData,
-    },
-  })
+  const onBlur = useCallback(() => {
+    console.log('onBlur, value:', value)
+  }, [value])
 
-  useEffect(() => {
-    if (fetchData && !dataFetched) {
-      const propValues = (propData?.propValuesFunction?.nodes ?? [])
-        .filter((v) => v !== null && v !== undefined)
-        .map((v) => v.value)
-      if (propValues.length > 0) {
-        setPropValues(propValues)
-        setFetchData(false)
-        setDataFetched(true)
-      }
+  const onChange = useCallback((newValue, actionMeta) => {
+    let value
+    console.log('onInputChange', { newValue, actionMeta })
+
+    switch (actionMeta.action) {
+      case 'clear':
+        value = ''
+        break
+      default:
+        value = newValue?.value
+        break
     }
-  }, [fetchData, dataFetched, propData])
-
-  const getSuggestions = useCallback(
-    (value) => {
-      const inputValue = value.toLowerCase()
-
-      if (value === ' ') return propValues
-      if (inputValue.length === 0) return []
-      return propValues.filter((v) => v.toLowerCase().includes(inputValue))
-    },
-    [propValues],
-  )
-
-  const handleSuggestionsFetchRequested = useCallback(
-    ({ value }) => {
-      setSuggestions(getSuggestions(value))
-    },
-    [getSuggestions],
-  )
-
-  const handleSuggestionsClearRequested = useCallback(() => {
-    setSuggestions([])
+    setFilter(newValue?.value)
   }, [])
 
-  const onFocus = useCallback(() => {
-    // fetch data if not yet happened
-    if (!dataFetched) setFetchData(true)
-  }, [dataFetched])
-
-  const handleChange = useCallback((event, { newValue }) => {
-    // trim the start to enable entering space
-    // at start to open list
-    setValue(trimStart(newValue))
-  }, [])
-
-  const handleBlur = useCallback(() => {
-    // 1. change filter value
-    let comparatorValue = comparator
-    if (!comparator && value) comparatorValue = 'ILIKE'
-    if (!value) comparatorValue = null
-    setTaxFilters({
+  const setFilter = useCallback(
+    (val) => {
+      console.log('setFilter, value:', val)
+      // 1. change filter value
+      let comparatorValue = comparator
+      if (!comparator && val) comparatorValue = 'ILIKE'
+      if (!val) comparatorValue = null
+      setTaxFilters({
+        taxname,
+        pname,
+        comparator: comparatorValue,
+        value: val,
+      })
+      // 2. if value and field not choosen, choose it
+      if (addFilterFields && val) {
+        addTaxProperty({ taxname, pname })
+      }
+    },
+    [
+      comparator,
+      setTaxFilters,
       taxname,
       pname,
-      comparator: comparatorValue,
-      value,
-    })
-    // 2. if value and field not choosen, choose it
-    if (addFilterFields && value) {
-      addTaxProperty({ taxname, pname })
-    }
-  }, [
-    comparator,
-    value,
-    setTaxFilters,
-    taxname,
-    pname,
-    addFilterFields,
-    addTaxProperty,
-  ])
-
-  const renderInput = useCallback(
-    (inputProps) => {
-      const labelText = `${pname} (${readableType(jsontype)})`
-      // eslint-disable-next-line no-unused-vars
-      const { autoFocus, ref, ...other } = inputProps
-
-      return (
-        <StyledTextField
-          label={labelText}
-          fullWidth
-          value={value || ''}
-          inputRef={ref}
-          variant="standard"
-          InputProps={other}
-        />
-      )
-    },
-    [pname, jsontype, value],
+      addFilterFields,
+      addTaxProperty,
+    ],
   )
-  const inputProps = useMemo(
+
+  // TODO: replace with real value
+  const singleColumnView = false
+
+  const customStyles = useMemo(
     () => ({
-      value,
-      autoFocus: true,
-      placeholder: 'Für Auswahlliste: Leerschlag tippen',
-      onChange: handleChange,
-      onBlur: handleBlur,
-      onFocus: onFocus,
+      control: (provided) => ({
+        ...provided,
+        border: 'none',
+        borderRadius: '3px',
+        backgroundColor: '#FFCC8042',
+        marginLeft: 0,
+        paddingLeft: singleColumnView ? '2px' : '25px',
+      }),
+      valueContainer: (provided) => ({
+        ...provided,
+        borderRadius: '3px',
+        paddingLeft: 0,
+      }),
+      singleValue: (provided) => ({
+        ...provided,
+        color: 'rgba(0,0,0,0.8)',
+      }),
+      option: (provided) => ({
+        ...provided,
+        color: 'rgba(0,0,0,0.8)',
+        fontSize: '0.8em',
+        paddingTop: '5px',
+        paddingBottom: '5px',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+      }),
+      groupHeading: (provided) => ({
+        ...provided,
+        lineHeight: '1em',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        color: 'rgba(0, 0, 0, 0.8)',
+        fontWeight: '700',
+        userSelect: 'none',
+        textTransform: 'none',
+      }),
+      input: (provided) => ({
+        ...provided,
+        color: 'rgba(0, 0, 0, 0.8)',
+      }),
+      menuList: (provided) => ({
+        ...provided,
+        maxHeight: `calc(100vh - ${constants.appBarHeight}px - 39px)`,
+        '::-webkit-scrollbar': {
+          width: '6px',
+        },
+        '::-webkit-scrollbar-thumb': {
+          borderRadius: '4px',
+          boxShadow: 'inset 0 0 7px #e65100',
+          background: 'rgba(85, 85, 85, 0.05)',
+        },
+        '::-webkit-scrollbar-track': {
+          background: 'rgba(0, 0, 0, 0) !important',
+          borderRadius: '1rem',
+        },
+        // '::-webkit-scrollbar-thumb:hover': {
+        //   background: '#6B2500',
+        // },
+      }),
+      menu: (provided) => ({
+        ...provided,
+        width: 'auto',
+        maxWidth: '100%',
+        marginTop: 0,
+      }),
+      placeholder: (provided) => ({
+        ...provided,
+        color: 'rgba(0,0,0,0.4)',
+      }),
+      indicatorSeparator: (provided) => ({
+        ...provided,
+        display: 'none',
+      }),
+      dropdownIndicator: (provided) => ({
+        ...provided,
+        display: 'none',
+      }),
+      clearIndicator: (provided) => ({
+        ...provided,
+        color: 'rgba(0,0,0,0.8)',
+      }),
     }),
-    [handleBlur, handleChange, onFocus, value],
+    [singleColumnView],
   )
 
-  if (propDataError) {
-    return `Error loading data: ${propDataError.message}`
-  }
+  // if (propDataError) {
+  //   return `Error loading data: ${propDataError.message}`
+  // }
 
   // console.log('TaxField, width:', width)
 
   return (
     <Container>
-      <StyledAutosuggest
-        renderInputComponent={renderInput}
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={handleSuggestionsFetchRequested}
-        onSuggestionsClearRequested={handleSuggestionsClearRequested}
-        renderSuggestionsContainer={renderSuggestionsContainer}
-        getSuggestionValue={getSuggestionValue}
-        renderSuggestion={renderSuggestion}
-        shouldRenderSuggestions={shouldRenderSuggestions}
-        inputProps={inputProps}
+      <Label>{`${pname} (${readableType(jsontype)})`}</Label>
+      <StyledSelect
+        value={{ value, label: value }}
+        styles={customStyles}
+        // onInputChange={onInputChange}
+        onChange={onChange}
+        onBlur={onBlur}
+        formatGroupLabel={formatGroupLabel}
+        formatOptionLabel={formatOptionLabel}
+        placeholder={`${pname} (${readableType(jsontype)})`}
+        noOptionsMessage={noOptionsMessage}
+        loadingMessage={loadingMessage}
+        classNamePrefix="react-select"
+        loadOptions={loadOptions}
+        isClearable
+        spellCheck={false}
         data-width={width}
-        className="styled_autossuggest"
       />
     </Container>
   )

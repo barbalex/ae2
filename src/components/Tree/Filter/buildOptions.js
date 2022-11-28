@@ -13,7 +13,7 @@ const filterSuggestionsQuery = gql`
       nodes {
         id
         name
-        taxonomyByTaxonomyId {
+        taxonomyByTaxonomyId { 
           id
           type
           name
