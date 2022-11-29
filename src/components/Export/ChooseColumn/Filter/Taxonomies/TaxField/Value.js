@@ -1,31 +1,12 @@
-import React, {
-  useEffect,
-  useCallback,
-  useState,
-  useMemo,
-  useContext,
-  useRef,
-} from 'react'
-import Autosuggest from 'react-autosuggest'
+import React, { useCallback, useState, useContext, useRef } from 'react'
 import Select from 'react-select/async'
 import Highlighter from 'react-highlight-words'
-import match from 'autosuggest-highlight/match'
-import parse from 'autosuggest-highlight/parse'
-import TextField from '@mui/material/TextField'
-import Autocomplete from '@mui/material/Autocomplete'
-import Paper from '@mui/material/Paper'
-import MenuItem from '@mui/material/MenuItem'
-import FormControl from '@mui/material/FormControl'
-import InputLabel from '@mui/material/InputLabel'
 import styled from 'styled-components'
-import trimStart from 'lodash/trimStart'
-import { useQuery, gql, useLazyQuery, useApolloClient } from '@apollo/client'
+import { gql, useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
-import { getSnapshot } from 'mobx-state-tree'
 
 import readableType from '../../../../../../modules/readableType'
 import storeContext from '../../../../../../storeContext'
-import constants from '../../../../../../modules/constants'
 
 // somehow need container and style Autosuggest to get css to work well
 const Container = styled.div`
@@ -116,16 +97,7 @@ const IntegrationAutosuggest = ({
 }) => {
   const client = useApolloClient()
   const store = useContext(storeContext)
-  const {
-    addFilterFields,
-    addTaxProperty,
-    setTaxFilters,
-    taxFilters: taxFiltersPassed,
-  } = store.export
-  const taxFilters = getSnapshot(taxFiltersPassed)
-  const taxFilter = taxFilters.find(
-    (f) => f.taxname === taxname && f.pname === pname,
-  )
+  const { addFilterFields, addTaxProperty, setTaxFilters } = store.export
 
   // Problem with loading data
   // Want to load all data when user focuses on input
@@ -168,25 +140,28 @@ const IntegrationAutosuggest = ({
       setError(error)
       return returnData
     },
-    [focusCount],
+    [client, focusCount, pname, taxname],
   )
 
-  const onBlur = useCallback(() => setFilter(value), [value])
+  const onBlur = useCallback(() => setFilter(value), [setFilter, value])
 
-  const onChange = useCallback((newValue, actionMeta) => {
-    console.log('onChange', { newValue, actionMeta })
-    let value
-    switch (actionMeta.action) {
-      case 'clear':
-        value = ''
-        break
-      default:
-        value = newValue?.value
-        break
-    }
-    setValue(newValue?.value)
-    setFilter(newValue?.value)
-  }, [])
+  const onChange = useCallback(
+    (newValue, actionMeta) => {
+      console.log('onChange', { newValue, actionMeta })
+      let value
+      switch (actionMeta.action) {
+        case 'clear':
+          value = ''
+          break
+        default:
+          value = newValue?.value
+          break
+      }
+      setValue(value)
+      setFilter(value)
+    },
+    [setFilter],
+  )
 
   const setFilter = useCallback(
     (val) => {
