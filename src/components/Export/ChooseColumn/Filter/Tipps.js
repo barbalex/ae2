@@ -6,7 +6,7 @@ import Collapse from '@mui/material/Collapse'
 import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 
 const StyledCard = styled(Card)`
   margin: 10px 0;

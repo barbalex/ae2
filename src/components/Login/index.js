@@ -12,7 +12,7 @@ import {
   MdVisibility as VisibilityIcon,
   MdVisibilityOff as VisibilityOffIcon,
 } from 'react-icons/md'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 

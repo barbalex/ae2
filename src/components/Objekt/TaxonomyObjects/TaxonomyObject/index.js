@@ -21,7 +21,7 @@ import {
   MdInfoOutline as InfoOutlineIcon,
   MdInfo as InfoIcon,
 } from 'react-icons/md'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { navigate } from 'gatsby'

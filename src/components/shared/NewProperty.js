@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import TextField from '@mui/material/TextField'
 import InputLabel from '@mui/material/InputLabel'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { useApolloClient } from '@apollo/client'
 
 import updatePropertyMutation from './updatePropertyMutation'

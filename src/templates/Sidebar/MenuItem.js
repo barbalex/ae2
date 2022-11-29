@@ -5,7 +5,7 @@ import ListItemText from '@mui/material/ListItemText'
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa'
 import { Location } from '@reach/router'
 import isEqual from 'lodash/isEqual'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 
 import storeContext from '../../storeContext'
 

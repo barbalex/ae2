@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState, useContext } from 'react'
 import { graphql } from 'gatsby'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import Paper from '@mui/material/Paper'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'

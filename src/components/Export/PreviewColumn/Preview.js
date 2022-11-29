@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useContext } from 'react'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import orderBy from 'lodash/orderBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'

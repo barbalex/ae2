@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useContext, useMemo } from 'react'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import omit from 'lodash/omit'
 import forOwn from 'lodash/forOwn'
 import union from 'lodash/union'

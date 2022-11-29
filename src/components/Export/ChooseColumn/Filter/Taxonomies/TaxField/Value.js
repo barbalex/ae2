@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useContext, useRef } from 'react'
 import Select from 'react-select/async'
 import Highlighter from 'react-highlight-words'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { gql, useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 

@@ -1,7 +1,7 @@
 // import React, { useCallback } from 'react'
 // import GraphiQL from 'graphiql'
 // import 'graphiql/graphiql.css'
-// import styled from 'styled-components'
+// import styled from '@emotion/styled'
 
 // import graphQlUri from '../../modules/graphQlUri'
 // import Spinner from '../shared/Spinner'

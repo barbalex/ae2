@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import uniqBy from 'lodash/uniqBy'
 import { useQuery } from '@apollo/client'
 import { observer } from 'mobx-react-lite'

@@ -7,7 +7,7 @@ RUN npm install -g @graphile-contrib/pg-order-by-related
 
 COPY --chown=node:node .postgraphilerc.js .postgraphilerc.js
 
-EXPOSE 5050
+EXPOSE 5000
 
 USER node
 

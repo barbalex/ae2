@@ -4,7 +4,7 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 import { MdMoreVert as MoreVertIcon } from 'react-icons/md'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { navigate } from 'gatsby'
 
 import relations from '../../../modules/relations.png'

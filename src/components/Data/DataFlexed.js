@@ -1,6 +1,6 @@
 import React from 'react'
 import { ReflexContainer, ReflexSplitter, ReflexElement } from 'react-reflex'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 
 import Tree from '../Tree'
 import DataType from '../DataType'

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useContext } from 'react'
 import Paper from '@mui/material/Paper'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { observer } from 'mobx-react-lite'
 
 import ChooseColumn from './ChooseColumn'
