@@ -1,60 +1,18 @@
-import React, { useState, useCallback, useContext } from 'react'
+import React, { useState, useCallback } from 'react'
 import styled from '@emotion/styled'
-import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
 import HowTo from './HowTo'
 import Taxonomies from './Taxonomies'
 import PCOs from './PCOs'
 import RCOs from './RCOs'
-import storeContext from '../../../../storeContext'
 import ErrorBoundary from '../../../shared/ErrorBoundary'
 
 const Container = styled.div`
   padding: 0 5px;
 `
 
-const propsByTaxQuery = gql`
-  query propsByTaxDataQuery(
-    $queryExportTaxonomies: Boolean!
-    $exportTaxonomies: [String]
-  ) {
-    pcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        propertyName
-        jsontype
-        count
-      }
-    }
-    rcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        relationType
-        propertyName
-        jsontype
-        count
-      }
-    }
-  }
-`
-
 const Properties = () => {
-  const store = useContext(storeContext)
-  const exportTaxonomies = store.export.taxonomies.toJSON()
-
-  const { data: propsByTaxData, error: propsByTaxError } = useQuery(
-    propsByTaxQuery,
-    {
-      variables: {
-        exportTaxonomies,
-        queryExportTaxonomies: exportTaxonomies.length > 0,
-      },
-    },
-  )
-
   const [taxonomiesExpanded, setTaxonomiesExpanded] = useState(false)
   const [pcoExpanded, setFilterExpanded] = useState(false)
   const [rcoExpanded, setPropertiesExpanded] = useState(false)
@@ -90,13 +48,6 @@ const Properties = () => {
     }
   }, [rcoExpanded])
 
-  const pcoProperties =
-    propsByTaxData?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
-  const rcoProperties =
-    propsByTaxData?.rcoPropertiesByTaxonomiesFunction?.nodes ?? []
-
-  if (propsByTaxError) return `Error fetching data: ${propsByTaxError.message}`
-
   return (
     <ErrorBoundary>
       <Container>
@@ -105,12 +56,8 @@ const Properties = () => {
           taxonomiesExpanded={taxonomiesExpanded}
           onToggleTaxonomies={onToggleTaxonomies}
         />
-        {pcoProperties.length > 0 && (
-          <PCOs pcoExpanded={pcoExpanded} onTogglePco={onTogglePco} />
-        )}
-        {rcoProperties.length > 0 && (
-          <RCOs rcoExpanded={rcoExpanded} onToggleRco={onToggleRco} />
-        )}
+        <PCOs pcoExpanded={pcoExpanded} onTogglePco={onTogglePco} />
+        <RCOs rcoExpanded={rcoExpanded} onToggleRco={onToggleRco} />
       </Container>
     </ErrorBoundary>
   )
