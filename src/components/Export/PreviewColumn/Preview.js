@@ -242,15 +242,18 @@ const Preview = () => {
       JSON.stringify(taxFilters),
       JSON.stringify(taxProperties),
     ],
-    queryFn: () =>
-      client.query({
+    queryFn: async () => {
+      if (exportTaxonomies.length === 0) return []
+      const data = await client.query({
         query: exportObjectQuery,
         variables: {
           exportTaxonomies,
           taxFilters,
           fetchTaxProperties: taxProperties.length > 0,
         },
-      }),
+      })
+      return data
+    },
   })
 
   console.log('Preview rendering', {
@@ -267,10 +270,13 @@ const Preview = () => {
     data: synonymData,
   } = useQuery({
     queryKey: ['synonymQuery'],
-    queryFn: () =>
-      client.query({
+    queryFn: async () => {
+      if (exportTaxonomies.length === 0) return []
+      const data = await client.query({
         query: synonymQuery,
-      }),
+      })
+      return data
+    },
   })
   const {
     isLoading: exportPcoLoading,
