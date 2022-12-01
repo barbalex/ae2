@@ -3,8 +3,8 @@ import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import styled from '@emotion/styled'
 import orderBy from 'lodash/orderBy'
-import { useQuery, gql, useApolloClient } from '@apollo/client'
-import { useQuery as useReactQuery } from '@tanstack/react-query'
+import { gql, useApolloClient } from '@apollo/client'
+import { useQuery } from '@tanstack/react-query'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
 
@@ -227,7 +227,7 @@ const Preview = () => {
     isLoading: exportObjectLoading,
     error: exportObjectError,
     data: exportObjectData,
-  } = useReactQuery({
+  } = useQuery({
     queryKey: [
       'exportObjectQuery',
       exportTaxonomies,
@@ -258,7 +258,7 @@ const Preview = () => {
     isLoading: synonymLoading,
     error: synonymError,
     data: synonymData,
-  } = useReactQuery({
+  } = useQuery({
     queryKey: ['synonymQuery'],
     queryFn: () =>
       client.query({
@@ -269,7 +269,7 @@ const Preview = () => {
     isLoading: exportPcoLoading,
     error: exportPcoError,
     data: exportPcoData,
-  } = useReactQuery({
+  } = useQuery({
     queryKey: [
       'exportPcoQuery',
       exportTaxonomies,
@@ -291,7 +291,7 @@ const Preview = () => {
     isLoading: exportRcoLoading,
     error: exportRcoError,
     data: exportRcoData,
-  } = useReactQuery({
+  } = useQuery({
     queryKey: [
       'exportRcoQuery',
       exportTaxonomies,
