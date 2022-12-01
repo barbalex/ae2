@@ -138,7 +138,6 @@ const IntegrationAutosuggest = ({
 
   const onChange = useCallback(
     (newValue, actionMeta) => {
-      console.log('onChange', { newValue, actionMeta })
       let value
       switch (actionMeta.action) {
         case 'clear':
