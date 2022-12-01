@@ -1,15 +1,10 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useContext,
-  useReducer,
-} from 'react'
+import React, { useState, useCallback, useContext } from 'react'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import styled from '@emotion/styled'
 import orderBy from 'lodash/orderBy'
 import { useQuery, gql, useApolloClient } from '@apollo/client'
+import { useQuery as useReactQuery } from '@tanstack/react-query'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
 
@@ -202,8 +197,6 @@ const synonymQuery = gql`
   }
 `
 
-const exportObjectReducer = (state) => state
-
 const Preview = () => {
   const client = useApolloClient()
   const isSSR = typeof window === 'undefined'
@@ -230,17 +223,38 @@ const Preview = () => {
   const exportTaxonomies = store.export.taxonomies.toJSON()
   const exportIds = store.export.ids.toJSON()
 
-  const [exportObjectState, exportObjectDispatch] = useReducer(
-    exportObjectReducer,
-    {
-      data: undefined,
-      loading: false,
-      error: undefined,
+  const {
+    isLoading: exportObjectLoading,
+    error: exportObjectError,
+    data: exportObjectData,
+  } = useReactQuery({
+    queryKey: [
+      'exportObjectQuery',
+      exportTaxonomies,
+      taxFilters,
+      taxProperties.length,
+    ],
+    queryFn: async () => {
+      const data = client.query({
+        query: exportObjectPreviewQuery,
+        variables: {
+          exportTaxonomies,
+          taxFilters,
+          fetchTaxProperties: taxProperties.length > 0,
+        },
+      })
+      return data
     },
-  )
-  const exportObjectData = exportObjectState.data
-  const exportObjectLoading = exportObjectState.loading
-  const exportObjectError = exportObjectState.error
+  })
+
+  console.log('Preview rendering', {
+    exportTaxonomies,
+    taxFilters,
+    taxPropertiesLength: taxProperties.length,
+    exportObjectLoading,
+    exportObjectError,
+    exportObjectData,
+  })
 
   const { loading: propsByTaxLoading, error: propsByTaxError } = useQuery(
     propsByTaxQuery,
@@ -251,31 +265,6 @@ const Preview = () => {
       },
     },
   )
-
-  console.log('Preview rendering', {
-    exportTaxonomies,
-    taxFilters,
-    taxPropertiesLength: taxProperties.length,
-  }),
-    useEffect(() => {
-      console.log('Preview useEffect, exportObjectPreviewQuery running')
-      exportObjectDispatch({ data: [], loading: true, error: undefined })
-      client
-        .query({
-          query: exportObjectPreviewQuery,
-          variables: {
-            exportTaxonomies,
-            taxFilters,
-            fetchTaxProperties: taxProperties.length > 0,
-          },
-        })
-        .then((data) =>
-          exportObjectDispatch({ data, loading: false, error: undefined }),
-        )
-        .catch((error) =>
-          exportObjectDispatch({ data: undefined, loading: false, error }),
-        )
-    }, [client, exportTaxonomies, taxFilters, taxProperties.length])
 
   const {
     data: synonymData,
@@ -317,7 +306,8 @@ const Preview = () => {
   }, [])
 
   const exportRcoPropertyNames = rcoProperties.map((p) => p.pname)
-  const objects = exportObjectData?.exportObject?.nodes ?? []
+  const objects = exportObjectData?.data?.exportObject?.nodes ?? []
+  const objectsCount = exportObjectData?.data?.exportObject?.totalCount
   const pco = exportPcoData?.exportPco?.nodes ?? []
   const rco = exportRcoData?.exportRco?.nodes ?? []
   const synonyms = synonymData?.allSynonyms?.nodes ?? []
@@ -400,7 +390,7 @@ const Preview = () => {
       <Container>
         {rows.length > 0 && (
           <SpreadsheetContainer>
-            <TotalDiv>{`${rows.length.toLocaleString(
+            <TotalDiv>{`${objectsCount.toLocaleString(
               'de-CH',
             )} Datensätze, ${anzFelder.toLocaleString('de-CH')} ${
               anzFelder === 1 ? 'Feld' : 'Felder'
