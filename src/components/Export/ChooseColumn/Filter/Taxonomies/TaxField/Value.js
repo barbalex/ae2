@@ -103,17 +103,9 @@ const IntegrationAutosuggest = ({
   // Want to load all data when user focuses on input
   // But is not possible to programmatically call loadOptions (https://github.com/JedWatson/react-select/discussions/5389#discussioncomment-3911824)
   // So need to set key on Select and update it on focus
-  // TODO: maybe better to not use AsyncSelect: https://github.com/JedWatson/react-select/discussions/5389#discussioncomment-3911837
+  // Maybe better to not use AsyncSelect? https://github.com/JedWatson/react-select/discussions/5389#discussioncomment-3911837
   const ref = useRef()
   const [focusCount, setFocusCount] = useState(0)
-
-  // console.log('TaxFieldValue', {
-  //   pname,
-  //   taxname,
-  //   taxFilters,
-  //   taxFilter,
-  //   propsValue,
-  // })
 
   const [value, setValue] = useState(propsValue ?? '')
   const [error, setError] = useState(undefined)
@@ -132,6 +124,7 @@ const IntegrationAutosuggest = ({
           propValue: val ?? '',
         },
       })
+      // TODO: add partly typed value?
       const returnData = data?.propValuesFilteredFunction?.nodes?.map((n) => ({
         value: n.value,
         label: n.value,
@@ -194,14 +187,15 @@ const IntegrationAutosuggest = ({
     return `Error loading data: ${error.message}`
   }
 
-  // TODO: use https://github.com/JedWatson/react-select/discussions/5389#discussioncomment-3911837 to enable loading all on focus
+  const valueToShow = value ? { value, label: value } : undefined
+
   return (
     <Container>
       <Label>{`${pname} (${readableType(jsontype)})`}</Label>
       <StyledSelect
         key={focusCount}
         ref={ref}
-        value={value ? { value, label: value } : undefined}
+        value={valueToShow}
         defaultOptions={true}
         onChange={onChange}
         onBlur={onBlur}
@@ -222,7 +216,6 @@ const IntegrationAutosuggest = ({
         loadOptions={loadOptions}
         cacheOptions
         isClearable
-        isFocused
         openMenuOnFocus={true}
         spellCheck={false}
         data-width={width}
