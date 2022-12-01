@@ -8,7 +8,6 @@ import { observer } from 'mobx-react-lite'
 import readableType from '../../../../../../modules/readableType'
 import storeContext from '../../../../../../storeContext'
 
-// somehow need container and style Autosuggest to get css to work well
 const Container = styled.div`
   flex-grow: 1;
   display: flex;
@@ -124,7 +123,6 @@ const IntegrationAutosuggest = ({
           propValue: val ?? '',
         },
       })
-      // TODO: add partly typed value?
       const returnData = data?.propValuesFilteredFunction?.nodes?.map((n) => ({
         value: n.value,
         label: n.value,

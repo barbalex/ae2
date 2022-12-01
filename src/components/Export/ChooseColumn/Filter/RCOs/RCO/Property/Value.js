@@ -1,109 +1,64 @@
-import React, { useEffect, useState, useCallback, useContext } from 'react'
-import Autosuggest from 'react-autosuggest'
-import match from 'autosuggest-highlight/match'
-import parse from 'autosuggest-highlight/parse'
-import TextField from '@mui/material/TextField'
-import Paper from '@mui/material/Paper'
-import MenuItem from '@mui/material/MenuItem'
+import React, { useState, useCallback, useContext, useRef } from 'react'
+import Select from 'react-select/async'
+import Highlighter from 'react-highlight-words'
 import styled from '@emotion/styled'
-import trimStart from 'lodash/trimStart'
-import { useQuery, gql } from '@apollo/client'
+import { gql, useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
 import readableType from '../../../../../../../modules/readableType'
 import storeContext from '../../../../../../../storeContext'
 
-const StyledPaper = styled(Paper)`
-  z-index: 1;
-  /* need this so text is visible when overflowing */
-  > ul > li > div {
-    overflow: inherit;
-  }
-`
-const StyledTextField = styled(TextField)`
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  width: 100%;
-`
-
-// somehow need container and style Autosuggest to get css to work well
 const Container = styled.div`
   flex-grow: 1;
-  .react-autosuggest__container {
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+`
+const Label = styled.div`
+  font-size: 12px;
+  color: rgb(0, 0, 0, 0.54);
+`
+const StyledSelect = styled(Select)`
+  width: 100%;
+  .react-select__control {
+    border-bottom: 1px solid;
+    background-color: rgba(0, 0, 0, 0) !important;
+    border-bottom-color: rgba(0, 0, 0, 0.3);
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    padding-left: 0 !important;
   }
-  .react-autosuggest__suggestions-list {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-    max-height: 500px;
-    overflow: auto;
+  .react-select__value-container {
+    padding-left: 0 !important;
   }
-  .react-autosuggest__suggestion {
-    display: block;
-    cursor: pointer;
-    margin: 0;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
+  .react-select__control:hover {
+    border-bottom-width: 2px;
+  }
+  .react-select__control:focus-within {
+    border-bottom-color: rgba(230, 81, 0, 0.6) !important;
+    box-shadow: none;
+  }
+  .react-select__input-container {
+    padding-left: 0;
+  }
+  .react-select__option {
+    font-size: small;
+  }
+  .react-select__menu {
+    /* z-index: 9999; */
+    position: unset;
+  }
+  .react-select__menu,
+  .react-select__menu-list {
+    height: 130px;
+    height: ${(props) => (props.maxheight ? `${props.maxheight}px` : 'unset')};
+  }
+  .react-select__indicator {
+    color: rgba(0, 0, 0, 0.4);
   }
 `
-const StyledAutosuggest = styled(Autosuggest)`
-  .react-autosuggest__suggestions-container {
-    position: relative;
-    height: 200px;
-  }
-  .react-autosuggest__suggestions-container--open {
-    position: absolute;
-    margin-top: 8px;
-    margin-bottom: 24px;
-    left: 0;
-    right: 0;
-    // minWidth: that of parent
-    min-width: ${(props) => props['data-width']}px;
-  }
-`
-
-function renderSuggestion(suggestion, { query, isHighlighted }) {
-  const matches = match(suggestion, query)
-  const parts = parse(suggestion, matches)
-
-  return (
-    <MenuItem selected={isHighlighted} component="div">
-      <>
-        {parts.map((part, index) => {
-          return part.highlight ? (
-            <strong key={String(index)} style={{ fontWeight: 700 }}>
-              {part.text}
-            </strong>
-          ) : (
-            <span key={String(index)} style={{ fontWeight: 400 }}>
-              {part.text}
-            </span>
-          )
-        })}
-      </>
-    </MenuItem>
-  )
-}
-
-function renderSuggestionsContainer(options) {
-  const { containerProps, children } = options
-
-  return (
-    <StyledPaper {...containerProps} square>
-      {children}
-    </StyledPaper>
-  )
-}
-
-function getSuggestionValue(suggestion) {
-  return suggestion
-}
-
-function shouldRenderSuggestions() {
-  return true
-}
 
 const rcoFieldPropQuery = gql`
   query propDataQuery(
@@ -112,21 +67,28 @@ const rcoFieldPropQuery = gql`
     $pcFieldName: String!
     $pcTableName: String!
     $pcName: String!
-    $fetchData: Boolean!
+    $propValue: String!
   ) {
-    propValuesFunction(
+    propValuesFilteredFunction(
       tableName: $tableName
       propName: $propName
       pcFieldName: $pcFieldName
       pcTableName: $pcTableName
       pcName: $pcName
-    ) @include(if: $fetchData) {
+      propValue: $propValue
+    ) {
       nodes {
         value
       }
     }
   }
 `
+
+const noOptionsMessage = () => 'Keine Daten entsprechen dem Filter'
+const loadingMessage = () => 'lade...'
+const formatOptionLabel = ({ label }, { inputValue }) => (
+  <Highlighter searchWords={[inputValue]} textToHighlight={label} />
+)
 
 const IntegrationAutosuggest = ({
   relationtype,
@@ -135,150 +97,136 @@ const IntegrationAutosuggest = ({
   jsontype,
   comparator,
   value: propValue,
+  width,
 }) => {
+  const client = useApolloClient()
   const store = useContext(storeContext)
   const { addFilterFields, setRcoFilters, addRcoProperty } = store.export
 
-  const [suggestions, setSuggestions] = useState([])
-  const [propValues, setPropValues] = useState([])
+  // Problem with loading data
+  // Want to load all data when user focuses on input
+  // But is not possible to programmatically call loadOptions (https://github.com/JedWatson/react-select/discussions/5389#discussioncomment-3911824)
+  // So need to set key on Select and update it on focus
+  // Maybe better to not use AsyncSelect? https://github.com/JedWatson/react-select/discussions/5389#discussioncomment-3911837
+  const ref = useRef()
+  const [focusCount, setFocusCount] = useState(0)
+
   const [value, setValue] = useState(propValue || '')
-  const [fetchData, setFetchData] = useState(false)
-  const [dataFetched, setDataFetched] = useState(false)
+  const [error, setError] = useState(undefined)
 
-  const { data: propData, error: propDataError } = useQuery(rcoFieldPropQuery, {
-    variables: {
-      tableName: 'relation',
-      propName: pname,
-      pcFieldName: 'property_collection_id',
-      pcTableName: 'property_collection',
-      pcName: pcname,
-      fetchData,
+  const loadOptions = useCallback(
+    async (val) => {
+      console.log('loadOptions', { val })
+      if (!focusCount) return []
+      const { data, error } = await client.query({
+        query: rcoFieldPropQuery,
+        variables: {
+          tableName: 'relation',
+          propName: pname,
+          pcFieldName: 'property_collection_id',
+          pcTableName: 'property_collection',
+          pcName: pcname,
+          propValue: val ?? '',
+        },
+      })
+      console.log('loadOptions', { data, error })
+      const returnData = data?.propValuesFilteredFunction?.nodes?.map((n) => ({
+        value: n.value,
+        label: n.value,
+      }))
+      setValue(val)
+      setError(error)
+      return returnData
     },
-  })
+    [client, focusCount, pcname, pname],
+  )
 
-  useEffect(() => {
-    if (fetchData && !dataFetched) {
-      const propValues = (propData?.propValuesFunction?.nodes ?? [])
-        .filter((v) => v !== null && v !== undefined)
-        .map((v) => v.value)
-      if (propValues.length > 0) {
-        setPropValues(propValues)
-        setFetchData(false)
-        setDataFetched(true)
+  const onBlur = useCallback(() => setFilter(value), [setFilter, value])
+
+  const onChange = useCallback(
+    (newValue, actionMeta) => {
+      // console.log('onChange', { newValue, actionMeta })
+      let value
+      switch (actionMeta.action) {
+        case 'clear':
+          value = ''
+          break
+        default:
+          value = newValue?.value
+          break
       }
-    }
-  }, [propData, dataFetched, fetchData])
-
-  const getSuggestions = useCallback(
-    (value) => {
-      const inputValue = value.toLowerCase()
-
-      if (value === ' ') return propValues
-      if (inputValue.length === 0) return []
-      return propValues.filter((v) => v.toLowerCase().includes(inputValue))
+      setValue(value)
+      setFilter(value)
     },
-    [propValues],
+    [setFilter],
   )
 
-  const handleSuggestionsFetchRequested = useCallback(
-    ({ value }) => {
-      setSuggestions(getSuggestions(value))
+  const setFilter = useCallback(
+    (val) => {
+      // 1. change filter value
+      let comparatorValue = comparator
+      if (!comparator && val) comparatorValue = 'ILIKE'
+      if (!val) comparatorValue = null
+      setRcoFilters({
+        pcname,
+        relationtype,
+        pname,
+        comparator: comparatorValue,
+        value: val,
+      })
+      // 2. if value and field not choosen, choose it
+      if (addFilterFields && value) {
+        addRcoProperty({ pcname, relationtype, pname })
+      }
     },
-    [getSuggestions],
-  )
-
-  const handleSuggestionsClearRequested = useCallback(() => {
-    setSuggestions(getSuggestions(' '))
-  }, [getSuggestions])
-
-  const onFocus = useCallback(() => {
-    // fetch data if not yet happened
-    if (!dataFetched) setFetchData(true)
-  }, [dataFetched])
-
-  const handleChange = useCallback((event, { newValue }) => {
-    // trim the start to enable entering space
-    // at start to open list
-    setValue(trimStart(newValue))
-  }, [])
-
-  const handleBlur = useCallback(async () => {
-    // 1. change filter value
-    let comparatorValue = comparator
-    if (!comparator && value) comparatorValue = 'ILIKE'
-    if (!value) comparatorValue = null
-    setRcoFilters({
+    [
+      addFilterFields,
+      addRcoProperty,
+      comparator,
       pcname,
-      relationtype,
       pname,
-      comparator: comparatorValue,
+      relationtype,
+      setRcoFilters,
       value,
-    })
-    // 2. if value and field is not choosen, choose it
-    if (addFilterFields && value) {
-      addRcoProperty({ pcname, relationtype, pname })
-    }
-  }, [
-    comparator,
-    value,
-    setRcoFilters,
-    pcname,
-    relationtype,
-    pname,
-    addFilterFields,
-    addRcoProperty,
-  ])
-
-  /**
-   * Issue:
-   * This hides behind next lower rc
-   * Maybe use react portal?
-   * https://github.com/moroshko/react-autosuggest/issues/699#issuecomment-568798287
-   */
-
-  const renderInput = useCallback(
-    (inputProps) => {
-      const labelText = `${pname} (${readableType(jsontype)})`
-      // eslint-disable-next-line no-unused-vars
-      const { autoFocus, ref, ...other } = inputProps
-
-      return (
-        <StyledTextField
-          label={labelText}
-          fullWidth
-          value={value || ''}
-          inputRef={ref}
-          InputProps={other}
-          variant="standard"
-        />
-      )
-    },
-    [pname, jsontype, value],
+    ],
   )
 
-  if (propDataError) {
-    return `Error loading data: ${propDataError.message}`
+  if (error) {
+    return `Error loading data: ${error.message}`
   }
+
+  const valueToShow = value ? { value, label: value } : undefined
 
   return (
     <Container>
-      <StyledAutosuggest
-        renderInputComponent={renderInput}
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={handleSuggestionsFetchRequested}
-        onSuggestionsClearRequested={handleSuggestionsClearRequested}
-        renderSuggestionsContainer={renderSuggestionsContainer}
-        getSuggestionValue={getSuggestionValue}
-        renderSuggestion={renderSuggestion}
-        shouldRenderSuggestions={shouldRenderSuggestions}
-        inputProps={{
-          value,
-          autoFocus: true,
-          placeholder: 'Für Auswahlliste: Leerschlag tippen',
-          onChange: handleChange,
-          onBlur: handleBlur,
-          onFocus: onFocus,
+      <Label>{`${pname} (${readableType(jsontype)})`}</Label>
+      <StyledSelect
+        key={focusCount}
+        ref={ref}
+        value={valueToShow}
+        defaultOptions={true}
+        onChange={onChange}
+        onBlur={onBlur}
+        onFocus={() => {
+          if (focusCount === 0) {
+            setFocusCount(1)
+            setTimeout(() => {
+              ref.current.onMenuOpen()
+              ref.current.focus()
+            })
+          }
         }}
+        formatOptionLabel={formatOptionLabel}
+        placeholder={''}
+        noOptionsMessage={noOptionsMessage}
+        loadingMessage={loadingMessage}
+        classNamePrefix="react-select"
+        loadOptions={loadOptions}
+        cacheOptions
+        isClearable
+        openMenuOnFocus={true}
+        spellCheck={false}
+        data-width={width}
       />
     </Container>
   )

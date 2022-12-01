@@ -48,7 +48,7 @@ const PcoProperty = ({
   return (
     <Container data-width={containerWidth}>
       <Value
-        key={`${pcname}/${pname}/${jsontype}`}
+        key={`${pcname}/${pname}/${jsontype}/${value}`}
         pcname={pcname}
         pname={pname}
         value={value}
