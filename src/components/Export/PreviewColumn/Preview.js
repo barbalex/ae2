@@ -265,7 +265,6 @@ const Preview = () => {
         query: synonymQuery,
       }),
   })
-
   const {
     isLoading: exportPcoLoading,
     error: exportPcoError,
@@ -289,15 +288,25 @@ const Preview = () => {
   })
 
   const {
-    data: exportRcoData,
-    loading: exportRcoLoading,
+    isLoading: exportRcoLoading,
     error: exportRcoError,
-  } = useQuery(exportRcoQuery, {
-    variables: {
-      rcoFilters,
-      rcoProperties,
-      fetchRcoProperties: rcoProperties.length > 0,
-    },
+    data: exportRcoData,
+  } = useReactQuery({
+    queryKey: [
+      'exportRcoQuery',
+      exportTaxonomies,
+      taxFilters,
+      taxProperties.length,
+    ],
+    queryFn: async () =>
+      client.query({
+        query: exportRcoQuery,
+        variables: {
+          rcoFilters,
+          rcoProperties,
+          fetchRcoProperties: rcoProperties.length > 0,
+        },
+      }),
   })
 
   const [sortField, setSortField] = useState('id')
