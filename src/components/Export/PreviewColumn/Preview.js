@@ -247,30 +247,29 @@ const Preview = () => {
     },
   })
 
-  console.log('Preview rendering', {
-    exportTaxonomies,
-    taxFilters,
-    taxPropertiesLength: taxProperties.length,
-    exportObjectLoading,
-    exportObjectError,
-    exportObjectData,
-  })
-
-  const { loading: propsByTaxLoading, error: propsByTaxError } = useQuery(
-    propsByTaxQuery,
-    {
-      variables: {
-        exportTaxonomies,
-        queryExportTaxonomies: exportTaxonomies.length > 0,
-      },
-    },
-  )
+  // console.log('Preview rendering', {
+  //   exportTaxonomies,
+  //   taxFilters,
+  //   taxPropertiesLength: taxProperties.length,
+  //   exportObjectLoading,
+  //   exportObjectError,
+  //   exportObjectData,
+  // })
 
   const {
-    data: synonymData,
-    loading: synonymLoading,
+    isLoading: synonymLoading,
     error: synonymError,
-  } = useQuery(synonymQuery)
+    data: synonymData,
+  } = useReactQuery({
+    queryKey: ['synonymQuery'],
+    queryFn: async () => {
+      const data = client.query({
+        query: synonymQuery,
+      })
+      return data
+    },
+  })
+
   const {
     data: exportPcoData,
     loading: exportPcoLoading,
@@ -334,7 +333,6 @@ const Preview = () => {
   const anzFelder = rows[0] ? Object.keys(rows[0]).length : 0
   const loading =
     exportRcoLoading ||
-    propsByTaxLoading ||
     exportObjectLoading ||
     exportPcoLoading ||
     synonymLoading
@@ -349,13 +347,6 @@ const Preview = () => {
   }, [rows, onSetMessage])
   const onClickCsv = useCallback(() => exportCsv(rows), [rows])
 
-  if (propsByTaxError) {
-    return (
-      <ErrorContainer>
-        `Error fetching data: ${propsByTaxError.message}`
-      </ErrorContainer>
-    )
-  }
   if (exportObjectError) {
     return (
       <ErrorContainer>
