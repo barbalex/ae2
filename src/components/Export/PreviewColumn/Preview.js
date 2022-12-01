@@ -234,17 +234,15 @@ const Preview = () => {
       taxFilters,
       taxProperties.length,
     ],
-    queryFn: async () => {
-      const data = client.query({
+    queryFn: async () =>
+      client.query({
         query: exportObjectPreviewQuery,
         variables: {
           exportTaxonomies,
           taxFilters,
           fetchTaxProperties: taxProperties.length > 0,
         },
-      })
-      return data
-    },
+      }),
   })
 
   // console.log('Preview rendering', {
@@ -262,25 +260,34 @@ const Preview = () => {
     data: synonymData,
   } = useReactQuery({
     queryKey: ['synonymQuery'],
-    queryFn: async () => {
-      const data = client.query({
+    queryFn: () =>
+      client.query({
         query: synonymQuery,
-      })
-      return data
-    },
+      }),
   })
 
   const {
-    data: exportPcoData,
-    loading: exportPcoLoading,
+    isLoading: exportPcoLoading,
     error: exportPcoError,
-  } = useQuery(exportPcoQuery, {
-    variables: {
-      pcoFilters,
-      pcoProperties,
-      fetchPcoProperties: pcoProperties.length > 0,
-    },
+    data: exportPcoData,
+  } = useReactQuery({
+    queryKey: [
+      'exportPcoQuery',
+      exportTaxonomies,
+      taxFilters,
+      taxProperties.length,
+    ],
+    queryFn: async () =>
+      client.query({
+        query: exportPcoQuery,
+        variables: {
+          pcoFilters,
+          pcoProperties,
+          fetchPcoProperties: pcoProperties.length > 0,
+        },
+      }),
   })
+
   const {
     data: exportRcoData,
     loading: exportRcoLoading,
