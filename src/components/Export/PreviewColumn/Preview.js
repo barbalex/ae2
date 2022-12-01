@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  useReducer,
+} from 'react'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import styled from '@emotion/styled'
@@ -196,6 +202,8 @@ const synonymQuery = gql`
   }
 `
 
+const exportObjectReducer = (state) => state
+
 const Preview = () => {
   const client = useApolloClient()
   const isSSR = typeof window === 'undefined'
@@ -222,9 +230,17 @@ const Preview = () => {
   const exportTaxonomies = store.export.taxonomies.toJSON()
   const exportIds = store.export.ids.toJSON()
 
-  const [exportObjectData, setExportObjectData] = useState()
-  const [exportObjectLoading, setExportObjectLoading] = useState(false)
-  const [exportObjectError, setExportObjectError] = useState()
+  const [exportObjectState, exportObjectDispatch] = useReducer(
+    exportObjectReducer,
+    {
+      data: undefined,
+      loading: false,
+      error: undefined,
+    },
+  )
+  const exportObjectData = exportObjectState.data
+  const exportObjectLoading = exportObjectState.loading
+  const exportObjectError = exportObjectState.error
 
   const { loading: propsByTaxLoading, error: propsByTaxError } = useQuery(
     propsByTaxQuery,
@@ -243,7 +259,7 @@ const Preview = () => {
   }),
     useEffect(() => {
       console.log('Preview useEffect, exportObjectPreviewQuery running')
-      setExportObjectLoading(true)
+      exportObjectDispatch({ data: [], loading: true, error: undefined })
       client
         .query({
           query: exportObjectPreviewQuery,
@@ -253,9 +269,12 @@ const Preview = () => {
             fetchTaxProperties: taxProperties.length > 0,
           },
         })
-        .then((data) => setExportObjectData(data))
-        .catch((error) => setExportObjectError(error))
-        .finally(() => setExportObjectLoading(false))
+        .then((data) =>
+          exportObjectDispatch({ data, loading: false, error: undefined }),
+        )
+        .catch((error) =>
+          exportObjectDispatch({ data: undefined, loading: false, error }),
+        )
     }, [client, exportTaxonomies, taxFilters, taxProperties.length])
 
   const {
