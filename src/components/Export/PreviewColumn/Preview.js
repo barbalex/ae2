@@ -109,7 +109,7 @@ const exportObjectPreviewQuery = gql`
     exportObject(
       exportTaxonomies: $exportTaxonomies
       taxFilters: $taxFilters
-      first: 17
+      first: 13
     ) {
       totalCount
       nodes {
@@ -236,7 +236,7 @@ const Preview = () => {
     ],
     queryFn: async () =>
       client.query({
-        query: exportObjectPreviewQuery,
+        query: exportObjectQuery,
         variables: {
           exportTaxonomies,
           taxFilters,
@@ -358,7 +358,9 @@ const Preview = () => {
     setSortDirection(direction.toLowerCase())
   }, [])
   const onClickXlsx = useCallback(() => {
-    // TODO: download the rows first
+    // TODO:
+    // 1. download the full rows
+    // 2. rowsFromObjects
     exportXlsx({ rows, onSetMessage })
   }, [rows, onSetMessage])
   const onClickCsv = useCallback(() => exportCsv(rows), [rows])
@@ -395,7 +397,7 @@ const Preview = () => {
   return (
     <ErrorBoundary>
       <Container>
-        {rows.length > 0 && (
+        {objectsCount > 0 && (
           <SpreadsheetContainer>
             <TotalDiv>{`${objectsCount.toLocaleString(
               'de-CH',
@@ -416,14 +418,14 @@ const Preview = () => {
             )}
           </SpreadsheetContainer>
         )}
-        {rows.length === 0 && (
+        {objectsCount === 0 && (
           <SpreadsheetContainer>
-            <TotalDiv>{`${rows.length.toLocaleString(
+            <TotalDiv>{`${objectsCount.toLocaleString(
               'de-CH',
             )} Datensätze`}</TotalDiv>
           </SpreadsheetContainer>
         )}
-        {rows.length > 0 && (
+        {objectsCount > 0 && (
           <ButtonsContainer>
             <StyledButton onClick={onClickXlsx} color="inherit">
               .xlsx herunterladen
