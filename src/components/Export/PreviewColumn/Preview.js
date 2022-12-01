@@ -26,7 +26,7 @@ const Container = styled.div`
   .react-grid-HeaderRow {
     overflow: hidden;
   }
-  .react-grid-HeaderCell:not(:first-child) {
+  .react-grid-HeaderCell:not(:first-of-type) {
     border-left: #c7c7c7 solid 1px !important;
   }
   .react-grid-HeaderCell__draggable {

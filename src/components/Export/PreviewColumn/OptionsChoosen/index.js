@@ -24,7 +24,7 @@ const Container = styled.div`
   li {
     margin-bottom: 4px;
   }
-  ul > li:first-child {
+  ul > li:first-of-type {
     padding-top: 4px;
   }
 `

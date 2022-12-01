@@ -31,7 +31,7 @@ const Container = styled.div`
   .react-grid-Container {
     font-size: small;
   }
-  .react-grid-HeaderCell:not(:first-child) {
+  .react-grid-HeaderCell:not(:first-of-type) {
     border-left: #c7c7c7 solid 1px !important;
   }
   .react-grid-Cell {
