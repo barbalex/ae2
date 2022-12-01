@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useContext } from 'react'
+import React, { useState, useEffect, useCallback, useContext } from 'react'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import styled from '@emotion/styled'
 import orderBy from 'lodash/orderBy'
-import { useQuery, gql } from '@apollo/client'
+import { useQuery, gql, useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
 
@@ -99,6 +99,25 @@ const propsByTaxQuery = gql`
     }
   }
 `
+const exportObjectPreviewQuery = gql`
+  query PreviewColumnExportObjectPreviewQuery(
+    $exportTaxonomies: [String]!
+    $taxFilters: [TaxFilterInput]!
+    $fetchTaxProperties: Boolean!
+  ) {
+    exportObject(
+      exportTaxonomies: $exportTaxonomies
+      taxFilters: $taxFilters
+      first: 17
+    ) {
+      totalCount
+      nodes {
+        id
+        properties @include(if: $fetchTaxProperties)
+      }
+    }
+  }
+`
 const exportObjectQuery = gql`
   query PreviewColumnExportObjectQuery(
     $exportTaxonomies: [String]!
@@ -178,6 +197,7 @@ const synonymQuery = gql`
 `
 
 const Preview = () => {
+  const client = useApolloClient()
   const isSSR = typeof window === 'undefined'
   const store = useContext(storeContext)
   const {
@@ -202,6 +222,10 @@ const Preview = () => {
   const exportTaxonomies = store.export.taxonomies.toJSON()
   const exportIds = store.export.ids.toJSON()
 
+  const [exportObjectData, setExportObjectData] = useState()
+  const [exportObjectLoading, setExportObjectLoading] = useState(false)
+  const [exportObjectError, setExportObjectError] = useState()
+
   const { loading: propsByTaxLoading, error: propsByTaxError } = useQuery(
     propsByTaxQuery,
     {
@@ -211,17 +235,29 @@ const Preview = () => {
       },
     },
   )
-  const {
-    data: exportObjectData,
-    loading: exportObjectLoading,
-    error: exportObjectError,
-  } = useQuery(exportObjectQuery, {
-    variables: {
-      exportTaxonomies,
-      taxFilters,
-      fetchTaxProperties: taxProperties.length > 0,
-    },
-  })
+
+  console.log('Preview rendering', {
+    exportTaxonomies,
+    taxFilters,
+    taxPropertiesLength: taxProperties.length,
+  }),
+    useEffect(() => {
+      console.log('Preview useEffect, exportObjectPreviewQuery running')
+      setExportObjectLoading(true)
+      client
+        .query({
+          query: exportObjectPreviewQuery,
+          variables: {
+            exportTaxonomies,
+            taxFilters,
+            fetchTaxProperties: taxProperties.length > 0,
+          },
+        })
+        .then((data) => setExportObjectData(data))
+        .catch((error) => setExportObjectError(error))
+        .finally(() => setExportObjectLoading(false))
+    }, [client, exportTaxonomies, taxFilters, taxProperties.length])
+
   const {
     data: synonymData,
     loading: synonymLoading,
@@ -298,10 +334,10 @@ const Preview = () => {
     setSortField(column)
     setSortDirection(direction.toLowerCase())
   }, [])
-  const onClickXlsx = useCallback(
-    () => exportXlsx({ rows, onSetMessage }),
-    [rows, onSetMessage],
-  )
+  const onClickXlsx = useCallback(() => {
+    // TODO: download the rows first
+    exportXlsx({ rows, onSetMessage })
+  }, [rows, onSetMessage])
   const onClickCsv = useCallback(() => exportCsv(rows), [rows])
 
   if (propsByTaxError) {
