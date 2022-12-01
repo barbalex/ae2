@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 import { MdLink as LinkIcon } from 'react-icons/md'
 import Icon from '@mui/material/Icon'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 
 const StyledButton = styled(Button)`
   min-width: 54px !important;

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useContext, useMemo } from 'react'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import omit from 'lodash/omit'
 import forOwn from 'lodash/forOwn'
 import union from 'lodash/union'
@@ -31,7 +31,7 @@ const Container = styled.div`
   .react-grid-Container {
     font-size: small;
   }
-  .react-grid-HeaderCell:not(:first-child) {
+  .react-grid-HeaderCell:not(:first-of-type) {
     border-left: #c7c7c7 solid 1px !important;
   }
   .react-grid-Cell {

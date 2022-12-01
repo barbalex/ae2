@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useContext, useMemo } from 'react'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { FaSearch } from 'react-icons/fa'
 import Highlighter from 'react-highlight-words'
 import Select from 'react-select/async'

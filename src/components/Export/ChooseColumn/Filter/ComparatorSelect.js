@@ -2,9 +2,10 @@ import React from 'react'
 import Input from '@mui/material/Input'
 import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 
 const StyledSelect = styled(Select)`
+  height: 39px;
   > div {
     padding-left: 8px;
   }

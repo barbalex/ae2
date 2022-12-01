@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField'
 import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdClear } from 'react-icons/md'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import omit from 'lodash/omit'
 import { useApolloClient } from '@apollo/client'
 

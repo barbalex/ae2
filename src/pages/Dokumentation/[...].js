@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useState, useContext } from 'react'
 import { graphql } from 'gatsby'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import Paper from '@mui/material/Paper'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
-import SwipeableViews from 'react-swipeable-views'
 import { observer } from 'mobx-react-lite'
 
 import Layout from '../../components/Layout'
@@ -41,11 +40,8 @@ const Doku = styled.div`
 const StyledPaper = styled(Paper)`
   background-color: #ffcc80 !important;
 `
-const StyledSwipeableViews = styled(SwipeableViews)`
+const Content = styled.div`
   height: 100%;
-  .react-swipeable-view-container {
-    height: 100%;
-  }
 `
 
 const Dokumentation = ({ data }) => {
@@ -56,17 +52,26 @@ const Dokumentation = ({ data }) => {
   const pathElements = pathname.split('/').filter((p) => !!p)
 
   const [tab, setTab] = useState(0)
-  const onChangeTab = useCallback((event, value) => setTab(value), [])
+  const onChangeTab = useCallback((event, value) => {
+    setTab(value)
+  }, [])
 
   const [stacked, setStacked] = useState(false)
   useEffect(() => {
-    const shouldBeStacked = singleColumnView
-    setStacked(shouldBeStacked)
-  }, [singleColumnView])
+    const w = window
+    const d = document
+    const e = d.documentElement
+    const g = d.getElementsByTagName('body')[0]
+    const windowWidth = w.innerWidth || e.clientWidth || g.clientWidth
+    const stacked = windowWidth < 700
+    setStacked(stacked)
+  }, [])
   useEffect(() => {
     if (pathElements.length > 1 && tab === 0) setTab(1)
-    if (pathElements.length === 1 && tab === 1) setTab(0)
+    // if (pathElements.length === 1 && tab === 1) setTab(0)
   }, [pathElements, tab])
+
+  // TODO: singleColumnView is set in App.jsx which is not run if app started on this route!!!
 
   if (stacked) {
     return (
@@ -83,21 +88,21 @@ const Dokumentation = ({ data }) => {
               <Tab label="Formular" />
             </Tabs>
           </StyledPaper>
-          <StyledSwipeableViews
-            axis="x"
-            index={tab}
-            onChangeIndex={(i) => setTab(i)}
-          >
-            <Sidebar
-              title="Dokumentation"
-              titleLink="/Dokumentation/"
-              edges={edges}
-              stacked={true}
-            />
-            <Doku>
-              <p>Hoffentlich nützliche Infos für Sie</p>
-            </Doku>
-          </StyledSwipeableViews>
+          <Content>
+            {tab === 0 && (
+              <Sidebar
+                title="Dokumentation"
+                titleLink="/Dokumentation/"
+                edges={edges}
+                stacked={true}
+              />
+            )}
+            {tab === 1 && (
+              <Doku>
+                <p>Hoffentlich nützliche Infos für Sie</p>
+              </Doku>
+            )}
+          </Content>
         </Layout>
       </ErrorBoundary>
     )

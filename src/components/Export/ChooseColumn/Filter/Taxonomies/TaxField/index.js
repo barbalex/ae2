@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { observer } from 'mobx-react-lite'
 import { withResizeDetector } from 'react-resize-detector'
 
@@ -35,7 +35,7 @@ const TaxField = ({
   return (
     <Container data-width={containerWidth}>
       <Value
-        key={`${taxname}/${pname}/${jsontype}`}
+        key={`${taxname}/${pname}/${jsontype}/${value}`}
         taxname={taxname}
         pname={pname}
         value={value}

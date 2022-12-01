@@ -1,10 +1,9 @@
 import React, { useEffect, useCallback, useState, useContext } from 'react'
 import { graphql, navigate } from 'gatsby'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import Paper from '@mui/material/Paper'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
-import SwipeableViews from 'react-swipeable-views'
 import SimpleBar from 'simplebar-react'
 import { withResizeDetector } from 'react-resize-detector'
 import { observer } from 'mobx-react-lite'
@@ -47,11 +46,8 @@ const DokuDate = styled.p`
 const StyledPaper = styled(Paper)`
   background-color: #ffcc80 !important;
 `
-const StyledSwipeableViews = styled(SwipeableViews)`
+const Content = styled.div`
   height: 100%;
-  .react-swipeable-view-container {
-    height: 100%;
-  }
 `
 
 const DocTemplate = ({ data, height, width }) => {
@@ -85,10 +81,14 @@ const DocTemplate = ({ data, height, width }) => {
 
   const [stacked, setStacked] = useState(false)
   useEffect(() => {
-    const shouldBeStacked = windowWidth < 700
-    console.log('docTemplate, useEffect1:', { shouldBeStacked })
-    setStacked(shouldBeStacked)
-  }, [windowWidth])
+    const w = window
+    const d = document
+    const e = d.documentElement
+    const g = d.getElementsByTagName('body')[0]
+    const windowWidth = w.innerWidth || e.clientWidth || g.clientWidth
+    const stacked = windowWidth < 700
+    setStacked(stacked)
+  }, [])
   useEffect(() => {
     console.log('docTemplate, useEffect2:', { pathElements, tab })
     pathElements.length > 1 && tab === 0 && setTab(1)
@@ -110,27 +110,27 @@ const DocTemplate = ({ data, height, width }) => {
               <Tab label="Formular" />
             </Tabs>
           </StyledPaper>
-          <StyledSwipeableViews
-            axis="x"
-            index={tab}
-            onChangeIndex={(i) => setTab(i)}
-          >
-            <Sidebar
-              title="Dokumentation"
-              titleLink="/Dokumentation/"
-              edges={edges}
-              stacked={true}
-            />
-            <SimpleBar
-              style={{ maxHeight: height, height: '100%', width: '100%' }}
-            >
-              <Doku>
-                <h1>{frontmatter?.title ?? 'no title'}</h1>
-                <DokuDate>{frontmatter.date ?? 'no date'}</DokuDate>
-                <div dangerouslySetInnerHTML={{ __html: html }} />
-              </Doku>
-            </SimpleBar>
-          </StyledSwipeableViews>
+          <Content>
+            {tab === 0 && (
+              <Sidebar
+                title="Dokumentation"
+                titleLink="/Dokumentation/"
+                edges={edges}
+                stacked={true}
+              />
+            )}
+            {tab === 1 && (
+              <SimpleBar
+                style={{ maxHeight: height, height: '100%', width: '100%' }}
+              >
+                <Doku>
+                  <h1>{frontmatter?.title ?? 'no title'}</h1>
+                  <DokuDate>{frontmatter.date ?? 'no date'}</DokuDate>
+                  <div dangerouslySetInnerHTML={{ __html: html }} />
+                </Doku>
+              </SimpleBar>
+            )}
+          </Content>
         </Layout>
       </ErrorBoundary>
     )

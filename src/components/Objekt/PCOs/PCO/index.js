@@ -10,7 +10,7 @@ import {
   MdInfoOutline as InfoOutlineIcon,
 } from 'react-icons/md'
 import sortBy from 'lodash/sortBy'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 
 import PCDescription from '../../../shared/PCDescription'
 import ErrorBoundary from '../../../shared/ErrorBoundary'

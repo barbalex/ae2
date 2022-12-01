@@ -1,7 +1,8 @@
 import React, { useContext } from 'react'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
+import { withResizeDetector } from 'react-resize-detector'
 
 import Comparator from './Comparator'
 import Value from './Value'
@@ -22,7 +23,7 @@ const PcoProperty = ({
   pcname,
   pname,
   jsontype,
-  count,
+  width,
   columns,
   propertiesLength,
 }) => {
@@ -48,12 +49,13 @@ const PcoProperty = ({
   return (
     <Container data-width={containerWidth}>
       <Value
-        key={`${pcname}/${pname}/${jsontype}`}
+        key={`${pcname}/${pname}/${jsontype}/${value}`}
         pcname={pcname}
         pname={pname}
         value={value}
         comparator={comparator}
         jsontype={jsontype}
+        width={width - 32}
       />
       {value !== undefined && value !== null && value !== ' ' && (
         <Comparator
@@ -67,4 +69,4 @@ const PcoProperty = ({
   )
 }
 
-export default observer(PcoProperty)
+export default withResizeDetector(observer(PcoProperty))

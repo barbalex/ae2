@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useContext } from 'react'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import orderBy from 'lodash/orderBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -26,7 +26,7 @@ const Container = styled.div`
   .react-grid-HeaderRow {
     overflow: hidden;
   }
-  .react-grid-HeaderCell:not(:first-child) {
+  .react-grid-HeaderCell:not(:first-of-type) {
     border-left: #c7c7c7 solid 1px !important;
   }
   .react-grid-HeaderCell__draggable {

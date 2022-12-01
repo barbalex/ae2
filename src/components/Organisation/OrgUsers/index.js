@@ -1,5 +1,5 @@
 import React, { useCallback, useContext } from 'react'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import sortBy from 'lodash/sortBy'
 import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'

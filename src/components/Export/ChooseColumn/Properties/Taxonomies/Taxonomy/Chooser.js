@@ -1,7 +1,7 @@
 import React, { useCallback, useContext } from 'react'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { observer } from 'mobx-react-lite'
 
 import storeContext from '../../../../../../storeContext'
