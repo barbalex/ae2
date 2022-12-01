@@ -231,10 +231,10 @@ const Preview = () => {
     queryKey: [
       'exportObjectQuery',
       exportTaxonomies,
-      taxFilters,
-      taxProperties.length,
+      JSON.stringify(taxFilters),
+      JSON.stringify(taxProperties),
     ],
-    queryFn: async () =>
+    queryFn: () =>
       client.query({
         query: exportObjectQuery,
         variables: {
@@ -245,14 +245,13 @@ const Preview = () => {
       }),
   })
 
-  // console.log('Preview rendering', {
-  //   exportTaxonomies,
-  //   taxFilters,
-  //   taxPropertiesLength: taxProperties.length,
-  //   exportObjectLoading,
-  //   exportObjectError,
-  //   exportObjectData,
-  // })
+  console.log('Preview rendering', {
+    exportTaxonomies,
+    exportObjectData,
+    pcoFilters,
+    pcoProperties,
+    exportPcoData,
+  })
 
   const {
     isLoading: synonymLoading,
@@ -272,19 +271,21 @@ const Preview = () => {
   } = useQuery({
     queryKey: [
       'exportPcoQuery',
-      exportTaxonomies,
-      taxFilters,
-      taxProperties.length,
+      JSON.stringify(pcoFilters),
+      JSON.stringify(pcoProperties),
     ],
-    queryFn: async () =>
-      client.query({
+    queryFn: async () => {
+      console.log('exportPcoQuery running')
+      const data = await client.query({
         query: exportPcoQuery,
         variables: {
           pcoFilters,
           pcoProperties,
           fetchPcoProperties: pcoProperties.length > 0,
         },
-      }),
+      })
+      return data
+    },
   })
 
   const {
@@ -294,11 +295,10 @@ const Preview = () => {
   } = useQuery({
     queryKey: [
       'exportRcoQuery',
-      exportTaxonomies,
-      taxFilters,
-      taxProperties.length,
+      JSON.stringify(rcoFilters),
+      JSON.stringify(rcoProperties),
     ],
-    queryFn: async () =>
+    queryFn: () =>
       client.query({
         query: exportRcoQuery,
         variables: {
@@ -323,9 +323,9 @@ const Preview = () => {
   const exportRcoPropertyNames = rcoProperties.map((p) => p.pname)
   const objects = exportObjectData?.data?.exportObject?.nodes ?? []
   const objectsCount = exportObjectData?.data?.exportObject?.totalCount
-  const pco = exportPcoData?.exportPco?.nodes ?? []
-  const rco = exportRcoData?.exportRco?.nodes ?? []
-  const synonyms = synonymData?.allSynonyms?.nodes ?? []
+  const pco = exportPcoData?.data?.exportPco?.nodes ?? []
+  const rco = exportRcoData?.data?.exportRco?.nodes ?? []
+  const synonyms = synonymData?.data?.allSynonyms?.nodes ?? []
 
   // need taxFields to filter only data with properties
   const rowsResult = rowsFromObjects({
