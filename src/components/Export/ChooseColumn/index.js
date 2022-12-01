@@ -7,7 +7,6 @@ import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import Snackbar from '@mui/material/Snackbar'
 import styled from '@emotion/styled'
-import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
 
@@ -46,151 +45,10 @@ const Container = styled.div`
   overflow-x: hidden !important;
   height: 100%;
 `
-const ErrorContainer = styled.div`
-  padding: 10px;
-`
-
-const propsByTaxQuery = gql`
-  query propsByTaxDataQuery(
-    $queryExportTaxonomies: Boolean!
-    $exportTaxonomies: [String]
-  ) {
-    pcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        propertyName
-        jsontype
-        count
-      }
-    }
-    rcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        relationType
-        propertyName
-        jsontype
-        count
-      }
-    }
-    taxPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        taxonomyName
-        propertyName
-        jsontype
-        count
-      }
-    }
-  }
-`
-const exportObjectQuery = gql`
-  query ChooseColumnExportObjectQuery(
-    $exportTaxonomies: [String]!
-    $taxFilters: [TaxFilterInput]!
-    $fetchTaxProperties: Boolean!
-  ) {
-    exportObject(exportTaxonomies: $exportTaxonomies, taxFilters: $taxFilters) {
-      totalCount
-      nodes {
-        id
-        properties @include(if: $fetchTaxProperties)
-      }
-    }
-  }
-`
-// turned off because of errors
-/*
-const exportRcoQuery = gql`
-  query exportDataQuery(
-    $rcoFilters: [RcoFilterInput]!
-    $rcoProperties: [RcoPropertyInput]!
-    $fetchRcoProperties: Boolean!
-  ) {
-    exportRco(rcoFilters: $rcoFilters, rcoProperties: $rcoProperties)
-      @include(if: $fetchRcoProperties) {
-      totalCount
-      nodes {
-        id
-        propertyCollectionId
-        objectId
-        objectIdRelation
-        objectByObjectIdRelation {
-          id
-          name
-          taxonomyByTaxonomyId {
-            id
-            name
-          }
-        }
-        propertyCollectionByPropertyCollectionId {
-          id
-          name
-        }
-        propertyCollectionOfOrigin
-        relationType
-        properties
-      }
-    }
-  }
-`*/
-const synonymQuery = gql`
-  query Query {
-    allSynonyms {
-      nodes {
-        objectId
-        objectIdSynonym
-      }
-    }
-  }
-`
 
 const Export = () => {
   const store = useContext(storeContext)
-  const { taxProperties, taxFilters } = store.export
   const exportTaxonomies = store.export.taxonomies.toJSON()
-
-  // need to remove __typename because apollo passes it along ?!
-  const fetchTaxProperties = taxProperties.length > 0
-  const { loading: propsByTaxLoading, error: propsByTaxError } = useQuery(
-    propsByTaxQuery,
-    {
-      variables: {
-        exportTaxonomies,
-        queryExportTaxonomies: exportTaxonomies.length > 0,
-      },
-    },
-  )
-  const { loading: exportObjectLoading, error: exportObjectError } = useQuery(
-    exportObjectQuery,
-    {
-      variables: {
-        exportTaxonomies,
-        taxFilters,
-        fetchTaxProperties,
-      },
-    },
-  )
-  /*
-  const rcoFilters = (storeData?.exportRcoFilters ?? []).map(d =>
-    omit(d, ['__typename']),
-  )
-  const rcoProperties = (storeData?.exportRcoProperties ?? []).map(d =>
-    omit(d, ['__typename']),
-  )
-  const fetchRcoProperties = rcoProperties.length > 0
-  const { loading: exportRcoLoading, error: exportRcoError } = useQuery(
-    exportRcoQuery,
-    {
-      variables: {
-        rcoFilters,
-        rcoProperties,
-        fetchRcoProperties,
-      },
-    },
-  )*/
-  const { loading: synonymLoading } = useQuery(synonymQuery)
 
   const [taxonomiesExpanded, setTaxonomiesExpanded] = useState(true)
   const [filterExpanded, setFilterExpanded] = useState(false)
@@ -210,58 +68,27 @@ const Export = () => {
     setPropertiesExpanded(false)
   }, [taxonomiesExpanded])
   const onToggleFilter = useCallback(() => {
-    const loading = propsByTaxLoading
-    if (!filterExpanded && exportTaxonomies.length > 0 && !loading) {
+    if (!filterExpanded && exportTaxonomies.length > 0) {
       setFilterExpanded(true)
       // close all others
       setTaxonomiesExpanded(false)
       setPropertiesExpanded(false)
-    } else if (!loading) {
-      setFilterExpanded(false)
-      onSetMessage('Bitte wählen Sie mindestens eine Taxonomie')
     } else {
       setFilterExpanded(false)
-      onSetMessage('Bitte warten Sie, bis die Daten geladen sind')
+      onSetMessage('Bitte wählen Sie mindestens eine Taxonomie')
     }
-  }, [propsByTaxLoading, filterExpanded, exportTaxonomies.length, onSetMessage])
+  }, [filterExpanded, exportTaxonomies.length, onSetMessage])
   const onToggleProperties = useCallback(() => {
-    const loading = propsByTaxLoading || exportObjectLoading || synonymLoading
-    if (!propertiesExpanded && exportTaxonomies.length > 0 && !loading) {
+    if (!propertiesExpanded && exportTaxonomies.length > 0) {
       setPropertiesExpanded(true)
       // close all others
       setTaxonomiesExpanded(false)
       setFilterExpanded(false)
-    } else if (!loading) {
-      setPropertiesExpanded(false)
-      onSetMessage('Bitte wählen Sie mindestens eine Gruppe')
     } else {
       setPropertiesExpanded(false)
-      onSetMessage('Bitte warten Sie, bis die Daten geladen sind')
+      onSetMessage('Bitte wählen Sie mindestens eine Gruppe')
     }
-  }, [
-    propsByTaxLoading,
-    exportObjectLoading,
-    synonymLoading,
-    propertiesExpanded,
-    exportTaxonomies.length,
-    onSetMessage,
-  ])
-
-  if (propsByTaxError) {
-    return (
-      <ErrorContainer>
-        `Error fetching data: ${propsByTaxError.message}`
-      </ErrorContainer>
-    )
-  }
-
-  if (exportObjectError) {
-    return (
-      <ErrorContainer>
-        `Error fetching data: ${exportObjectError.message}`
-      </ErrorContainer>
-    )
-  }
+  }, [propertiesExpanded, exportTaxonomies.length, onSetMessage])
 
   return (
     <ErrorBoundary>
