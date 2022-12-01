@@ -4,6 +4,7 @@ import FormGroup from '@mui/material/FormGroup'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react-lite'
+import { useQuery, gql } from '@apollo/client'
 
 import Taxonomies from './Taxonomies'
 import storeContext from '../../../../../../storeContext'
@@ -33,7 +34,7 @@ const TypeLabel = styled(FormControlLabel)`
   }
 `
 
-const ExportTypes = ({ type, taxonomies }) => {
+const ExportTypes = ({ type }) => {
   const store = useContext(storeContext)
   const {
     type: exportType,
@@ -41,6 +42,23 @@ const ExportTypes = ({ type, taxonomies }) => {
     setTaxonomies,
   } = store.export
   const exportTaxonomies = store.export.taxonomies.toJSON()
+
+  const taxonomiesQuery = gql`
+  query AllTaxonomiesQuery {
+    allTaxonomies(filter: {type: {equalTo: ${
+      type === 'Arten' ? 'ART' : 'LEBENSRAUM'
+    }}}, orderBy: NAME_ASC) {
+      nodes {
+        id
+        name
+        type
+      }
+    }
+  }
+`
+
+  const { data, error } = useQuery(taxonomiesQuery)
+  const taxonomies = data?.allTaxonomies?.nodes
 
   const onCheckType = useCallback(
     async (event, isChecked) => {
@@ -64,7 +82,9 @@ const ExportTypes = ({ type, taxonomies }) => {
       } else {
         setExportType(exportTypes.find((t) => t !== name))
         // uncheck all taxonomies of this type
-        const taxonomiesToUncheck = taxonomies.map((t) => t.taxonomyName)
+        const taxonomiesToUncheck = (taxonomies ?? []).map(
+          (t) => t.taxonomyName,
+        )
         const remainingTaxonomies = exportTaxonomies.filter(
           (t) => !taxonomiesToUncheck.includes(t),
         )
@@ -73,6 +93,8 @@ const ExportTypes = ({ type, taxonomies }) => {
     },
     [setExportType, taxonomies, exportTaxonomies, setTaxonomies],
   )
+
+  if (error) return `Error fetching data: ${error.message}`
 
   return (
     <ErrorBoundary>
@@ -91,7 +113,7 @@ const ExportTypes = ({ type, taxonomies }) => {
         {exportType === type && (
           <TaxContainer>
             <TaxTitle>
-              {taxonomies.length === 1 ? 'Taxonomie:' : 'Taxonomien:'}
+              {(taxonomies ?? []).length === 1 ? 'Taxonomie:' : 'Taxonomien:'}
             </TaxTitle>
             <FormGroup>
               <Taxonomies taxonomies={taxonomies} />

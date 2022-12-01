@@ -16,7 +16,7 @@ const TaxonomyLabel = styled(FormControlLabel)`
   }
 `
 
-const Taxonomies = ({ taxonomies }) => {
+const Taxonomies = ({ taxonomies = [] }) => {
   const store = useContext(storeContext)
   const { setType, setTaxonomies } = store.export
   const exportTaxonomies = store.export.taxonomies.toJSON()

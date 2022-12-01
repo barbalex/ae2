@@ -136,12 +136,16 @@ const exportObjectQuery = gql`
 `
 const exportPcoQuery = gql`
   query exportDataQuery(
+    $exportTaxonomies: [String]!
     $pcoFilters: [PcoFilterInput]!
     $pcoProperties: [PcoPropertyInput]!
     $fetchPcoProperties: Boolean!
   ) {
-    exportPco(pcoFilters: $pcoFilters, pcoProperties: $pcoProperties)
-      @include(if: $fetchPcoProperties) {
+    exportPco(
+      exportTaxonomies: $exportTaxonomies
+      pcoFilters: $pcoFilters
+      pcoProperties: $pcoProperties
+    ) @include(if: $fetchPcoProperties) {
       totalCount
       nodes {
         id
@@ -155,12 +159,16 @@ const exportPcoQuery = gql`
 `
 const exportRcoQuery = gql`
   query exportDataQuery(
+    $exportTaxonomies: [String]!
     $rcoFilters: [RcoFilterInput]!
     $rcoProperties: [RcoPropertyInput]!
     $fetchRcoProperties: Boolean!
   ) {
-    exportRco(rcoFilters: $rcoFilters, rcoProperties: $rcoProperties)
-      @include(if: $fetchRcoProperties) {
+    exportRco(
+      exportTaxonomies: $exportTaxonomies
+      rcoFilters: $rcoFilters
+      rcoProperties: $rcoProperties
+    ) @include(if: $fetchRcoProperties) {
       totalCount
       nodes {
         id

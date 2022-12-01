@@ -281,7 +281,7 @@ const Export = () => {
               </CardActionIconButton>
             </StyledCardActions>
             <Collapse in={taxonomiesExpanded} timeout="auto" unmountOnExit>
-              <Taxonomies />
+              {taxonomiesExpanded && <Taxonomies />}
             </Collapse>
           </StyledCard>
           <StyledCard>

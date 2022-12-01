@@ -96,7 +96,7 @@ const Taxonomies = () => {
     <ErrorBoundary>
       <Container>
         <HowTo />
-        <ExportTypes />
+        <ExportTypes /> 
         <StyledPaper elevation={1} data-bgcolor={paperBackgroundColor}>
           <PaperTextContainer>
             <PropertyTextDiv>{textProperties}</PropertyTextDiv>
