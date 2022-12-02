@@ -318,6 +318,19 @@ STABLE;
 ALTER FUNCTION ae.export_object (export_taxonomies text[], tax_filters tax_filter[]) OWNER TO postgres;
 
 -- drop FUNCTION ae.export_pco (pco_filters pco_filter[], pco_properties pco_property[])
+-- Example query:
+-- SELECT
+--   ae.property_collection_object.*
+-- FROM
+--   ae.object
+--   INNER JOIN ae.taxonomy ON ae.taxonomy.id = ae.object.taxonomy_id
+--   INNER JOIN ae.property_collection_object
+--   INNER JOIN ae.property_collection ON ae.property_collection_object.property_collection_id = ae.property_collection.id ON ae.object.id = ae.property_collection_object.object_id
+-- WHERE
+--   ae.taxonomy.name = ANY ($1)
+--   AND ae.property_collection.name IN ('CH OeQV')
+--   AND (ae.property_collection.name = 'CH OeQV'
+--     AND ae.property_collection_object.properties ->> 'Art ist Qualitätszeiger Liste A' = 'true');
 CREATE OR REPLACE FUNCTION ae.export_pco (export_taxonomies text[], pco_filters pco_filter[], pco_properties pco_property[])
   RETURNS SETOF ae.property_collection_object
   AS $$
@@ -361,7 +374,7 @@ BEGIN
     END LOOP;
   END IF;
   --RAISE EXCEPTION 'export_taxonomies: %, pco_filters: %:, pco_properties: %, sql: %', export_taxonomies, pco_filters, pco_properties, sql;
-  --RAISE EXCEPTION  'sql: %', sql;
+  --RAISE EXCEPTION 'sql: %', sql;
   RETURN QUERY EXECUTE sql
   USING export_taxonomies, pco_filters, pco_properties;
 END
@@ -413,6 +426,7 @@ BEGIN
       sql := sql || ')';
     END LOOP;
   END IF;
+  --RAISE EXCEPTION 'sql: %', sql;
   RETURN QUERY EXECUTE sql
   USING export_taxonomies, rco_filters, rco_properties;
 END
