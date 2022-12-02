@@ -64,7 +64,40 @@ const StyledSnackbar = styled(Snackbar)`
     background-color: #2e7d32 !important;
   }
 `
-
+const exportObjectQuery = gql`
+  query PreviewColumnExportObjectQuery(
+    $exportTaxonomies: [String]!
+    $taxFilters: [TaxFilterInput]!
+    $fetchTaxProperties: Boolean!
+  ) {
+    exportObject(exportTaxonomies: $exportTaxonomies, taxFilters: $taxFilters) {
+      totalCount
+      nodes {
+        id
+        properties @include(if: $fetchTaxProperties)
+      }
+    }
+  }
+`
+const exportObjectWithTaxPropertiesQuery = gql`
+  query PreviewColumnExportObjectQuery(
+    $exportTaxonomies: [String]!
+    $taxFilters: [TaxFilterInput]!
+    $fetchTaxProperties: Boolean!
+  ) {
+    exportObject(
+      exportTaxonomies: $exportTaxonomies
+      taxFilters: $taxFilters
+      filter: { properties: { isNull: false } }
+    ) {
+      totalCount
+      nodes {
+        id
+        properties @include(if: $fetchTaxProperties)
+      }
+    }
+  }
+`
 const exportObjectPreviewQuery = gql`
   query PreviewColumnExportObjectPreviewQuery(
     $exportTaxonomies: [String]!
@@ -76,21 +109,6 @@ const exportObjectPreviewQuery = gql`
       taxFilters: $taxFilters
       first: 13
     ) {
-      totalCount
-      nodes {
-        id
-        properties @include(if: $fetchTaxProperties)
-      }
-    }
-  }
-`
-const exportObjectQuery = gql`
-  query PreviewColumnExportObjectQuery(
-    $exportTaxonomies: [String]!
-    $taxFilters: [TaxFilterInput]!
-    $fetchTaxProperties: Boolean!
-  ) {
-    exportObject(exportTaxonomies: $exportTaxonomies, taxFilters: $taxFilters) {
       totalCount
       nodes {
         id
@@ -199,6 +217,7 @@ const Preview = () => {
   const rcoProperties = getSnapshot(rcoPropertiesPassed)
   const pcoProperties = getSnapshot(pcoPropertiesPassed)
   const taxProperties = getSnapshot(taxPropertiesPassed)
+  const fetchTaxProperties = taxProperties.length > 0
   const exportTaxonomies = store.export.taxonomies.toJSON()
   const exportIds = store.export.ids.toJSON()
 
@@ -208,19 +227,23 @@ const Preview = () => {
     data: exportObjectData,
   } = useQuery({
     queryKey: [
-      'exportObjectQuery',
-      exportTaxonomies,
+      exportTaxonomies
+        ? 'exportObjectWithTaxPropertiesQuery'
+        : 'exportObjectQuery',
+      JSON.stringify(exportTaxonomies),
       JSON.stringify(taxFilters),
       JSON.stringify(taxProperties),
     ],
     queryFn: async () => {
       if (exportTaxonomies.length === 0) return []
       const data = await client.query({
-        query: exportObjectQuery,
+        query: exportTaxonomies
+          ? exportObjectWithTaxPropertiesQuery
+          : exportObjectQuery,
         variables: {
           exportTaxonomies,
           taxFilters,
-          fetchTaxProperties: taxProperties.length > 0,
+          fetchTaxProperties,
         },
       })
       return data
