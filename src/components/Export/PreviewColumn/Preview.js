@@ -79,25 +79,6 @@ const exportObjectQuery = gql`
     }
   }
 `
-const exportObjectWithTaxPropertiesQuery = gql`
-  query PreviewColumnExportObjectQuery(
-    $exportTaxonomies: [String]!
-    $taxFilters: [TaxFilterInput]!
-    $fetchTaxProperties: Boolean!
-  ) {
-    exportObject(
-      exportTaxonomies: $exportTaxonomies
-      taxFilters: $taxFilters
-      filter: { properties: { isNull: false } }
-    ) {
-      totalCount
-      nodes {
-        id
-        properties @include(if: $fetchTaxProperties)
-      }
-    }
-  }
-`
 const exportObjectPreviewQuery = gql`
   query PreviewColumnExportObjectPreviewQuery(
     $exportTaxonomies: [String]!
@@ -227,9 +208,7 @@ const Preview = () => {
     data: exportObjectData,
   } = useQuery({
     queryKey: [
-      exportTaxonomies
-        ? 'exportObjectWithTaxPropertiesQuery'
-        : 'exportObjectQuery',
+      'exportObjectQuery',
       JSON.stringify(exportTaxonomies),
       JSON.stringify(taxFilters),
       JSON.stringify(taxProperties),
@@ -237,9 +216,7 @@ const Preview = () => {
     queryFn: async () => {
       if (exportTaxonomies.length === 0) return []
       const data = await client.query({
-        query: exportTaxonomies
-          ? exportObjectWithTaxPropertiesQuery
-          : exportObjectQuery,
+        query: exportObjectQuery,
         variables: {
           exportTaxonomies,
           taxFilters,
