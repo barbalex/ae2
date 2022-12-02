@@ -79,27 +79,8 @@ const exportObjectQuery = gql`
     }
   }
 `
-const exportObjectPreviewQuery = gql`
-  query PreviewColumnExportObjectPreviewQuery(
-    $exportTaxonomies: [String]!
-    $taxFilters: [TaxFilterInput]!
-    $fetchTaxProperties: Boolean!
-  ) {
-    exportObject(
-      exportTaxonomies: $exportTaxonomies
-      taxFilters: $taxFilters
-      first: 13
-    ) {
-      totalCount
-      nodes {
-        id
-        properties @include(if: $fetchTaxProperties)
-      }
-    }
-  }
-`
 const exportPcoQuery = gql`
-  query exportDataQuery(
+  query exportPcoQuery(
     $exportTaxonomies: [String]!
     $pcoFilters: [PcoFilterInput]!
     $pcoProperties: [PcoPropertyInput]!
@@ -122,7 +103,7 @@ const exportPcoQuery = gql`
   }
 `
 const exportRcoQuery = gql`
-  query exportDataQuery(
+  query exportRcoQuery(
     $exportTaxonomies: [String]!
     $rcoFilters: [RcoFilterInput]!
     $rcoProperties: [RcoPropertyInput]!
@@ -211,10 +192,11 @@ const Preview = () => {
       'exportObjectQuery',
       JSON.stringify(exportTaxonomies),
       JSON.stringify(taxFilters),
-      JSON.stringify(taxProperties),
+      fetchTaxProperties,
     ],
     queryFn: async () => {
       if (exportTaxonomies.length === 0) return []
+
       const data = await client.query({
         query: exportObjectQuery,
         variables: {
@@ -226,6 +208,8 @@ const Preview = () => {
       return data
     },
   })
+
+  const objects = exportObjectData?.data?.exportObject?.nodes ?? []
 
   console.log('Preview rendering', {
     exportTaxonomies,
@@ -240,7 +224,7 @@ const Preview = () => {
     error: synonymError,
     data: synonymData,
   } = useQuery({
-    queryKey: ['synonymQuery', exportTaxonomies],
+    queryKey: ['synonymQuery', JSON.stringify(exportTaxonomies)],
     queryFn: async () => {
       if (exportTaxonomies.length === 0) return []
       const data = await client.query({
@@ -258,21 +242,20 @@ const Preview = () => {
   } = useQuery({
     queryKey: [
       'exportPcoQuery',
+      JSON.stringify(exportTaxonomies),
       JSON.stringify(pcoFilters),
       JSON.stringify(pcoProperties),
     ],
-    queryFn: async () => {
-      console.log('exportPcoQuery running')
-      const data = await client.query({
+    queryFn: async () =>
+      client.query({
         query: exportPcoQuery,
         variables: {
+          exportTaxonomies,
           pcoFilters,
           pcoProperties,
           fetchPcoProperties: pcoProperties.length > 0,
         },
-      })
-      return data
-    },
+      }),
   })
 
   const {
@@ -282,6 +265,7 @@ const Preview = () => {
   } = useQuery({
     queryKey: [
       'exportRcoQuery',
+      JSON.stringify(exportTaxonomies),
       JSON.stringify(rcoFilters),
       JSON.stringify(rcoProperties),
     ],
@@ -289,6 +273,7 @@ const Preview = () => {
       client.query({
         query: exportRcoQuery,
         variables: {
+          exportTaxonomies,
           rcoFilters,
           rcoProperties,
           fetchRcoProperties: rcoProperties.length > 0,
@@ -308,7 +293,6 @@ const Preview = () => {
   }, [])
 
   const exportRcoPropertyNames = rcoProperties.map((p) => p.pname)
-  const objects = exportObjectData?.data?.exportObject?.nodes ?? []
   const objectsCount = exportObjectData?.data?.exportObject?.totalCount
   const pco = exportPcoData?.data?.exportPco?.nodes ?? []
   const rco = exportRcoData?.data?.exportRco?.nodes ?? []
