@@ -276,6 +276,15 @@ $$ STABLE
 LANGUAGE sql;
 
 -- 2.: actual app FUNCTIONS
+-- example query:
+-- SELECT
+--   ae.object.*
+-- FROM
+--   ae.object
+--   INNER JOIN ae.taxonomy ON ae.taxonomy.id = ae.object.taxonomy_id
+-- WHERE
+--   ae.taxonomy.name in('SISF (2005)')
+--   AND ae.object.properties ->> 'Artname vollständig' ILIKE '%rosa%';
 CREATE OR REPLACE FUNCTION ae.export_object (export_taxonomies text[], tax_filters tax_filter[])
   RETURNS SETOF ae.object
   AS $$
@@ -298,6 +307,7 @@ BEGIN
     END IF;
   END LOOP;
   --RAISE EXCEPTION  'export_taxonomies: %, tax_filters: %, sql: %:', export_taxonomies, tax_filters, sql;
+  --RAISE EXCEPTION 'sql: %:', sql;
   RETURN QUERY EXECUTE sql
   USING export_taxonomies, tax_filters;
 END
