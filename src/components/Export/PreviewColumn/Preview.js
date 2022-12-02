@@ -190,8 +190,8 @@ const Preview = () => {
   } = useQuery({
     queryKey: [
       'exportObjectQuery',
-      JSON.stringify(exportTaxonomies),
-      JSON.stringify(taxFilters),
+      exportTaxonomies,
+      taxFilters,
       fetchTaxProperties,
     ],
     queryFn: async () => {
@@ -224,7 +224,7 @@ const Preview = () => {
     error: synonymError,
     data: synonymData,
   } = useQuery({
-    queryKey: ['synonymQuery', JSON.stringify(exportTaxonomies)],
+    queryKey: ['synonymQuery', exportTaxonomies],
     queryFn: async () => {
       if (exportTaxonomies.length === 0) return []
       const data = await client.query({
@@ -240,12 +240,7 @@ const Preview = () => {
     error: exportPcoError,
     data: exportPcoData,
   } = useQuery({
-    queryKey: [
-      'exportPcoQuery',
-      JSON.stringify(exportTaxonomies),
-      JSON.stringify(pcoFilters),
-      JSON.stringify(pcoProperties),
-    ],
+    queryKey: ['exportPcoQuery', exportTaxonomies, pcoFilters, pcoProperties],
     queryFn: async () =>
       client.query({
         query: exportPcoQuery,
@@ -263,12 +258,7 @@ const Preview = () => {
     error: exportRcoError,
     data: exportRcoData,
   } = useQuery({
-    queryKey: [
-      'exportRcoQuery',
-      JSON.stringify(exportTaxonomies),
-      JSON.stringify(rcoFilters),
-      JSON.stringify(rcoProperties),
-    ],
+    queryKey: ['exportRcoQuery', exportTaxonomies, rcoFilters, rcoProperties],
     queryFn: () =>
       client.query({
         query: exportRcoQuery,
