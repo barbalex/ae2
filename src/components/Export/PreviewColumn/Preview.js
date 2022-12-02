@@ -195,8 +195,14 @@ const exportRcoQuery = gql`
   }
 `
 const synonymQuery = gql`
-  query Query {
-    allSynonyms {
+  query exportSynonymQuery($exportTaxonomies: [String!]) {
+    allSynonyms(
+      filter: {
+        objectByObjectId: {
+          taxonomyByTaxonomyId: { name: { in: $exportTaxonomies } }
+        }
+      }
+    ) {
       nodes {
         objectId
         objectIdSynonym
@@ -269,15 +275,17 @@ const Preview = () => {
     error: synonymError,
     data: synonymData,
   } = useQuery({
-    queryKey: ['synonymQuery'],
+    queryKey: ['synonymQuery', exportTaxonomies],
     queryFn: async () => {
       if (exportTaxonomies.length === 0) return []
       const data = await client.query({
         query: synonymQuery,
+        variables: { exportTaxonomies },
       })
       return data
     },
   })
+
   const {
     isLoading: exportPcoLoading,
     error: exportPcoError,
