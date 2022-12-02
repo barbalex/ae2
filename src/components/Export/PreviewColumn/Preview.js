@@ -65,41 +65,6 @@ const StyledSnackbar = styled(Snackbar)`
   }
 `
 
-const propsByTaxQuery = gql`
-  query propsByTaxDataQuery(
-    $queryExportTaxonomies: Boolean!
-    $exportTaxonomies: [String]
-  ) {
-    pcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        propertyName
-        jsontype
-        count
-      }
-    }
-    rcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        relationType
-        propertyName
-        jsontype
-        count
-      }
-    }
-    taxPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        taxonomyName
-        propertyName
-        jsontype
-        count
-      }
-    }
-  }
-`
 const exportObjectPreviewQuery = gql`
   query PreviewColumnExportObjectPreviewQuery(
     $exportTaxonomies: [String]!
