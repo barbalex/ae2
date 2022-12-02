@@ -324,12 +324,12 @@ DECLARE
                     ON ae.property_collection_object.property_collection_id = ae.property_collection.id
                   ON ae.object.id = ae.property_collection_object.object_id
                 WHERE
-                  ae.taxonomy.name = ANY($1) and
-                  ae.property_collection.name IN(';
+                  ae.taxonomy.name = any($1)';
 BEGIN
   IF cardinality(pco_properties) = 0 THEN
-    sql := sql || 'AND false';
+    sql := sql || ' and false';
   ELSE
+    sql := sql || ' and ae.property_collection.name IN(';
     FOREACH pcop IN ARRAY pco_properties LOOP
       IF pcop = pco_properties[1] THEN
         sql := sql || quote_literal(pcop.pcname);
@@ -337,8 +337,8 @@ BEGIN
         sql := sql || ',' || quote_literal(pcop.pcname);
       END IF;
     END LOOP;
+    sql := sql || ')';
   END IF;
-  sql := sql || ')';
   IF cardinality(pco_filters) > 0 THEN
     FOREACH pcof IN ARRAY pco_filters LOOP
       sql := sql || ' AND (ae.property_collection.name = ' || quote_literal(pcof.pcname);
@@ -350,9 +350,10 @@ BEGIN
       sql := sql || ')';
     END LOOP;
   END IF;
-  --RAISE EXCEPTION  'pco_filters: %, sql: %:', pco_filters, sql;
+  --RAISE EXCEPTION 'export_taxonomies: %, pco_filters: %:, pco_properties: %, sql: %', export_taxonomies, pco_filters, pco_properties, sql;
+  --RAISE EXCEPTION  'sql: %', sql;
   RETURN QUERY EXECUTE sql
-  USING pco_filters, pco_properties;
+  USING export_taxonomies, pco_filters, pco_properties;
 END
 $$
 LANGUAGE plpgsql
@@ -403,7 +404,7 @@ BEGIN
     END LOOP;
   END IF;
   RETURN QUERY EXECUTE sql
-  USING rco_filters, rco_properties;
+  USING export_taxonomies, rco_filters, rco_properties;
 END
 $$
 LANGUAGE plpgsql
