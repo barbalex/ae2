@@ -42,35 +42,51 @@ WHERE
 -- TODO: add relation collections?
 -- TODO: how to efficiently handle previews? Sort by object_id and limit to 15?
 --
--- alternative idea with temporary table: (https://stackoverflow.com/a/23957098/712005)
+-- alternative idea with temporary table and record: (https://stackoverflow.com/a/23957098/712005)
 -- 1. create temporary table _tmp with column id
--- 2. select list of object_ids while applying all filters: insert into _tmp. Limit if count was passed
--- 3. for every tax field choosen: add column to _tmp, then update it's value
--- 4. for every pc with fields choosen: add column to _tmp, then update it with above query
--- 5. select _tmp into record and return it
+-- 2. for every taxonomy: select list of object_ids and tax-fields choosen while applying all filters: insert into _tmp. Limit if count was passed
+-- 3. for every pc with fields choosen: add column to _tmp, then update it with above query
+-- 4. select _tmp into record and return it
+-- 5. TODO: how to query unknown structure with graphql? Use id and jsonb instead?
+--
+-- alternative idea using id and jsonb:
+-- 0. define type as (id uuid, properties json)
+-- 1. create temporary table _tmp with column id
+-- 2. for every taxonomy: select list of object_ids and tax-fields choosen while applying all filters: insert into _tmp. Limit if count was passed
+-- 3. for every pc with fields choosen: add column to _tmp, then update it with above query
+-- 4. select _tmp into record and return it
+-- 5. TODO: how to query unknown structure with graphql? Use id and json instead? 
+--    Build directly in json or convert _tmp using to_jsonb or row_to_json, then removing id using jsonb - text → jsonb?
+--    Or: build _only_ json by using row_to_json. Then client reads that.
+--    (https://www.postgresql.org/docs/14/functions-json.html, https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE)
+CREATE TYPE ae.export_row AS (
+  id uuid,
+  properties jsonb
+);
+CREATE TYPE tax_field AS (
+    fieldname text,
+    taxname text
+);
+
 --
 -- need to use a record type, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
-CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields text[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, only_rows_with_properties boolean, count integer)
-  RETURNS RECORD
+CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, only_rows_with_properties boolean, count integer)
+  RETURNS SETOF ae.export_row
   AS $$
 DECLARE
-  rec RECORD;
-  sql text := 'SELECT
-                    ae.object.*
-                  FROM
-                    ae.object
-                    INNER JOIN ae.taxonomy
-                    ON ae.taxonomy.id = ae.object.taxonomy_id
-                  WHERE
-                    ae.taxonomy.name = ANY($1)';
-  tf tax_filter;
+  taxfilter tax_filter;
+  taxfield tax_field;
 BEGIN
-  FOREACH tf IN ARRAY tax_filters LOOP
-    IF tf.comparator IN ('ILIKE', 'LIKE') THEN
-      sql := sql || ' AND ae.object.properties->>' || quote_literal(tf.pname) || ' ' || tf.comparator || ' ' || quote_literal('%' || tf.value || '%');
+  EXECUTE 'CREATE TEMPORARY TABLE _tmp (id uuid, properties jsonb)';
+  FOREACH taxfield IN ARRAY tax_fields LOOP
+    EXECUTE 'jsonb_set(properties, ''{' || taxfield.fieldname || '}'', ''' || taxfield.fieldname || ''')';
+  END LOOP;
+  FOREACH taxfilter IN ARRAY tax_filters LOOP
+    IF taxfilter.comparator IN ('ILIKE', 'LIKE') THEN
+      sql := sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal('%' || taxfilter.value || '%');
     ELSE
-      sql := sql || ' AND ae.object.properties->>' || quote_literal(tf.pname) || ' ' || tf.comparator || ' ' || quote_literal(tf.value);
+      sql := sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal(taxfilter.value);
     END IF;
   END LOOP;
   --RAISE EXCEPTION  'taxonomies: %, tax_filters: %, sql: %:', taxonomies, tax_filters, sql;
@@ -84,5 +100,5 @@ $$
 LANGUAGE plpgsql
 STABLE;
 
-ALTER FUNCTION ae.export (taxonomies text[], tax_fields text[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, only_rows_with_properties boolean, count integer) OWNER TO postgres;
+ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, only_rows_with_properties boolean, count integer) OWNER TO postgres;
 

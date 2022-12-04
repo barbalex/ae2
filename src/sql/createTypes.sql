@@ -10,6 +10,10 @@ CREATE TYPE tax_filter AS (
     taxname text,
     value text
 );
+CREATE TYPE tax_field AS (
+    fieldname text,
+    taxname text
+);
 CREATE TYPE pco_filter AS (
     comparator text,
     pname text,
