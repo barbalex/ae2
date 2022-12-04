@@ -18,23 +18,3 @@ WHERE
     AND pco.properties ->> 'Art ist Qualitätszeiger Liste A' = 'true');
 
 --
--- Idea:
--- 0. get the following info passed from app:
---    - taxonomies
---    - taxFilters
---    - pcFilters
---    - taxFields
---    - pcFields
---    - useSynonyms
---    - onlyRowsWithProperties
---    - list of objectIds (optional)
---    - limit (optional)
--- 1. for every pc with fields choosen, select: object_id, fieldname, value (while applying all filters)
---    Use above query as template
--- 2. get list of object_ids (with empty columns fieldname and value) while applying all filters
--- 3. for every tax field choosen, select: object_id, fieldname, value (while applying all filters)
--- 4. combine all tables using either union or intersect
---    see: https://www.enterprisedb.com/postgres-tutorials/how-combine-multiple-queries-single-result-set-using-union-intersect-and-except
--- 5. use crosstab to get list of objects with all columns (https://stackoverflow.com/a/11751905/712005, safe form)
--- TODO: add relation collections?
--- TODO: how to efficiently handle previews? Sort by object_id and limit to 15?
