@@ -55,7 +55,7 @@ WHERE
 -- 2. for every taxonomy: select list of object_ids and tax-fields choosen while applying all filters: insert into _tmp. Limit if count was passed
 -- 3. for every pc with fields choosen: add column to _tmp, then update it with above query
 -- 4. select _tmp into record and return it
--- 5. TODO: how to query unknown structure with graphql? Use id and json instead? 
+-- 5. TODO: how to query unknown structure with graphql? Use id and json instead?
 --    Build directly in json or convert _tmp using to_jsonb or row_to_json, then removing id using jsonb - text → jsonb?
 --    Or: build _only_ json by using row_to_json. Then client reads that.
 --    (https://www.postgresql.org/docs/14/functions-json.html, https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE)
@@ -63,42 +63,54 @@ CREATE TYPE ae.export_row AS (
   id uuid,
   properties jsonb
 );
+
 CREATE TYPE tax_field AS (
-    fieldname text,
-    taxname text
+  fieldname text,
+  taxname text
 );
 
 --
--- need to use a record type, as there exists no predefined structure
+-- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
-CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, only_rows_with_properties boolean, count integer)
+CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer)
   RETURNS SETOF ae.export_row
   AS $$
 DECLARE
+  taxonomy text;
+  tax_sql text;
   taxfilter tax_filter;
   taxfield tax_field;
+  pcofilter pco_filter;
+  pcoproperty pco_property;
 BEGIN
   EXECUTE 'CREATE TEMPORARY TABLE _tmp (id uuid, properties jsonb)';
-  FOREACH taxfield IN ARRAY tax_fields LOOP
-    EXECUTE 'jsonb_set(properties, ''{' || taxfield.fieldname || '}'', ''' || taxfield.fieldname || ''')';
+  FOREACH taxonomy IN ARRAY taxonomies LOOP
+    tax_sql := 'INSERT INTO _tmp (id) select id from ae.object object inner join ae.taxonomy tax on tax.id = object.taxonomy_id where tax.name = ' || quote_literal(taxonomy);
   END LOOP;
   FOREACH taxfilter IN ARRAY tax_filters LOOP
     IF taxfilter.comparator IN ('ILIKE', 'LIKE') THEN
-      sql := sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal('%' || taxfilter.value || '%');
+      tax_sql := tax_sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal('%' || taxfilter.value || '%');
     ELSE
-      sql := sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal(taxfilter.value);
+      tax_sql := tax_sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal(taxfilter.value);
     END IF;
+  END LOOP;
+  -- TODO: if pco_filters exist
+  -- TODO: if synonyms are used, filter pcos via pco_of_object
+  -- else, filter by pcos
+  -- create _tmp with all object_ids
+  EXECUTE tax_sql;
+  FOREACH taxfield IN ARRAY tax_fields LOOP
+    EXECUTE 'update _tmp set properties = jsonb_set(properties, ''{' || taxfield.fieldname || '}'', ''' || taxfield.fieldname || ''')';
   END LOOP;
   --RAISE EXCEPTION  'taxonomies: %, tax_filters: %, sql: %:', taxonomies, tax_filters, sql;
   --RAISE EXCEPTION 'sql: %:', sql;
   -- does this work?:
-  EXECUTE sql INTO rec;
   RETURN rec;
-  USING taxonomies, tax_fields, tax_filters, pco_filters, pco_properties, object_ids, use_synonyms, only_rows_with_properties, count;
+  USING taxonomies, tax_fields, tax_filters, pco_filters, pco_properties, object_ids, use_synonyms, count;
 END
 $$
 LANGUAGE plpgsql
 STABLE;
 
-ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, only_rows_with_properties boolean, count integer) OWNER TO postgres;
+ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer) OWNER TO postgres;
 
