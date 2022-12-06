@@ -85,28 +85,39 @@ DECLARE
 BEGIN
   EXECUTE 'CREATE TEMPORARY TABLE _tmp (id uuid, properties jsonb)';
   FOREACH taxonomy IN ARRAY taxonomies LOOP
-    tax_sql := 'INSERT INTO _tmp (id) select id from ae.object object inner join ae.taxonomy tax on tax.id = object.taxonomy_id where tax.name = ' || quote_literal(taxonomy);
+    -- select
+    tax_sql := 'INSERT INTO _tmp (id) select id from ae.object object';
+    -- join
+    tax_sql := tax_sql || ' inner join ae.taxonomy tax on tax.id = object.taxonomy_id';
+    -- add where clauses
+    tax_sql := tax_sql || ' WHERE tax.name = ' || quote_literal(taxonomy);
+    FOREACH taxfilter IN ARRAY tax_filters LOOP
+      IF taxfilter.comparator IN ('ILIKE', 'LIKE') THEN
+        tax_sql := tax_sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal('%' || taxfilter.value || '%');
+      ELSE
+        tax_sql := tax_sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal(taxfilter.value);
+      END IF;
+    END LOOP;
+    -- TODO: if pco_filters exist
+    -- TODO: if synonyms are used, filter pcos via pco_of_object
+    -- else, filter by pcos
+    -- create _tmp with all object_ids
+    EXECUTE tax_sql;
   END LOOP;
-  FOREACH taxfilter IN ARRAY tax_filters LOOP
-    IF taxfilter.comparator IN ('ILIKE', 'LIKE') THEN
-      tax_sql := tax_sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal('%' || taxfilter.value || '%');
-    ELSE
-      tax_sql := tax_sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal(taxfilter.value);
-    END IF;
-  END LOOP;
-  -- TODO: if pco_filters exist
-  -- TODO: if synonyms are used, filter pcos via pco_of_object
-  -- else, filter by pcos
-  -- create _tmp with all object_ids
-  EXECUTE tax_sql;
+  -- TODO: add tax_fields
   FOREACH taxfield IN ARRAY tax_fields LOOP
     EXECUTE 'update _tmp set properties = jsonb_set(properties, ''{' || taxfield.fieldname || '}'', ''' || taxfield.fieldname || ''')';
   END LOOP;
+  -- TODO: add pco_fields
   --RAISE EXCEPTION  'taxonomies: %, tax_filters: %, sql: %:', taxonomies, tax_filters, sql;
   --RAISE EXCEPTION 'sql: %:', sql;
   -- does this work?:
-  RETURN rec;
-  USING taxonomies, tax_fields, tax_filters, pco_filters, pco_properties, object_ids, use_synonyms, count;
+  RETURN
+  SELECT
+    *
+  FROM
+    _tmp;
+  ROLLBACK
 END
 $$
 LANGUAGE plpgsql
