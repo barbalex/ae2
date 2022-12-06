@@ -137,7 +137,8 @@ BEGIN
   END LOOP;
   -- TODO: add tax_fields
   FOREACH taxfield IN ARRAY tax_fields LOOP
-    EXECUTE 'update _tmp set properties = jsonb_set(properties, ''{' || taxfield.fieldname || '}'', ''' || taxfield.fieldname || ''')';
+    -- TODO: get value by select
+    EXECUTE $tf$update _tmp set properties = jsonb_set(properties, '{' || taxfield.fieldname || '}', '' || taxfield.fieldname || '')$tf$;
   END LOOP;
   -- TODO: add pco_fields
   --RAISE EXCEPTION  'taxonomies: %, tax_filters: %, sql: %:', taxonomies, tax_filters, sql;
