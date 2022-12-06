@@ -7,7 +7,7 @@ FROM
   ae.object
   INNER JOIN ae.taxonomy ON ae.taxonomy.id = ae.object.taxonomy_id
   -- if: with info of synonyms
-  -- inner JOIN ae.pco_of_object pcoo ON pcoo.object_id = ae.object.id
+  -- INNER JOIN ae.pco_of_object pcoo ON pcoo.object_id = ae.object.id
   -- INNER JOIN ae.property_collection_object pco ON pco.id = pcoo.pco_id
   -- INNER JOIN ae.property_collection pc ON pc.id = pco.property_collection_id
   -- if: without info of synonyms
@@ -72,7 +72,7 @@ CREATE TYPE tax_field AS (
 --
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
-CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer)
+CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[] pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer)
   RETURNS SETOF ae.export_row
   AS $$
 DECLARE
@@ -81,6 +81,10 @@ DECLARE
   taxfilter tax_filter;
   taxfield tax_field;
   pcofilter pco_filter;
+  pc_of_pco_filters text;
+  name text;
+  pc_name text;
+  pco_name text;
   pcoproperty pco_property;
 BEGIN
   -- create table
@@ -91,18 +95,43 @@ BEGIN
     tax_sql := 'INSERT INTO _tmp (id) select id from ae.object object';
     -- join
     tax_sql := tax_sql || ' inner join ae.taxonomy tax on tax.id = object.taxonomy_id';
-    -- add where clauses
-    tax_sql := tax_sql || ' WHERE tax.name = ' || quote_literal(taxonomy);
-    FOREACH taxfilter IN ARRAY tax_filters LOOP
-      IF taxfilter.comparator IN ('ILIKE', 'LIKE') THEN
-        tax_sql := tax_sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal('%' || taxfilter.value || '%');
+    -- join to filter by pcos
+    FOREACH pc_of_pco_filters IN ARRAY pcs_of_pco_filters LOOP
+      name := replace(replace(replace(quote_literal(pc_of_pco_filters), ' ', ''), '(', ''), ')', '');
+      pc_name := quote_ident('pc_' || name);
+      pco_name := quote_ident('pco_' || name);
+      IF use_synonyms = TRUE THEN
+        -- if synonyms are used, filter pcos via pco_of_object
+        tax_sql := tax_sql || ' INNER JOIN ae.pco_of_object pcoo ON pcoo.object_id = object.id
+                                INNER JOIN ae.property_collection_object ' || pco_name || ' ON ' || pco_name || '.id = pcoo.pco_id
+                                INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id'
       ELSE
-        tax_sql := tax_sql || ' AND ae.object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal(taxfilter.value);
+        -- filter directly by property_collection_object
+        tax_sql := tax_sql || ' INNER JOIN ae.property_collection_object ' || pco_name || ' ON ' || pco_name || '.object_id = object.id
+                                INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id'
       END IF;
     END LOOP;
-    -- TODO: if pco_filters exist
-    -- TODO: if synonyms are used, filter pcos via pco_of_object
-    -- else, filter by pcos
+    -- add where clauses
+    -- for taxonomies
+    tax_sql := tax_sql || ' WHERE tax.name = ANY (' || taxonomies || ')';
+    FOREACH taxfilter IN ARRAY tax_filters LOOP
+      IF taxfilter.comparator IN ('ILIKE', 'LIKE') THEN
+        tax_sql := tax_sql || ' AND object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal('%' || taxfilter.value || '%');
+      ELSE
+        tax_sql := tax_sql || ' AND object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal(taxfilter.value);
+      END IF;
+    END LOOP;
+    -- add where clauses for pco_filters
+    FOREACH pco_filter IN ARRAY pco_filters LOOP
+      name := replace(replace(replace(quote_literal(pco_filter.pcname), ' ', ''), '(', ''), ')', '');
+      pc_name := quote_ident('pc_' || name);
+      pco_name := quote_ident('pco_' || name);
+      IF pco_filter.comparator IN ('ILIKE', 'LIKE') THEN
+        tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pco_filter.pname) || ' ' || pco_filter.comparator || ' ' || quote_literal('%' || pco_filter.value || '%');
+      ELSE
+        tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pco_filter.pname) || ' ' || pco_filter.comparator || ' ' || quote_literal(pco_filter.value);
+      END IF;
+    END LOOP;
     -- create _tmp with all object_ids
     EXECUTE tax_sql;
   END LOOP;
@@ -125,5 +154,5 @@ $$
 LANGUAGE plpgsql
 STABLE;
 
-ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer) OWNER TO postgres;
+ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[] pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer) OWNER TO postgres;
 
