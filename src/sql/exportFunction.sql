@@ -83,7 +83,9 @@ DECLARE
   pcofilter pco_filter;
   pcoproperty pco_property;
 BEGIN
+  -- create table
   EXECUTE 'CREATE TEMPORARY TABLE _tmp (id uuid, properties jsonb)';
+  -- insert object_ids
   FOREACH taxonomy IN ARRAY taxonomies LOOP
     -- select
     tax_sql := 'INSERT INTO _tmp (id) select id from ae.object object';
