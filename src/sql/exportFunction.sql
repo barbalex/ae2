@@ -144,17 +144,15 @@ BEGIN
       *
     FROM
       _tmp LOOP
-        object :=
-        SELECT
-          *
-        FROM
-          ae.object
-        WHERE
-          id = tmprow.id;
-        $tf$ UPDATE
+        UPDATE
           _tmp
         SET
-          properties = jsonb_set(properties, '{' || taxfield.fieldname || '}', '' || object.properties ->> quote_ident(taxfield.fieldname) || '') $tf$;
+          properties = jsonb_set(properties, '{' || taxfield.fieldname || '}', (
+              SELECT
+                object.properties ->> quote_ident(taxfield.fieldname)
+              FROM ae.object
+              WHERE
+                id = tmprow.id));
       END LOOP;
   END LOOP;
   -- TODO: add pco_fields
