@@ -130,7 +130,6 @@ BEGIN
     -- add where clauses for pco_filters
     FOREACH pcofilter IN ARRAY pco_filters LOOP
       name := replace(replace(replace(pcofilter.pcname, ' ', ''), '(', ''), ')', '');
-      pc_name := 'pc_' || name;
       pco_name := 'pco_' || name;
       IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
         tax_sql := tax_sql || ' AND ' || quote_ident(pco_name || '.properties') || '->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value || '%');
