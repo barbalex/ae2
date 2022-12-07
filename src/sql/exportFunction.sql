@@ -103,7 +103,7 @@ BEGIN
     tax_sql := tax_sql || ' inner join ae.taxonomy tax on tax.id = object.taxonomy_id';
     -- join to filter by pcos
     FOREACH pc_of_pco_filters IN ARRAY pcs_of_pco_filters LOOP
-      name := replace(replace(replace(pc_of_pco_filters, ' ', ''), '(', ''), ')', '');
+      name := replace(replace(replace(LOWER(pc_of_pco_filters), ' ', ''), '(', ''), ')', '');
       pc_name := 'pc_' || name;
       pco_name := 'pco_' || name;
       IF use_synonyms = TRUE THEN
@@ -128,13 +128,17 @@ BEGIN
       END IF;
     END LOOP;
     -- add where clauses for pco_filters
+    -- TODO: error: "Spalte »pco_choeqv.properties« existiert nicht"
     FOREACH pcofilter IN ARRAY pco_filters LOOP
-      name := replace(replace(replace(pcofilter.pcname, ' ', ''), '(', ''), ')', '');
+      name := replace(replace(replace(LOWER(pcofilter.pcname), ' ', ''), '(', ''), ')', '');
       pco_name := 'pco_' || name;
       IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
-        tax_sql := tax_sql || ' AND ' || quote_ident(pco_name || '.properties') || '->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value || '%');
+        -- tax_sql := tax_sql || ' AND ' || quote_ident(pco_name || '.properties') || '->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value || '%');
+        tax_sql := tax_sql || format(' AND %I.properties->>%s %s %%I%%', pco_name, pcofilter.pname, pcofilter.comparator, pcofilter.value);
       ELSE
-        tax_sql := tax_sql || ' AND ' || quote_ident(pco_name || '.properties') || '->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value);
+        -- tax_sql := tax_sql || ' AND ' || quote_ident(pco_name || '.properties') || '->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value);
+        tax_sql := tax_sql || format(' AND %I.properties->>%s %s %L', pco_name, pcofilter.pname, pcofilter.comparator, pcofilter.value);
+        -- tax_sql := tax_sql || format(' AND %I.properties->>''Art ist Qualitätszeiger Liste A'' = true', pco_name);
       END IF;
     END LOOP;
     -- create _tmp with all object_ids
@@ -160,8 +164,8 @@ BEGIN
         END LOOP;
     END LOOP;
     -- TODO: add pco_fields
-    RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %:', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql;
-    --RAISE EXCEPTION 'sql: %:', sql;
+    --RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %:', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql;
+    --RAISE EXCEPTION 'tax_sql: %:', tax_sql;
     -- does this work?:
     RETURN QUERY
     SELECT
