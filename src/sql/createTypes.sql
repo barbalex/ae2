@@ -24,14 +24,6 @@ CREATE TYPE pco_filter AS (
     value text
 );
 
-CREATE TYPE pco_filter_typed AS (
-    comparator text,
-    pname text,
-    pcname text,
-    value text,
-    type text -- this is to cast value to the correct type server-side
-);
-
 CREATE TYPE rco_filter AS (
     comparator text,
     pname text,

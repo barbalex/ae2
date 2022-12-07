@@ -72,7 +72,7 @@ CREATE TYPE tax_field AS (
 --
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
-CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter_typed[], pcs_of_pco_filters text[], pco_properties pco_property[], use_synonyms boolean, count integer, object_ids uuid[])
+CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], use_synonyms boolean, count integer, object_ids uuid[])
   RETURNS SETOF ae.export_row
   AS $$
 DECLARE
@@ -80,7 +80,7 @@ DECLARE
   tax_sql text;
   taxfilter tax_filter;
   taxfield tax_field;
-  pcofilter pco_filter_typed;
+  pcofilter pco_filter;
   pc_of_pco_filters text;
   name text;
   pc_name text;
@@ -128,7 +128,6 @@ BEGIN
       END IF;
     END LOOP;
     -- add where clauses for pco_filters
-    -- TODO: error: "Spalte »pco_choeqv.properties« existiert nicht"
     FOREACH pcofilter IN ARRAY pco_filters LOOP
       name := replace(replace(replace(LOWER(pcofilter.pcname), ' ', ''), '(', ''), ')', '');
       pco_name := 'pco_' || name;
@@ -142,7 +141,8 @@ BEGIN
     EXECUTE tax_sql
     USING taxonomies;
   END LOOP;
-    -- TODO: add tax_fields
+    -- add tax_fields
+    -- TODO: properties are not set
     FOREACH taxfield IN ARRAY tax_fields LOOP
       FOR tmprow IN
       SELECT
@@ -154,15 +154,22 @@ BEGIN
           SET
             properties = jsonb_set(properties, ARRAY[quote_literal(taxfield.fieldname)], (
     SELECT
-      properties ->> quote_ident(taxfield.fieldname)
+      properties ->> quote_literal(taxfield.fieldname)
     FROM ae.object
     WHERE
-      id = tmprow.id)::jsonb);
+      id = tmprow.id)::jsonb, TRUE);
         END LOOP;
     END LOOP;
     -- TODO: add pco_fields
     --RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %:', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql;
-    --RAISE EXCEPTION 'tax_sql: %:', tax_sql;
+    --RAISE EXCEPTION 'tax_fields: %:', tax_fields;
+    -- FOR object IN
+    -- SELECT
+    --   *
+    -- FROM
+    --   _tmp LOOP
+    --     RAISE EXCEPTION 'col1: %s, col2: %s', object.id, to_json(object.properties);
+    --   END LOOP;
     -- does this work?:
     RETURN QUERY
     SELECT
@@ -175,10 +182,10 @@ $$
 LANGUAGE plpgsql;
 
 -- fehlerhafte Arraykonstante: »)«
-ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter_typed[], pcs_of_pco_filters text[], pco_properties pco_property[], use_synonyms boolean, count integer, object_ids uuid[]) OWNER TO postgres;
+ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], use_synonyms boolean, count integer, object_ids uuid[]) OWNER TO postgres;
 
 -- test from grqphiql:
--- mutation exportDataMutation($taxonomies: [String]!, $taxFields: [TaxFieldInput]!, $taxFilters: [TaxFilterInput]!, $pcoFilters: [PcoFilterTypedInput]!, $pcsOfPcoFilters: [String]!, $pcoProperties: [PcoPropertyInput]!, $useSynonyms: Boolean!, $count: Int!, $objectIds: [UUID]!) {
+-- mutation exportDataMutation($taxonomies: [String]!, $taxFields: [TaxFieldInput]!, $taxFilters: [TaxFilterInput]!, $pcoFilters: [PcoFilterInput]!, $pcsOfPcoFilters: [String]!, $pcoProperties: [PcoPropertyInput]!, $useSynonyms: Boolean!, $count: Int!, $objectIds: [UUID]!) {
 --   export(
 --     input: {taxonomies: $taxonomies, taxFields: $taxFields, taxFilters: $taxFilters, pcoFilters: $pcoFilters, pcsOfPcoFilters: $pcsOfPcoFilters, pcoProperties: $pcoProperties, useSynonyms: $useSynonyms, count: $count, objectIds: $objectIds}
 --   ) {
@@ -213,8 +220,7 @@ ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters
 --       "pcname": "CH OeQV",
 --       "pname": "Art ist Qualitätszeiger Liste A",
 --       "comparator": "=",
---       "value": "true",
---       "type": "boolean"
+--       "value": "true"
 --     }
 --   ],
 --   "pcsOfPcoFilters": [
