@@ -159,12 +159,12 @@ BEGIN
   --RAISE EXCEPTION  'taxonomies: %, tax_filters: %, sql: %:', taxonomies, tax_filters, sql;
   --RAISE EXCEPTION 'sql: %:', sql;
   -- does this work?:
-  RETURN
+  RETURN QUERY
   SELECT
     *
   FROM
     _tmp;
-  ROLLBACK
+  ROLLBACK;
 END
 $$
 LANGUAGE plpgsql
