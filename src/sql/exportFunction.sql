@@ -90,11 +90,12 @@ DECLARE
   object record;
 BEGIN
   -- create table
-  EXECUTE 'CREATE TEMPORARY TABLE _tmp (id uuid, properties jsonb)';
+  DROP TABLE IF EXISTS _temp;
+  CREATE TEMPORARY TABLE _tmp (id uuid, properties jsonb);
   -- insert object_ids
   FOREACH taxonomy IN ARRAY taxonomies LOOP
     -- select
-    tax_sql := 'INSERT INTO _tmp (id) select id from ae.object object';
+    tax_sql := 'INSERT INTO _tmp (id) select object.id from ae.object object';
     -- join
     tax_sql := tax_sql || ' inner join ae.taxonomy tax on tax.id = object.taxonomy_id';
     -- join to filter by pcos
@@ -157,7 +158,7 @@ BEGIN
     --     END LOOP;
     -- END LOOP;
     -- TODO: add pco_fields
-    RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %:', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql;
+    -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %:', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql;
     --RAISE EXCEPTION 'sql: %:', sql;
     -- does this work?:
     RETURN QUERY
@@ -165,7 +166,7 @@ BEGIN
       *
     FROM
       _tmp;
-    ROLLBACK;
+    DROP TABLE _tmp;
 END
 $$
 LANGUAGE plpgsql;
