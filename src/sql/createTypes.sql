@@ -1,25 +1,37 @@
 CREATE TYPE auth.jwt_token AS (
-  token text,
-  role text,
-  username text,
-  exp integer
+    token text,
+    ROLE text,
+    username text,
+    exp integer
 );
+
 CREATE TYPE tax_filter AS (
     comparator text,
     pname text,
     taxname text,
     value text
 );
+
 CREATE TYPE tax_field AS (
     fieldname text,
     taxname text
 );
+
 CREATE TYPE pco_filter AS (
     comparator text,
     pname text,
     pcname text,
     value text
 );
+
+CREATE TYPE pco_filter_typed AS (
+    comparator text,
+    pname text,
+    pcname text,
+    value text,
+    type text -- this is to cast value to the correct type server-side
+);
+
 CREATE TYPE rco_filter AS (
     comparator text,
     pname text,
@@ -27,13 +39,18 @@ CREATE TYPE rco_filter AS (
     relationtype text,
     value text
 );
-alter type rco_filter add ATTRIBUTE relationtype text;
+
+ALTER TYPE rco_filter
+    ADD ATTRIBUTE relationtype text;
+
 CREATE TYPE pco_property AS (
     pname text,
     pcname text
 );
+
 CREATE TYPE rco_property AS (
     pname text,
     relationtype text,
     pcname text
 );
+
