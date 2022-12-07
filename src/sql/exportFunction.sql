@@ -72,7 +72,7 @@ CREATE TYPE tax_field AS (
 --
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
-CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer)
+CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], use_synonyms boolean, count integer, object_ids uuid[])
   RETURNS SETOF ae.export_row
   AS $$
 DECLARE
@@ -167,8 +167,54 @@ BEGIN
   ROLLBACK;
 END
 $$
-LANGUAGE plpgsql
-STABLE;
+LANGUAGE plpgsql;
 
-ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer) OWNER TO postgres;
+ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], use_synonyms boolean, count integer, object_ids uuid[]) OWNER TO postgres;
 
+-- test from grqphiql:
+-- mutation exportDataQuery($taxonomies: [String]!, $taxFields: [TaxFieldInput]!, $taxFilters: [TaxFilterInput]!, $pcoFilters: [PcoFilterInput]!, $pcsOfPcoFilters: [String]!, $pcoProperties: [PcoPropertyInput]!, $useSynonyms: Boolean!, $count: Int!) {
+--   export(
+--     taxonomies: $taxonomies
+--     taxFields: $taxFields
+--     taxFilters: $taxFilters
+--     pcoFilters: $pcoFilters
+--     pcsOfPcoFilters: $pcsOfPcoFilters
+--     pcoProperties: $pcoProperties
+--     useSynonyms: $useSynonyms
+--     count: $count
+--   ) {
+--     totalCount
+--     nodes {
+--       id
+--       properties
+--     }
+--   }
+-- }
+--
+-- variables:
+-- {
+--   "taxonomies": [
+--     "SISF (2005)"
+--   ],
+--   "taxFields": [],
+--   "taxFilters": [],
+--   "pcoFilters": [
+--     {
+--       "pcname": "CH OeQV",
+--       "pname": "Art ist Qualitätszeiger Liste A",
+--       "comparator": "=",
+--       "value": "true"
+--     }
+--   ],
+--   "pcsOfPcoFilters": [
+--     "CH OeQV"
+--   ],
+--   "pcoProperties": [
+--     {
+--       "pcname": "CH OeQV",
+--       "pname": "Art ist Qualitätszeiger Liste A"
+--     }
+--   ],
+--   "useSynonyms": true,
+--   "count": 10
+-- }
