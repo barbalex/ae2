@@ -144,7 +144,7 @@ BEGIN
       *
     FROM
       _tmp LOOP
-        object =
+        object :=
         SELECT
           *
         FROM
