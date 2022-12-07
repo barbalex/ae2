@@ -104,17 +104,17 @@ BEGIN
     -- join to filter by pcos
     FOREACH pc_of_pco_filters IN ARRAY pcs_of_pco_filters LOOP
       name := replace(replace(replace(pc_of_pco_filters, ' ', ''), '(', ''), ')', '');
-      pc_name := quote_ident('pc_' || name);
-      pco_name := quote_ident('pco_' || name);
+      pc_name := 'pc_' || name;
+      pco_name := 'pco_' || name;
       IF use_synonyms = TRUE THEN
         -- if synonyms are used, filter pcos via pco_of_object
         tax_sql := tax_sql || ' INNER JOIN ae.pco_of_object pcoo ON pcoo.object_id = object.id
-                                INNER JOIN ae.property_collection_object ' || pco_name || ' ON ' || pco_name || '.id = pcoo.pco_id
-                                INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id';
+                                INNER JOIN ae.property_collection_object ' || quote_ident(pco_name) || ' ON ' || quote_ident(pco_name) || '.id = pcoo.pco_id
+                                INNER JOIN ae.property_collection ' || quote_ident(pc_name) || ' ON ' || quote_ident(pc_name) || '.id = ' || quote_ident(pco_name) || '.property_collection_id';
       ELSE
         -- filter directly by property_collection_object
-        tax_sql := tax_sql || ' INNER JOIN ae.property_collection_object ' || pco_name || ' ON ' || pco_name || '.object_id = object.id
-                                INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id';
+        tax_sql := tax_sql || ' INNER JOIN ae.property_collection_object ' || quote_ident(pco_name) || ' ON ' || quote_ident(pco_name) || '.object_id = object.id
+                                INNER JOIN ae.property_collection ' || quote_ident(pc_name) || ' ON ' || quote_ident(pc_name) || '.id = ' || quote_ident(pco_name) || '.property_collection_id';
       END IF;
     END LOOP;
     -- add where clauses
@@ -130,12 +130,12 @@ BEGIN
     -- add where clauses for pco_filters
     FOREACH pcofilter IN ARRAY pco_filters LOOP
       name := replace(replace(replace(pcofilter.pcname, ' ', ''), '(', ''), ')', '');
-      pc_name := quote_ident('pc_' || name);
-      pco_name := quote_ident('pco_' || name);
+      pc_name := 'pc_' || name;
+      pco_name := 'pco_' || name;
       IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
-        tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value || '%');
+        tax_sql := tax_sql || ' AND ' || quote_ident(pco_name || '.properties') || '->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value || '%');
       ELSE
-        tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value);
+        tax_sql := tax_sql || ' AND ' || quote_ident(pco_name || '.properties') || '->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value);
       END IF;
     END LOOP;
     -- create _tmp with all object_ids
@@ -143,25 +143,25 @@ BEGIN
     USING taxonomies;
   END LOOP;
     -- TODO: add tax_fields
-    -- FOREACH taxfield IN ARRAY tax_fields LOOP
-    --   FOR tmprow IN
-    --   SELECT
-    --     *
-    --   FROM
-    --     _tmp LOOP
-    --       UPDATE
-    --         _tmp
-    --       SET
-    --         properties = jsonb_set(properties, '{' || taxfield.fieldname || '}', (
-    --             SELECT
-    --               object.properties ->> quote_ident(taxfield.fieldname)
-    --             FROM ae.object
-    --             WHERE
-    --               id = tmprow.id));
-    --     END LOOP;
-    -- END LOOP;
+    FOREACH taxfield IN ARRAY tax_fields LOOP
+      FOR tmprow IN
+      SELECT
+        *
+      FROM
+        _tmp LOOP
+          UPDATE
+            _tmp
+          SET
+            properties = jsonb_set(properties, ARRAY[quote_literal(taxfield.fieldname)], (
+    SELECT
+      properties ->> quote_ident(taxfield.fieldname)
+    FROM ae.object
+    WHERE
+      id = tmprow.id)::jsonb);
+        END LOOP;
+    END LOOP;
     -- TODO: add pco_fields
-    -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %:', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql;
+    RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %:', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql;
     --RAISE EXCEPTION 'sql: %:', sql;
     -- does this work?:
     RETURN QUERY
