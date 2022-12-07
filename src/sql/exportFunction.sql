@@ -128,16 +128,16 @@ BEGIN
     --   END IF;
     -- END LOOP;
     -- add where clauses for pco_filters
-    -- FOREACH pcofilter IN ARRAY pco_filters LOOP
-    --   name := replace(replace(replace(quote_literal(pcofilter.pcname), ' ', ''), '(', ''), ')', '');
-    --   pc_name := quote_ident('pc_' || name);
-    --   pco_name := quote_ident('pco_' || name);
-    --   IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
-    --     tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value || '%');
-    --   ELSE
-    --     tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value);
-    --   END IF;
-    -- END LOOP;
+    FOREACH pcofilter IN ARRAY pco_filters LOOP
+      name := replace(replace(replace(pcofilter.pcname, ' ', ''), '(', ''), ')', '');
+      pc_name := quote_ident('pc_' || name);
+      pco_name := quote_ident('pco_' || name);
+      IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
+        tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value || '%');
+      ELSE
+        tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value);
+      END IF;
+    END LOOP;
     -- create _tmp with all object_ids
     EXECUTE tax_sql
     USING taxonomies;
