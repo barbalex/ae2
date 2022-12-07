@@ -120,13 +120,13 @@ BEGIN
     -- add where clauses
     -- for taxonomies
     tax_sql := tax_sql || ' WHERE tax.name = ANY ($1)';
-    -- FOREACH taxfilter IN ARRAY tax_filters LOOP
-    --   IF taxfilter.comparator IN ('ILIKE', 'LIKE') THEN
-    --     tax_sql := tax_sql || ' AND object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal('%' || taxfilter.value || '%');
-    --   ELSE
-    --     tax_sql := tax_sql || ' AND object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal(taxfilter.value);
-    --   END IF;
-    -- END LOOP;
+    FOREACH taxfilter IN ARRAY tax_filters LOOP
+      IF taxfilter.comparator IN ('ILIKE', 'LIKE') THEN
+        tax_sql := tax_sql || ' AND object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal('%' || taxfilter.value || '%');
+      ELSE
+        tax_sql := tax_sql || ' AND object.properties->>' || quote_literal(taxfilter.pname) || ' ' || taxfilter.comparator || ' ' || quote_literal(taxfilter.value);
+      END IF;
+    END LOOP;
     -- add where clauses for pco_filters
     FOREACH pcofilter IN ARRAY pco_filters LOOP
       name := replace(replace(replace(pcofilter.pcname, ' ', ''), '(', ''), ')', '');
