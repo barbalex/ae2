@@ -91,7 +91,10 @@ DECLARE
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _temp;
-  CREATE TEMPORARY TABLE _tmp (id uuid, properties jsonb);
+  CREATE TEMPORARY TABLE _tmp (
+    id uuid,
+    properties jsonb
+  );
   -- insert object_ids
   FOREACH taxonomy IN ARRAY taxonomies LOOP
     -- select
@@ -99,21 +102,21 @@ BEGIN
     -- join
     tax_sql := tax_sql || ' inner join ae.taxonomy tax on tax.id = object.taxonomy_id';
     -- join to filter by pcos
-    -- FOREACH pc_of_pco_filters IN ARRAY pcs_of_pco_filters LOOP
-    --   name := replace(replace(replace(pc_of_pco_filters, ' ', ''), '(', ''), ')', '');
-    --   pc_name := quote_ident('pc_' || name);
-    --   pco_name := quote_ident('pco_' || name);
-    --   IF use_synonyms = TRUE THEN
-    --     -- if synonyms are used, filter pcos via pco_of_object
-    --     tax_sql := tax_sql || ' INNER JOIN ae.pco_of_object pcoo ON pcoo.object_id = object.id
-    --                             INNER JOIN ae.property_collection_object ' || pco_name || ' ON ' || pco_name || '.id = pcoo.pco_id
-    --                             INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id';
-    --   ELSE
-    --     -- filter directly by property_collection_object
-    --     tax_sql := tax_sql || ' INNER JOIN ae.property_collection_object ' || pco_name || ' ON ' || pco_name || '.object_id = object.id
-    --                             INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id';
-    --   END IF;
-    -- END LOOP;
+    FOREACH pc_of_pco_filters IN ARRAY pcs_of_pco_filters LOOP
+      name := replace(replace(replace(pc_of_pco_filters, ' ', ''), '(', ''), ')', '');
+      pc_name := quote_ident('pc_' || name);
+      pco_name := quote_ident('pco_' || name);
+      IF use_synonyms = TRUE THEN
+        -- if synonyms are used, filter pcos via pco_of_object
+        tax_sql := tax_sql || ' INNER JOIN ae.pco_of_object pcoo ON pcoo.object_id = object.id
+                                INNER JOIN ae.property_collection_object ' || pco_name || ' ON ' || pco_name || '.id = pcoo.pco_id
+                                INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id';
+      ELSE
+        -- filter directly by property_collection_object
+        tax_sql := tax_sql || ' INNER JOIN ae.property_collection_object ' || pco_name || ' ON ' || pco_name || '.object_id = object.id
+                                INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id';
+      END IF;
+    END LOOP;
     -- add where clauses
     -- for taxonomies
     tax_sql := tax_sql || ' WHERE tax.name = ANY ($1)';
