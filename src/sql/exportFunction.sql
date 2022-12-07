@@ -72,7 +72,7 @@ CREATE TYPE tax_field AS (
 --
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
-CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[] pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer)
+CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer)
   RETURNS SETOF ae.export_row
   AS $$
 DECLARE
@@ -172,5 +172,5 @@ $$
 LANGUAGE plpgsql
 STABLE;
 
-ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[] pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer) OWNER TO postgres;
+ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], object_ids uuid[], use_synonyms boolean, count integer) OWNER TO postgres;
 
