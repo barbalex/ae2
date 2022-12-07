@@ -86,6 +86,8 @@ DECLARE
   pc_name text;
   pco_name text;
   pcoproperty pco_property;
+  tmprow record;
+  object record;
 BEGIN
   -- create table
   EXECUTE 'CREATE TEMPORARY TABLE _tmp (id uuid, properties jsonb)';
@@ -137,8 +139,23 @@ BEGIN
   END LOOP;
   -- TODO: add tax_fields
   FOREACH taxfield IN ARRAY tax_fields LOOP
-    -- TODO: get value by select
-    EXECUTE $tf$update _tmp set properties = jsonb_set(properties, '{' || taxfield.fieldname || '}', '' || taxfield.fieldname || '')$tf$;
+    FOR tmprow IN
+    SELECT
+      *
+    FROM
+      _tmp LOOP
+        object =
+        SELECT
+          *
+        FROM
+          ae.object
+        WHERE
+          id = tmprow.id;
+        $tf$ UPDATE
+          _tmp
+        SET
+          properties = jsonb_set(properties, '{' || taxfield.fieldname || '}', '' || object.properties ->> quote_ident(taxfield.fieldname) || '') $tf$;
+      END LOOP;
   END LOOP;
   -- TODO: add pco_fields
   --RAISE EXCEPTION  'taxonomies: %, tax_filters: %, sql: %:', taxonomies, tax_filters, sql;
