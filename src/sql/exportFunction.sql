@@ -106,11 +106,11 @@ BEGIN
         -- if synonyms are used, filter pcos via pco_of_object
         tax_sql := tax_sql || ' INNER JOIN ae.pco_of_object pcoo ON pcoo.object_id = object.id
                                 INNER JOIN ae.property_collection_object ' || pco_name || ' ON ' || pco_name || '.id = pcoo.pco_id
-                                INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id'
+                                INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id';
       ELSE
         -- filter directly by property_collection_object
         tax_sql := tax_sql || ' INNER JOIN ae.property_collection_object ' || pco_name || ' ON ' || pco_name || '.object_id = object.id
-                                INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id'
+                                INNER JOIN ae.property_collection ' || pc_name || ' ON ' || pc_name || '.id = ' || pco_name || '.property_collection_id';
       END IF;
     END LOOP;
     -- add where clauses
@@ -124,14 +124,14 @@ BEGIN
       END IF;
     END LOOP;
     -- add where clauses for pco_filters
-    FOREACH pco_filter IN ARRAY pco_filters LOOP
-      name := replace(replace(replace(quote_literal(pco_filter.pcname), ' ', ''), '(', ''), ')', '');
+    FOREACH pcofilter IN ARRAY pco_filters LOOP
+      name := replace(replace(replace(quote_literal(pcofilter.pcname), ' ', ''), '(', ''), ')', '');
       pc_name := quote_ident('pc_' || name);
       pco_name := quote_ident('pco_' || name);
-      IF pco_filter.comparator IN ('ILIKE', 'LIKE') THEN
-        tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pco_filter.pname) || ' ' || pco_filter.comparator || ' ' || quote_literal('%' || pco_filter.value || '%');
+      IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
+        tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value || '%');
       ELSE
-        tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pco_filter.pname) || ' ' || pco_filter.comparator || ' ' || quote_literal(pco_filter.value);
+        tax_sql := tax_sql || ' AND ' || pco_name || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value);
       END IF;
     END LOOP;
     -- create _tmp with all object_ids
