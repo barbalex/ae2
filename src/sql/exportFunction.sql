@@ -90,6 +90,7 @@ DECLARE
   object record;
   fieldname text;
   taxfield_sql text;
+  taxfield_sql2 text;
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
@@ -167,33 +168,31 @@ BEGIN
     -- TODO: properties are not set
     FOREACH taxfield IN ARRAY tax_fields LOOP
       fieldname := replace(replace(replace(LOWER(taxfield.taxname), ' ', ''), '(', ''), ')', '') || '__' || replace(LOWER(taxfield.fieldname), ' ', '');
-      taxfield_sql := 'ALTER TABLE _tmp ADD COLUMN $1 text';
-      EXECUTE taxfield_sql
-      USING taxfield.fieldname;
-      taxfield_sql := 'FOR tmprow IN SELECT * FROM _tmp
-        UPDATE _tmp SET $1 =
-        SELECT properties ->> $2
-        FROM ae.object WHERE id = $3';
-      EXECUTE taxfield_sql
-      USING taxfield.fieldname, taxfield.fieldname, tmprow.id;
+      EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
+      -- taxfield_sql2 := 'FOR tmprow IN SELECT * FROM _tmp
+      --   UPDATE _tmp SET $1 =
+      --   SELECT properties ->> $2
+      --   FROM ae.object WHERE id = $3';
+      -- EXECUTE taxfield_sql2
+      -- USING fieldname, fieldname, tmprow.id;
     END LOOP;
-      -- TODO: add pco_fields
-      --RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %:', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql;
-      --RAISE EXCEPTION 'tax_fields: %:', tax_fields;
-      -- FOR object IN
-      -- SELECT
-      --   *
-      -- FROM
-      --   _tmp LOOP
-      --     RAISE EXCEPTION 'col1: %s, col2: %s', object.id, to_json(object.properties);
-      --   END LOOP;
-      -- does this work?:
-      RETURN QUERY
-      SELECT
-        *
-      FROM
-        _tmp;
-      -- DROP TABLE _tmp; TODO: re-enable
+    -- TODO: add pco_fields
+    -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname;
+    --RAISE EXCEPTION 'tax_fields: %:', tax_fields;
+    -- FOR object IN
+    -- SELECT
+    --   *
+    -- FROM
+    --   _tmp LOOP
+    --     RAISE EXCEPTION 'col1: %s, col2: %s', object.id, to_json(object.properties);
+    --   END LOOP;
+    -- does this work?:
+    RETURN QUERY
+    SELECT
+      id, properties
+    FROM
+      _tmp;
+    -- DROP TABLE _tmp; TODO: re-enable
 END
 $$
 LANGUAGE plpgsql;
