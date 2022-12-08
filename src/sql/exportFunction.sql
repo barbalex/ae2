@@ -184,14 +184,6 @@ BEGIN
     -- TODO: add rco-properties
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
     --RAISE EXCEPTION 'tax_fields: %:', tax_fields;
-    -- FOR object IN
-    -- SELECT
-    --   *
-    -- FROM
-    --   _tmp LOOP
-    --     RAISE EXCEPTION 'col1: %s, col2: %s', object.id, to_json(object.properties);
-    --   END LOOP;
-    -- does this work?:
     RETURN QUERY
     SELECT
       row.id,
