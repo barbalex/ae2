@@ -106,7 +106,7 @@ BEGIN
     tax_sql := tax_sql || ' inner join ae.taxonomy tax on tax.id = object.taxonomy_id';
     -- join to filter by pcos
     FOREACH pc_of_pco_filters IN ARRAY pcs_of_pco_filters LOOP
-      name := replace(replace(replace(LOWER(pc_of_pco_filters), ' ', ''), '(', ''), ')', '');
+      name := replace(replace(replace(LOWER(pc_of_pco_filters), ' ', '_'), '(', ''), ')', '');
       pc_name := 'pc_' || name;
       pco_name := 'pco_' || name;
       IF use_synonyms = TRUE THEN
@@ -132,7 +132,7 @@ BEGIN
     END LOOP;
     -- add where clauses for pco_filters
     FOREACH pcofilter IN ARRAY pco_filters LOOP
-      name := replace(replace(replace(LOWER(pcofilter.pcname), ' ', ''), '(', ''), ')', '');
+      name := replace(replace(replace(LOWER(pcofilter.pcname), ' ', '_'), '(', ''), ')', '');
       pco_name := 'pco_' || name;
       IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
         tax_sql := tax_sql || ' AND ' || quote_ident(pco_name) || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value::text || '%');
@@ -157,7 +157,13 @@ BEGIN
     -- END LOOP;
     -- add tax_fields as extra columns
     FOREACH taxfield IN ARRAY tax_fields LOOP
-      fieldname := replace(replace(replace(LOWER(taxfield.taxname), ' ', ''), '(', ''), ')', '') || '__' || replace(LOWER(taxfield.fieldname), ' ', '');
+      -- several fieldnames exist in many taxonomies, so need not add taxonmy-name
+      -- TODO: if only one taxonomy is used, add taxonomy-name instead
+      if cardinality(taxonomies) > 1 then
+        fieldname := 'taxonomie__' || replace(LOWER(taxfield.fieldname), ' ', '_');
+      else
+        fieldname := replace(replace(replace(LOWER(taxonomies[1]), ' ', '_'), '(', ''), ')', '') || '__' || replace(LOWER(taxfield.fieldname), ' ', '_');
+      end if;
       EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
       FOR tmprow IN
       SELECT
@@ -168,7 +174,7 @@ BEGIN
         END LOOP;
     END LOOP;
     FOREACH pcoproperty IN ARRAY pco_properties LOOP
-      fieldname := replace(replace(replace(LOWER(pcoproperty.pcname), ' ', ''), '(', ''), ')', '') || '__' || replace(LOWER(pcoproperty.pname), ' ', '');
+      fieldname := replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', '') || '__' || replace(LOWER(pcoproperty.pname), ' ', '_');
       EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
       FOR tmprow IN
       SELECT
