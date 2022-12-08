@@ -95,7 +95,7 @@ BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
   -- TODO: redeclare temporary
-  CREATE TABLE _tmp (
+  CREATE TEMPORARY TABLE _tmp (
     id uuid
   );
   -- insert object_ids
@@ -178,7 +178,10 @@ BEGIN
           EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
         END LOOP;
     END LOOP;
-    -- TODO: add pco_fields
+    -- TODO: add object_ids
+    -- TODO: add count
+    -- TODO: add rco-filters
+    -- TODO: add rco-properties
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
     --RAISE EXCEPTION 'tax_fields: %:', tax_fields;
     -- FOR object IN
@@ -195,7 +198,7 @@ BEGIN
       row_to_json(ROW) AS properties
     FROM
       _tmp ROW;
-    -- DROP TABLE _tmp; TODO: re-enable
+    DROP TABLE _tmp;
 END
 $$
 LANGUAGE plpgsql;
