@@ -169,15 +169,31 @@ BEGIN
     FOREACH taxfield IN ARRAY tax_fields LOOP
       fieldname := replace(replace(replace(LOWER(taxfield.taxname), ' ', ''), '(', ''), ')', '') || '__' || replace(LOWER(taxfield.fieldname), ' ', '');
       EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
-      -- taxfield_sql2 := 'FOR tmprow IN SELECT * FROM _tmp
-      --   UPDATE _tmp SET $1 =
-      --   SELECT properties ->> $2
-      --   FROM ae.object WHERE id = $3';
-      -- EXECUTE taxfield_sql2
-      -- USING fieldname, fieldname, tmprow.id;
+      -- taxfield_sql2 := format('FOR tmprow IN SELECT * FROM _tmp
+      --   UPDATE _tmp SET %1$s =
+      --   SELECT properties ->> %2$I
+      --   FROM ae.object WHERE id = tmprow.id', fieldname, taxfield.fieldname);
+      -- EXECUTE taxfield_sql2;
+      FOR tmprow IN
+      SELECT
+        *
+      FROM
+        _tmp LOOP
+          EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
+          -- UPDATE
+          --   _tmp
+          -- SET
+          --   fieldname = (
+          --     SELECT
+          --       properties ->> taxfield.fieldname
+          --     FROM
+          --       ae.object
+          --     WHERE
+          --       id = tmprow.id);
+        END LOOP;
     END LOOP;
     -- TODO: add pco_fields
-    -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname;
+    -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
     --RAISE EXCEPTION 'tax_fields: %:', tax_fields;
     -- FOR object IN
     -- SELECT
@@ -189,7 +205,8 @@ BEGIN
     -- does this work?:
     RETURN QUERY
     SELECT
-      id, properties
+      id,
+      properties
     FROM
       _tmp;
     -- DROP TABLE _tmp; TODO: re-enable
