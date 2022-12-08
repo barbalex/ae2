@@ -167,6 +167,17 @@ BEGIN
           EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
         END LOOP;
     END LOOP;
+    FOREACH pcoproperty IN ARRAY pco_properties LOOP
+      fieldname := replace(replace(replace(LOWER(pcoproperty.pcname), ' ', ''), '(', ''), ')', '') || '__' || replace(LOWER(pcoproperty.pname), ' ', '');
+      EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
+      FOR tmprow IN
+      SELECT
+        *
+      FROM
+        _tmp LOOP
+          EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
+        END LOOP;
+    END LOOP;
     -- TODO: add pco_fields
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
     --RAISE EXCEPTION 'tax_fields: %:', tax_fields;
