@@ -145,7 +145,7 @@ BEGIN
     USING taxonomies;
   END LOOP;
     -- add tax_fields in properties
-    -- TODO: this always returns an error, no mather how many hours are put into it
+    -- this always returns an error, no mather how many hours are put into it
     -- FOREACH taxfield IN ARRAY tax_fields LOOP
     --   FOR tmprow IN
     --   SELECT
@@ -181,9 +181,9 @@ BEGIN
     RETURN QUERY
     SELECT
       row.id,
-      row_to_json(row) as properties
+      row_to_json(ROW) AS properties
     FROM
-      _tmp row;
+      _tmp ROW;
     -- DROP TABLE _tmp; TODO: re-enable
 END
 $$
