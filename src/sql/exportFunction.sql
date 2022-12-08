@@ -91,7 +91,8 @@ DECLARE
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _temp;
-  CREATE TEMPORARY TABLE _tmp (
+  -- TODO: redeclare temporary
+  CREATE TABLE _tmp (
     id uuid,
     properties jsonb
   );
@@ -176,7 +177,7 @@ BEGIN
       *
     FROM
       _tmp;
-    DROP TABLE _tmp;
+    -- DROP TABLE _tmp; TODO: re-enable
 END
 $$
 LANGUAGE plpgsql;
