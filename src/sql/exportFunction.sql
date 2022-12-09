@@ -240,21 +240,17 @@ BEGIN
         pc_name := 'pc_' || name1;
         pco_name := 'pco_' || name1;
         -- TODO: join for synonyms if used
-        sql2 := format('
-          UPDATE _tmp SET %1$s = (
-          SELECT properties ->> %2$L ', fieldname, pcoproperty.pname);
         IF use_synonyms = TRUE THEN
-          sql2 := sql2 || format('
+          sql2 := format('
             UPDATE _tmp SET %1$s = (
             SELECT pco.properties ->> %2$L 
             FROM ae.pco_of_object pcoo
               INNER JOIN ae.property_collection_object pco on pco.id = pcoo.pco_id
               INNER JOIN ae.property_collection pc on pc.id = pco.property_collection_id
             WHERE 
-              pcoo.object_id = _tmp.id 
-              and pc.name = %3$L)', fieldname, pcoproperty.pname, pcoproperty.pcname);
+              pco.object_id = _tmp.id and pc.name = %3$L)', fieldname, pcoproperty.pname, pcoproperty.pcname);
         ELSE
-          sql2 := sql2 || format('
+          sql2 := format('
             UPDATE _tmp SET %1$s = (
             SELECT properties ->> %2$L 
             FROM ae.property_collection_object pco 
@@ -266,7 +262,7 @@ BEGIN
     END IF;
     -- TODO: add rco-properties
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
-    --RAISE EXCEPTION 'tax_sql: %:', tax_sql;
+    --RAISE EXCEPTION 'sql2: %:', sql2;
     RETURN QUERY
     SELECT
       row.id,
