@@ -168,8 +168,8 @@ BEGIN
     -- END LOOP;
     -- add tax_fields as extra columns
     FOREACH taxfield IN ARRAY tax_fields LOOP
-      -- several fieldnames exist in many taxonomies, so need not add taxonmy-name
-      -- TODO: if only one taxonomy is used, add taxonomy-name instead
+      -- several fieldnames exist in many taxonomies, so need not add taxonmy-name if multiple taxonomies are used
+      -- if only one taxonomy is used, do add taxonomy-name
       IF cardinality(taxonomies) > 1 THEN
         fieldname := 'taxonomie__' || replace(LOWER(taxfield.fieldname), ' ', '_');
       ELSE
