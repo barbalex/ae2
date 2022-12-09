@@ -84,10 +84,15 @@ DECLARE
   rcofilter rco_filter;
   pc_of_pco_filters text;
   pc_of_rco_filters text;
-  name text;
+  name1 text;
+  name2 text;
+  name3 text;
   pc_name text;
+  pc_name2 text;
   pco_name text;
+  pco_name2 text;
   rco_name text;
+  rco_name2 text;
   pcoproperty pco_property;
   tmprow record;
   object record;
@@ -99,7 +104,7 @@ BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
   -- TODO: redeclare temporary
-  CREATE TEMPORARY TABLE _tmp (
+  CREATE TABLE _tmp (
     id uuid PRIMARY KEY
   );
   -- insert object_ids
@@ -111,9 +116,9 @@ BEGIN
     -- join to filter by pcos
     IF cardinality(pcs_of_pco_filters) > 0 THEN
       FOREACH pc_of_pco_filters IN ARRAY pcs_of_pco_filters LOOP
-        name := replace(replace(replace(LOWER(pc_of_pco_filters), ' ', '_'), '(', ''), ')', '');
-        pc_name := 'pc_' || name;
-        pco_name := 'pco_' || name;
+        name1 := replace(replace(replace(LOWER(pc_of_pco_filters), ' ', '_'), '(', ''), ')', '');
+        pc_name := 'pc_' || name1;
+        pco_name := 'pco_' || name1;
         IF use_synonyms = TRUE THEN
           -- if synonyms are used, filter pcos via pco_of_object
           tax_sql := tax_sql || ' INNER JOIN ae.pco_of_object pcoo ON pcoo.object_id = object.id
@@ -130,18 +135,18 @@ BEGIN
     -- join to filter by rcos
     IF cardinality(pcs_of_rco_filters) > 0 THEN
       FOREACH pc_of_rco_filters IN ARRAY pcs_of_rco_filters LOOP
-        name := replace(replace(replace(LOWER(pc_of_rco_filters), ' ', '_'), '(', ''), ')', '');
-        pc_name := 'rpc_' || name;
-        rco_name := 'rco_' || name;
+        name1 := replace(replace(replace(LOWER(pc_of_rco_filters), ' ', '_'), '(', ''), ')', '');
+        pc_name2 := 'rpc_' || name1;
+        rco_name := 'rco_' || name1;
         IF use_synonyms = TRUE THEN
           -- TODO: if synonyms are used, filter rcos via rco_of_object
           tax_sql := tax_sql || ' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
                                 INNER JOIN ae.relation ' || quote_ident(rco_name) || ' ON ' || quote_ident(rco_name) || '.id = rcoo.rco_id
-                                INNER JOIN ae.property_collection ' || quote_ident(pc_name) || ' ON ' || quote_ident(pc_name) || '.id = ' || quote_ident(rco_name) || '.property_collection_id';
+                                INNER JOIN ae.property_collection ' || quote_ident(pc_name2) || ' ON ' || quote_ident(pc_name2) || '.id = ' || quote_ident(rco_name) || '.property_collection_id';
         ELSE
           -- filter directly by relation
           tax_sql := tax_sql || ' INNER JOIN ae.relation ' || quote_ident(rco_name) || ' ON ' || quote_ident(rco_name) || '.object_id = object.id
-                                INNER JOIN ae.property_collection ' || quote_ident(pc_name) || ' ON ' || quote_ident(pc_name) || '.id = ' || quote_ident(rco_name) || '.property_collection_id';
+                                INNER JOIN ae.property_collection ' || quote_ident(pc_name2) || ' ON ' || quote_ident(pc_name2) || '.id = ' || quote_ident(rco_name) || '.property_collection_id';
         END IF;
       END LOOP;
     END IF;
@@ -160,26 +165,26 @@ BEGIN
     -- add where clauses for pco_filters
     IF cardinality(pco_filters) > 0 THEN
       FOREACH pcofilter IN ARRAY pco_filters LOOP
-        name := replace(replace(replace(LOWER(pcofilter.pcname), ' ', '_'), '(', ''), ')', '');
-        pco_name := 'pco_' || name;
+        name2 := replace(replace(replace(LOWER(pcofilter.pcname), ' ', '_'), '(', ''), ')', '');
+        pco_name2 := 'pco_' || name2;
         IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
-          tax_sql := tax_sql || ' AND ' || quote_ident(pco_name) || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value::text || '%');
+          tax_sql := tax_sql || ' AND ' || quote_ident(pco_name2) || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value::text || '%');
         ELSE
-          tax_sql := tax_sql || ' AND ' || quote_ident(pco_name) || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value::text);
+          tax_sql := tax_sql || ' AND ' || quote_ident(pco_name2) || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value::text);
         END IF;
       END LOOP;
     END IF;
     -- add where clauses for rco_filters
     IF cardinality(rco_filters) > 0 THEN
       FOREACH rcofilter IN ARRAY rco_filters LOOP
-        name := replace(replace(replace(LOWER(rcofilter.pcname), ' ', '_'), '(', ''), ')', '');
-        rco_name := 'rco_' || name;
+        name3 := replace(replace(replace(LOWER(rcofilter.pcname), ' ', '_'), '(', ''), ')', '');
+        rco_name2 := 'rco_' || name3;
         IF rcofilter.comparator IN ('ILIKE', 'LIKE') THEN
-          tax_sql := tax_sql || ' AND ' || quote_ident(rco_name) || '.properties->>' || quote_literal(rcofilter.pname) || ' ' || rcofilter.comparator || ' ' || quote_literal('%' || rcofilter.value::text || '%');
+          tax_sql := tax_sql || ' AND ' || quote_ident(rco_name2) || '.properties->>' || quote_literal(rcofilter.pname) || ' ' || rcofilter.comparator || ' ' || quote_literal('%' || rcofilter.value::text || '%');
         ELSE
-          tax_sql := tax_sql || ' AND ' || quote_ident(rco_name) || '.properties->>' || quote_literal(rcofilter.pname) || ' ' || rcofilter.comparator || ' ' || quote_literal(rcofilter.value::text);
+          tax_sql := tax_sql || ' AND ' || quote_ident(rco_name2) || '.properties->>' || quote_literal(rcofilter.pname) || ' ' || rcofilter.comparator || ' ' || quote_literal(rcofilter.value::text);
         END IF;
-        tax_sql := tax_sql || ' AND ' || quote_ident(rco_name) || '.relation_type = ' || quote_literal(rcofilter.relationtype);
+        tax_sql := tax_sql || ' AND ' || quote_ident(rco_name2) || '.relation_type = ' || quote_literal(rcofilter.relationtype);
       END LOOP;
     END IF;
     --
@@ -209,7 +214,7 @@ BEGIN
     --     END LOOP;
     -- END LOOP;
     -- add tax_fields as extra columns
-    -- TODO: when filtering for rco, Artname vollständig is always same
+    -- TODO: when filtering for rco, value is always same
     IF cardinality(tax_fields) > 0 THEN
       FOREACH taxfield IN ARRAY tax_fields LOOP
         -- several fieldnames exist in many taxonomies, so need not add taxonmy-name if multiple taxonomies are used
@@ -220,12 +225,15 @@ BEGIN
           fieldname := replace(replace(replace(LOWER(taxonomies[1]), ' ', '_'), '(', ''), ')', '') || '__' || replace(LOWER(taxfield.fieldname), ' ', '_');
         END IF;
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
+        -- EXECUTE 'ALTER TABLE _tmp ADD COLUMN $1 text'
+        -- USING fieldname;
         FOR tmprow IN
         SELECT
-          id
+          *
         FROM
           _tmp LOOP
             EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
+            -- EXECUTE 'UPDATE _tmp SET $1 = (SELECT properties ->> $2 FROM ae.object WHERE id = $3)' USING fieldname, taxfield.fieldname, tmprow.id;
           END LOOP;
       END LOOP;
     END IF;
@@ -233,26 +241,28 @@ BEGIN
       FOREACH pcoproperty IN ARRAY pco_properties LOOP
         fieldname := replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', '') || '__' || replace(LOWER(pcoproperty.pname), ' ', '_');
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
+        -- EXECUTE 'ALTER TABLE _tmp ADD COLUMN $1 text'
+        -- USING fieldname;
         FOR tmprow IN
         SELECT
-          id
+          *
         FROM
           _tmp LOOP
             EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
+            -- EXECUTE 'UPDATE _tmp SET $1 = (SELECT properties ->> $2 FROM ae.object WHERE id = $3)' USING fieldname, taxfield.fieldname, tmprow.id;
           END LOOP;
       END LOOP;
     END IF;
-    -- TODO: add rco-filters
     -- TODO: add rco-properties
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
-    --RAISE EXCEPTION 'tax_fields: %:', tax_fields;
+    RAISE EXCEPTION 'tax_sql: %:', tax_sql;
     RETURN QUERY
     SELECT
       row.id,
       row_to_json(ROW) AS properties
     FROM
       _tmp ROW;
-    DROP TABLE _tmp;
+    -- DROP TABLE _tmp;
 END
 $$
 LANGUAGE plpgsql;
@@ -303,7 +313,7 @@ ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters
 --   "pcsOfPcoFilters": [
 --     "CH OeQV"
 --   ],
---   "pcsOfRcoFilters": ["CH OeQV"],
+--   "pcsOfRcoFilters": ["ZH AP FM (2010)"],
 --   "pcoProperties": [
 --     {
 --       "pcname": "CH OeQV",
