@@ -97,7 +97,7 @@ BEGIN
   DROP TABLE IF EXISTS _tmp;
   -- TODO: redeclare temporary
   CREATE TEMPORARY TABLE _tmp (
-    id uuid
+    id uuid PRIMARY KEY
   );
   -- insert object_ids
   FOREACH taxonomy IN ARRAY taxonomies LOOP
@@ -145,6 +145,8 @@ BEGIN
     IF cardinality(object_ids) > 0 THEN
       tax_sql := tax_sql || ' AND object.id = ANY ($2)';
     END IF;
+    -- prevent duplicates
+    tax_sql := tax_sql || ' ON CONFLICT DO NOTHING';
     -- create _tmp with all object_ids
     EXECUTE tax_sql
     USING taxonomies, object_ids;
