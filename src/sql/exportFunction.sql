@@ -141,10 +141,11 @@ BEGIN
         tax_sql := tax_sql || ' AND ' || quote_ident(pco_name) || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value::text);
       END IF;
     END LOOP;
-    -- TODO: add object_ids
+    -- if object_ids were passed, only use them
     IF cardinality(object_ids) > 0 THEN
       tax_sql := tax_sql || ' AND object.id = ANY ($2)';
     END IF;
+    -- enable limiting for previews
     IF count > 0 THEN
       tax_sql := tax_sql || ' LIMIT ' || count;
     END IF;
@@ -194,7 +195,6 @@ BEGIN
           EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
         END LOOP;
     END LOOP;
-    -- TODO: add count
     -- TODO: add rco-filters
     -- TODO: add rco-properties
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
