@@ -72,7 +72,7 @@ CREATE TYPE tax_field AS (
 --
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
-CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], use_synonyms boolean, count integer, object_ids uuid[])
+CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[])
   RETURNS SETOF ae.export_row
   AS $$
 DECLARE
@@ -81,10 +81,13 @@ DECLARE
   taxfilter tax_filter;
   taxfield tax_field;
   pcofilter pco_filter;
+  rcofilter rco_filter;
   pc_of_pco_filters text;
+  pc_of_rco_filters text;
   name text;
   pc_name text;
   pco_name text;
+  rco_name text;
   pcoproperty pco_property;
   tmprow record;
   object record;
@@ -121,6 +124,23 @@ BEGIN
                                 INNER JOIN ae.property_collection ' || quote_ident(pc_name) || ' ON ' || quote_ident(pc_name) || '.id = ' || quote_ident(pco_name) || '.property_collection_id';
       END IF;
     END LOOP;
+    -- TODO:
+    -- join to filter by rcos
+    FOREACH pc_of_rco_filters IN ARRAY pcs_of_rco_filters LOOP
+      name := replace(replace(replace(LOWER(pc_of_rco_filters), ' ', '_'), '(', ''), ')', '');
+      pc_name := 'rpc_' || name;
+      rco_name := 'rco_' || name;
+      IF use_synonyms = TRUE THEN
+        -- TODO: if synonyms are used, filter rcos via rco_of_object
+        tax_sql := tax_sql || ' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
+                                INNER JOIN ae.relation ' || quote_ident(rco_name) || ' ON ' || quote_ident(rco_name) || '.id = rcoo.rco_id
+                                INNER JOIN ae.property_collection ' || quote_ident(pc_name) || ' ON ' || quote_ident(pc_name) || '.id = ' || quote_ident(rco_name) || '.property_collection_id';
+      ELSE
+        -- filter directly by relation
+        tax_sql := tax_sql || ' INNER JOIN ae.relation ' || quote_ident(rco_name) || ' ON ' || quote_ident(rco_name) || '.object_id = object.id
+                                INNER JOIN ae.property_collection ' || quote_ident(pc_name) || ' ON ' || quote_ident(pc_name) || '.id = ' || quote_ident(rco_name) || '.property_collection_id';
+      END IF;
+    END LOOP;
     -- add where clauses
     -- for taxonomies
     tax_sql := tax_sql || ' WHERE tax.name = ANY ($1)';
@@ -141,6 +161,19 @@ BEGIN
         tax_sql := tax_sql || ' AND ' || quote_ident(pco_name) || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value::text);
       END IF;
     END LOOP;
+    -- TODO:
+    -- add where clauses for rco_filters
+    FOREACH rcofilter IN ARRAY rco_filters LOOP
+      name := replace(replace(replace(LOWER(rcofilter.pcname), ' ', '_'), '(', ''), ')', '');
+      rco_name := 'rco_' || name;
+      IF rcofilter.comparator IN ('ILIKE', 'LIKE') THEN
+        tax_sql := tax_sql || ' AND ' || quote_ident(rco_name) || '.properties->>' || quote_literal(rcofilter.pname) || ' ' || rcofilter.comparator || ' ' || quote_literal('%' || rcofilter.value::text || '%');
+      ELSE
+        tax_sql := tax_sql || ' AND ' || quote_ident(rco_name) || '.properties->>' || quote_literal(rcofilter.pname) || ' ' || rcofilter.comparator || ' ' || quote_literal(rcofilter.value::text);
+      END IF;
+      tax_sql := tax_sql || ' AND ' || quote_ident(rco_name) || '.relation_type = ' || quote_literal(rcofilter.relationtype) || ')';
+    END LOOP;
+    --
     -- if object_ids were passed, only use them
     IF cardinality(object_ids) > 0 THEN
       tax_sql := tax_sql || ' AND object.id = ANY ($2)';
@@ -211,7 +244,7 @@ $$
 LANGUAGE plpgsql;
 
 -- fehlerhafte Arraykonstante: »)«
-ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], use_synonyms boolean, count integer, object_ids uuid[]) OWNER TO postgres;
+ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[]) OWNER TO postgres;
 
 -- test from grqphiql:
 -- mutation exportDataMutation($taxonomies: [String]!, $taxFields: [TaxFieldInput]!, $taxFilters: [TaxFilterInput]!, $pcoFilters: [PcoFilterInput]!, $pcsOfPcoFilters: [String]!, $pcoProperties: [PcoPropertyInput]!, $useSynonyms: Boolean!, $count: Int!, $objectIds: [UUID]!) {
