@@ -78,6 +78,7 @@ CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[],
 DECLARE
   taxonomy text;
   tax_sql text;
+  sql2 text;
   taxfilter tax_filter;
   taxfield tax_field;
   pcofilter pco_filter;
@@ -235,9 +236,32 @@ BEGIN
       FOREACH pcoproperty IN ARRAY pco_properties LOOP
         fieldname := replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', '') || '__' || replace(LOWER(pcoproperty.pname), ' ', '_');
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
-        -- EXECUTE 'ALTER TABLE _tmp ADD COLUMN $1 text'
-        -- USING fieldname;
-        EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.property_collection_object pco inner join ae.property_collection pc on pc.id = pco.property_collection_id WHERE pco.object_id = _tmp.id and pc.name = %3$L)', fieldname, taxfield.fieldname, pcoproperty.pcname);
+        name1 := replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', '');
+        pc_name := 'pc_' || name1;
+        pco_name := 'pco_' || name1;
+        -- TODO: join for synonyms if used
+        sql2 := format('
+          UPDATE _tmp SET %1$s = (
+          SELECT properties ->> %2$L ', fieldname, pcoproperty.pname);
+        IF use_synonyms = TRUE THEN
+          sql2 := sql2 || format('
+            UPDATE _tmp SET %1$s = (
+            SELECT pco.properties ->> %2$L 
+            FROM ae.pco_of_object pcoo
+              INNER JOIN ae.property_collection_object pco on pco.id = pcoo.pco_id
+              INNER JOIN ae.property_collection pc on pc.id = pco.property_collection_id
+            WHERE 
+              pcoo.object_id = _tmp.id 
+              and pc.name = %3$L)', fieldname, pcoproperty.pname, pcoproperty.pcname);
+        ELSE
+          sql2 := sql2 || format('
+            UPDATE _tmp SET %1$s = (
+            SELECT properties ->> %2$L 
+            FROM ae.property_collection_object pco 
+            inner join ae.property_collection pc on pc.id = pco.property_collection_id 
+            WHERE pco.object_id = _tmp.id and pc.name = %3$L)', fieldname, pcoproperty.pname, pcoproperty.pcname);
+        END IF;
+        EXECUTE sql2;
       END LOOP;
     END IF;
     -- TODO: add rco-properties
