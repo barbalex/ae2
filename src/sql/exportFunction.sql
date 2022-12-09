@@ -95,6 +95,7 @@ DECLARE
   rco_name2 text;
   pcoproperty pco_property;
   tmprow record;
+  tmprow2 record;
   object record;
   fieldname text;
   taxfield_sql text;
@@ -227,14 +228,7 @@ BEGIN
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         -- EXECUTE 'ALTER TABLE _tmp ADD COLUMN $1 text'
         -- USING fieldname;
-        FOR tmprow IN
-        SELECT
-          *
-        FROM
-          _tmp LOOP
-            EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
-            -- EXECUTE 'UPDATE _tmp SET $1 = (SELECT properties ->> $2 FROM ae.object WHERE id = $3)' USING fieldname, taxfield.fieldname, tmprow.id;
-          END LOOP;
+        EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = _tmp.id)', fieldname, taxfield.fieldname);
       END LOOP;
     END IF;
     IF cardinality(pco_properties) > 0 THEN
@@ -243,19 +237,12 @@ BEGIN
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         -- EXECUTE 'ALTER TABLE _tmp ADD COLUMN $1 text'
         -- USING fieldname;
-        FOR tmprow IN
-        SELECT
-          *
-        FROM
-          _tmp LOOP
-            EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
-            -- EXECUTE 'UPDATE _tmp SET $1 = (SELECT properties ->> $2 FROM ae.object WHERE id = $3)' USING fieldname, taxfield.fieldname, tmprow.id;
-          END LOOP;
+        EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.property_collection_object pco inner join ae.property_collection pc on pc.id = pco.property_collection_id WHERE pco.object_id = _tmp.id and pc.name = %3$L)', fieldname, taxfield.fieldname, pcoproperty.pcname);
       END LOOP;
     END IF;
     -- TODO: add rco-properties
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
-    RAISE EXCEPTION 'tax_sql: %:', tax_sql;
+    --RAISE EXCEPTION 'tax_sql: %:', tax_sql;
     RETURN QUERY
     SELECT
       row.id,
