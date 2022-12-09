@@ -91,6 +91,7 @@ DECLARE
   fieldname text;
   taxfield_sql text;
   taxfield_sql2 text;
+  object_id uuid;
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
@@ -140,9 +141,13 @@ BEGIN
         tax_sql := tax_sql || ' AND ' || quote_ident(pco_name) || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value::text);
       END IF;
     END LOOP;
+    -- TODO: add object_ids
+    IF cardinality(object_ids) > 0 THEN
+      tax_sql := tax_sql || ' AND object.id = ANY ($2)';
+    END IF;
     -- create _tmp with all object_ids
     EXECUTE tax_sql
-    USING taxonomies;
+    USING taxonomies, object_ids;
   END LOOP;
     -- add tax_fields in properties
     -- this always returns an error, no mather how many hours are put into it
@@ -159,11 +164,11 @@ BEGIN
     FOREACH taxfield IN ARRAY tax_fields LOOP
       -- several fieldnames exist in many taxonomies, so need not add taxonmy-name
       -- TODO: if only one taxonomy is used, add taxonomy-name instead
-      if cardinality(taxonomies) > 1 then
+      IF cardinality(taxonomies) > 1 THEN
         fieldname := 'taxonomie__' || replace(LOWER(taxfield.fieldname), ' ', '_');
-      else
+      ELSE
         fieldname := replace(replace(replace(LOWER(taxonomies[1]), ' ', '_'), '(', ''), ')', '') || '__' || replace(LOWER(taxfield.fieldname), ' ', '_');
-      end if;
+      END IF;
       EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
       FOR tmprow IN
       SELECT
@@ -184,7 +189,6 @@ BEGIN
           EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
         END LOOP;
     END LOOP;
-    -- TODO: add object_ids
     -- TODO: add count
     -- TODO: add rco-filters
     -- TODO: add rco-properties
