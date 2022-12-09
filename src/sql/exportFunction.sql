@@ -169,9 +169,7 @@ BEGIN
         END IF;
       END LOOP;
     END IF;
-    -- TODO:
     -- add where clauses for rco_filters
-    -- TODO: error: Anfrageargument von EXECUTE ist NULL
     IF cardinality(rco_filters) > 0 THEN
       FOREACH rcofilter IN ARRAY rco_filters LOOP
         name := replace(replace(replace(LOWER(rcofilter.pcname), ' ', '_'), '(', ''), ')', '');
@@ -211,6 +209,7 @@ BEGIN
     --     END LOOP;
     -- END LOOP;
     -- add tax_fields as extra columns
+    -- TODO: when filtering for rco, Artname vollständig is always same
     IF cardinality(tax_fields) > 0 THEN
       FOREACH taxfield IN ARRAY tax_fields LOOP
         -- several fieldnames exist in many taxonomies, so need not add taxonmy-name if multiple taxonomies are used
@@ -223,7 +222,7 @@ BEGIN
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         FOR tmprow IN
         SELECT
-          *
+          id
         FROM
           _tmp LOOP
             EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
@@ -236,7 +235,7 @@ BEGIN
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         FOR tmprow IN
         SELECT
-          *
+          id
         FROM
           _tmp LOOP
             EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)', fieldname, taxfield.fieldname, tmprow.id);
