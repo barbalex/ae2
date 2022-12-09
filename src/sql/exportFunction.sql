@@ -145,6 +145,9 @@ BEGIN
     IF cardinality(object_ids) > 0 THEN
       tax_sql := tax_sql || ' AND object.id = ANY ($2)';
     END IF;
+    IF count > 0 THEN
+      tax_sql := tax_sql || ' LIMIT ' || count;
+    END IF;
     -- prevent duplicates
     tax_sql := tax_sql || ' ON CONFLICT DO NOTHING';
     -- create _tmp with all object_ids
