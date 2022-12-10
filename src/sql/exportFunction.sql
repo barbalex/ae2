@@ -143,6 +143,7 @@ BEGIN
         pc_name2 := 'rpc_' || name1;
         rco_name := 'rco_' || name1;
         IF use_synonyms = TRUE THEN
+        -- TODO: create ae.rco_of_object
           tax_sql := tax_sql || format(' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
                                 INNER JOIN ae.relation %1$s ON %1$s.id = rcoo.rco_id
                                 INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', rco_name, pc_name2, pc_of_rco_filters);
