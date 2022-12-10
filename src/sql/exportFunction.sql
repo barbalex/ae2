@@ -218,7 +218,6 @@ BEGIN
     --     END LOOP;
     -- END LOOP;
     -- add tax_fields as extra columns
-    -- TODO: when filtering for rco, value is always same
     IF cardinality(tax_fields) > 0 THEN
       FOREACH taxfield IN ARRAY tax_fields LOOP
         -- several fieldnames exist in many taxonomies, so need not add taxonmy-name if multiple taxonomies are used
@@ -234,6 +233,8 @@ BEGIN
         EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = _tmp.id)', fieldname, taxfield.fieldname);
       END LOOP;
     END IF;
+    -- add property fields as extra columns
+    -- and insert values
     IF cardinality(pco_properties) > 0 THEN
       FOREACH pcoproperty IN ARRAY pco_properties LOOP
         fieldname := trim(replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(pcoproperty.pname), ' ', '_'), '(', ''), ')', ''));
