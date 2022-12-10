@@ -184,11 +184,11 @@ BEGIN
         name3 := trim(replace(replace(replace(LOWER(rcofilter.pcname), ' ', '_'), '(', ''), ')', ''));
         rco_name2 := 'rco_' || name3;
         IF rcofilter.comparator IN ('ILIKE', 'LIKE') THEN
-          tax_sql := tax_sql || ' AND ' || quote_ident(rco_name2) || '.properties->>' || quote_literal(rcofilter.pname) || ' ' || rcofilter.comparator || ' ' || quote_literal('%' || rcofilter.value::text || '%');
+          tax_sql := tax_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
         ELSE
-          tax_sql := tax_sql || ' AND ' || quote_ident(rco_name2) || '.properties->>' || quote_literal(rcofilter.pname) || ' ' || rcofilter.comparator || ' ' || quote_literal(rcofilter.value::text);
+          tax_sql := tax_sql || format(' AND %1$s.properties->>%2$L %3$s 4$L', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
         END IF;
-        tax_sql := tax_sql || ' AND ' || quote_ident(rco_name2) || '.relation_type = ' || quote_literal(rcofilter.relationtype);
+        tax_sql := tax_sql || format(' AND %1$s.relation_type = %2$L', rco_name2, rcofilter.relationtype);
       END LOOP;
     END IF;
     --
