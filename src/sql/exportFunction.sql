@@ -260,12 +260,15 @@ BEGIN
           -- TODO: create ae.rco_of_object
           sql2 := format('
             UPDATE _tmp SET %1$s = (
-            SELECT distinct on (rcoo.object_id) rco.properties ->> %2$L 
-            FROM ae.rco_of_object rcoo
-              INNER JOIN ae.relation rco on rco.id = rcoo.pco_id
-              INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
-            WHERE 
-              rcoo.object_id = _tmp.id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+              SELECT 
+                string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L))
+              FROM ae.rco_of_object rcoo
+                INNER JOIN ae.relation rco on rco.id = rcoo.pco_id
+                INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
+                INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
+              WHERE
+                rco.object_id = _tmp.id
+                AND rco.relation_type = %4$L GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
         ELSE
           sql2 := format(' UPDATE
               _tmp
