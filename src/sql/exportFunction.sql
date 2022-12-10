@@ -125,11 +125,11 @@ BEGIN
           -- if synonyms are used, filter pcos via pco_of_object
           tax_sql := tax_sql || format(' INNER JOIN ae.pco_of_object pcoo ON pcoo.object_id = object.id
                                 INNER JOIN ae.property_collection_object %1$s ON %1$s.id = pcoo.pco_id
-                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id', pco_name, pc_name);
+                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', pco_name, pc_name, pc_of_pco_filters);
         ELSE
           -- filter directly by property_collection_object
           tax_sql := tax_sql || format(' INNER JOIN ae.property_collection_object %1$s ON %1$s.object_id = object.id
-                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id', pco_name, pc_name);
+                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', pco_name, pc_name, pc_of_pco_filters);
         END IF;
       END LOOP;
     END IF;
