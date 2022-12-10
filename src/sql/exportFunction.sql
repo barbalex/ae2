@@ -172,9 +172,9 @@ BEGIN
         name2 := trim(replace(replace(replace(LOWER(pcofilter.pcname), ' ', '_'), '(', ''), ')', ''));
         pco_name2 := 'pco_' || name2;
         IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
-          tax_sql := tax_sql || ' AND ' || quote_ident(pco_name2) || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal('%' || pcofilter.value::text || '%');
+          tax_sql := tax_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
         ELSE
-          tax_sql := tax_sql || ' AND ' || quote_ident(pco_name2) || '.properties->>' || quote_literal(pcofilter.pname) || ' ' || pcofilter.comparator || ' ' || quote_literal(pcofilter.value::text);
+          tax_sql := tax_sql || format(' AND %1$s.properties->>%2$L %3$s 4$L', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
         END IF;
       END LOOP;
     END IF;
