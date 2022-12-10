@@ -107,7 +107,7 @@ DECLARE
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
-  CREATE temporary TABLE _tmp (
+  CREATE TEMPORARY TABLE _tmp (
     id uuid PRIMARY KEY
   );
   -- insert object_ids
@@ -356,21 +356,21 @@ ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters
 --     }
 --   ],
 --   "rcoFilters": [
---     {
---       "comparator": "ILIKE",
---       "pcname": "ZH AP FM (2010)",
---       "pname": "Biotopbindung",
---       "relationtype": "Art ist an Lebensraum gebunden",
---       "value": "2"
---     }
---   ],
+--   {
+--     "pcname": "ZH AP FM (2010)",
+--     "pname": "Biotopbindung",
+--     "relationtype": "Art ist an Lebensraum gebunden",
+--     "value": "2",
+--     "comparator": "="
+--   }
+-- ],
 --   "rcoProperties": [
---     {
---       "pcname": "ZH AP FM (2010)",
---       "pname": "Biotopbindung",
---       "relationtype": "Art ist an Lebensraum gebunden"
---     }
---   ],
+--   {
+--     "pcname": "ZH AP FM (2010)",
+--     "pname": "Biotopbindung",
+--     "relationtype": "Art ist an Lebensraum gebunden"
+--   }
+-- ],
 --   "useSynonyms": false,
 --   "count": 0,
 --   "objectIds": []
