@@ -267,12 +267,6 @@ BEGIN
             WHERE 
               rcoo.object_id = _tmp.id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
         ELSE
-          -- sql2 := format('
-          --   UPDATE _tmp SET %1$s = (
-          --   SELECT properties ->> %2$L
-          --   FROM ae.relation rco
-          --   inner join ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
-          --   WHERE rco.object_id = _tmp.id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           sql2 := format(' UPDATE
               _tmp
             SET
