@@ -144,13 +144,18 @@ BEGIN
         rco_name := 'rco_' || name1;
         IF use_synonyms = TRUE THEN
           -- TODO: if synonyms are used, filter rcos via rco_of_object
-          tax_sql := tax_sql || ' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
-                                INNER JOIN ae.relation ' || quote_ident(rco_name) || ' ON ' || quote_ident(rco_name) || '.id = rcoo.rco_id
-                                INNER JOIN ae.property_collection ' || quote_ident(pc_name2) || ' ON ' || quote_ident(pc_name2) || '.id = ' || quote_ident(rco_name) || '.property_collection_id';
+          -- tax_sql := tax_sql || ' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
+          --                       INNER JOIN ae.relation ' || quote_ident(rco_name) || ' ON ' || quote_ident(rco_name) || '.id = rcoo.rco_id
+          --                       INNER JOIN ae.property_collection ' || quote_ident(pc_name2) || ' ON ' || quote_ident(pc_name2) || '.id = ' || quote_ident(rco_name) || '.property_collection_id';
+          tax_sql := tax_sql || format(' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
+                                INNER JOIN ae.relation %1$s ON %1$s.id = rcoo.rco_id
+                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id', rco_name, pc_name2);
         ELSE
           -- filter directly by relation
-          tax_sql := tax_sql || ' INNER JOIN ae.relation ' || quote_ident(rco_name) || ' ON ' || quote_ident(rco_name) || '.object_id = object.id
-                                INNER JOIN ae.property_collection ' || quote_ident(pc_name2) || ' ON ' || quote_ident(pc_name2) || '.id = ' || quote_ident(rco_name) || '.property_collection_id';
+          -- tax_sql := tax_sql || ' INNER JOIN ae.relation ' || quote_ident(rco_name) || ' ON ' || quote_ident(rco_name) || '.object_id = object.id
+          --                       INNER JOIN ae.property_collection ' || quote_ident(pc_name2) || ' ON ' || quote_ident(pc_name2) || '.id = ' || quote_ident(rco_name) || '.property_collection_id';
+          tax_sql := tax_sql || format(' INNER JOIN ae.relation %1$s ON %1$s.object_id = object.id
+                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id', rco_name, pc_name2);
         END IF;
       END LOOP;
     END IF;
