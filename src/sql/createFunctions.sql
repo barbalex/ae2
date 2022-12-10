@@ -276,6 +276,15 @@ $$ STABLE
 LANGUAGE sql;
 
 -- 2.: actual app FUNCTIONS
+-- example query:
+-- SELECT
+--   ae.object.*
+-- FROM
+--   ae.object
+--   INNER JOIN ae.taxonomy ON ae.taxonomy.id = ae.object.taxonomy_id
+-- WHERE
+--   ae.taxonomy.name in('SISF (2005)')
+--   AND ae.object.properties ->> 'Artname vollständig' ILIKE '%rosa%';
 CREATE OR REPLACE FUNCTION ae.export_object (export_taxonomies text[], tax_filters tax_filter[])
   RETURNS SETOF ae.object
   AS $$
@@ -298,6 +307,7 @@ BEGIN
     END IF;
   END LOOP;
   --RAISE EXCEPTION  'export_taxonomies: %, tax_filters: %, sql: %:', export_taxonomies, tax_filters, sql;
+  --RAISE EXCEPTION 'sql: %:', sql;
   RETURN QUERY EXECUTE sql
   USING export_taxonomies, tax_filters;
 END
@@ -307,7 +317,21 @@ STABLE;
 
 ALTER FUNCTION ae.export_object (export_taxonomies text[], tax_filters tax_filter[]) OWNER TO postgres;
 
-CREATE OR REPLACE FUNCTION ae.export_pco (pco_filters pco_filter[], pco_properties pco_property[])
+-- drop FUNCTION ae.export_pco (pco_filters pco_filter[], pco_properties pco_property[])
+-- Example query:
+-- SELECT
+--   ae.property_collection_object.*
+-- FROM
+--   ae.object
+--   INNER JOIN ae.taxonomy ON ae.taxonomy.id = ae.object.taxonomy_id
+--   INNER JOIN ae.property_collection_object
+--   INNER JOIN ae.property_collection ON ae.property_collection_object.property_collection_id = ae.property_collection.id ON ae.object.id = ae.property_collection_object.object_id
+-- WHERE
+--   ae.taxonomy.name = ANY ($1)
+--   AND ae.property_collection.name IN ('CH OeQV')
+--   AND (ae.property_collection.name = 'CH OeQV'
+--     AND ae.property_collection_object.properties ->> 'Art ist Qualitätszeiger Liste A' = 'true');
+CREATE OR REPLACE FUNCTION ae.export_pco (export_taxonomies text[], pco_filters pco_filter[], pco_properties pco_property[])
   RETURNS SETOF ae.property_collection_object
   AS $$
 DECLARE
@@ -315,18 +339,20 @@ DECLARE
   pcof pco_filter;
   -- TODO: change select to only extract properties wanted instead of entire json?
   sql text := 'SELECT
-                    ae.property_collection_object.*
-                  FROM ae.object
-                    INNER JOIN ae.property_collection_object
-                      INNER JOIN ae.property_collection
-                      ON ae.property_collection_object.property_collection_id = ae.property_collection.id
-                    ON ae.object.id = ae.property_collection_object.object_id
-                  WHERE
-                    ae.property_collection.name IN(';
+                  ae.property_collection_object.*
+                FROM ae.object
+                  INNER JOIN ae.taxonomy ON ae.taxonomy.id = ae.object.taxonomy_id
+                  INNER JOIN ae.property_collection_object
+                    INNER JOIN ae.property_collection
+                    ON ae.property_collection_object.property_collection_id = ae.property_collection.id
+                  ON ae.object.id = ae.property_collection_object.object_id
+                WHERE
+                  ae.taxonomy.name = any($1)';
 BEGIN
   IF cardinality(pco_properties) = 0 THEN
-    sql := sql || 'AND false';
+    sql := sql || ' and false';
   ELSE
+    sql := sql || ' and ae.property_collection.name IN(';
     FOREACH pcop IN ARRAY pco_properties LOOP
       IF pcop = pco_properties[1] THEN
         sql := sql || quote_literal(pcop.pcname);
@@ -334,8 +360,8 @@ BEGIN
         sql := sql || ',' || quote_literal(pcop.pcname);
       END IF;
     END LOOP;
+    sql := sql || ')';
   END IF;
-  sql := sql || ')';
   IF cardinality(pco_filters) > 0 THEN
     FOREACH pcof IN ARRAY pco_filters LOOP
       sql := sql || ' AND (ae.property_collection.name = ' || quote_literal(pcof.pcname);
@@ -347,17 +373,19 @@ BEGIN
       sql := sql || ')';
     END LOOP;
   END IF;
-  --RAISE EXCEPTION  'pco_filters: %, sql: %:', pco_filters, sql;
+  --RAISE EXCEPTION 'export_taxonomies: %, pco_filters: %:, pco_properties: %, sql: %', export_taxonomies, pco_filters, pco_properties, sql;
+  --RAISE EXCEPTION 'sql: %', sql;
   RETURN QUERY EXECUTE sql
-  USING pco_filters, pco_properties;
+  USING export_taxonomies, pco_filters, pco_properties;
 END
 $$
 LANGUAGE plpgsql
 STABLE;
 
-ALTER FUNCTION ae.export_pco (pco_filters pco_filter[], pco_properties pco_property[]) OWNER TO postgres;
+ALTER FUNCTION ae.export_pco (export_taxonomies text[], pco_filters pco_filter[], pco_properties pco_property[]) OWNER TO postgres;
 
-CREATE OR REPLACE FUNCTION ae.export_rco (rco_filters rco_filter[], rco_properties rco_property[])
+-- drop FUNCTION ae.export_rco (rco_filters rco_filter[], rco_properties rco_property[])
+CREATE OR REPLACE FUNCTION ae.export_rco (export_taxonomies text[], rco_filters rco_filter[], rco_properties rco_property[])
   RETURNS SETOF ae.relation
   AS $$
 DECLARE
@@ -366,11 +394,13 @@ DECLARE
   sql text := 'SELECT
                     ae.relation.*
                   FROM ae.object
+                    INNER JOIN ae.taxonomy ON ae.taxonomy.id = ae.object.taxonomy_id
                     INNER JOIN ae.relation
                       INNER JOIN ae.property_collection
                       ON ae.relation.property_collection_id = ae.property_collection.id
                     ON ae.object.id = ae.relation.object_id
                   WHERE
+                    ae.taxonomy.name = ANY($1) and
                     ';
 BEGIN
   IF cardinality(rco_properties) = 0 THEN
@@ -396,14 +426,15 @@ BEGIN
       sql := sql || ')';
     END LOOP;
   END IF;
+  --RAISE EXCEPTION 'sql: %', sql;
   RETURN QUERY EXECUTE sql
-  USING rco_filters, rco_properties;
+  USING export_taxonomies, rco_filters, rco_properties;
 END
 $$
 LANGUAGE plpgsql
 STABLE;
 
-ALTER FUNCTION ae.export_rco (rco_filters rco_filter[], rco_properties rco_property[]) OWNER TO postgres;
+ALTER FUNCTION ae.export_rco (export_taxonomies text[], rco_filters rco_filter[], rco_properties rco_property[]) OWNER TO postgres;
 
 CREATE OR REPLACE FUNCTION ae.object_by_object_name (object_name text)
   RETURNS SETOF ae.object

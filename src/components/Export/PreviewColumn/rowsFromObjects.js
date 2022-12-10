@@ -19,7 +19,6 @@ const rowsFromObjects = ({
   pco,
   rco,
   synonyms,
-  exportRcoPropertyNames,
   rcoProperties,
   exportIds,
   exportOnlyRowsWithProperties,

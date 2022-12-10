@@ -1,5 +1,6 @@
 import React from 'react'
 import { ApolloProvider } from '@apollo/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { navigate } from 'gatsby'
 // importing isomorphic-fetch is essential
 // otherwise apollo errors during the build
@@ -40,6 +41,8 @@ const App = ({ element }) => {
 
   const myClient = client({ idb, store })
 
+  const queryClient = new QueryClient()
+
   const { setActiveNodeArray } = store
 
   typeof window !== 'undefined' && setLoginFromIdb({ idb, store })
@@ -51,9 +54,11 @@ const App = ({ element }) => {
     <IdbProvider value={idb}>
       <MobxProvider value={store}>
         <ApolloProvider client={myClient}>
-          <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={theme}>{element}</ThemeProvider>
-          </StyledEngineProvider>
+          <QueryClientProvider client={queryClient}>
+            <StyledEngineProvider injectFirst>
+              <ThemeProvider theme={theme}>{element}</ThemeProvider>
+            </StyledEngineProvider>
+          </QueryClientProvider>
         </ApolloProvider>
       </MobxProvider>
     </IdbProvider>

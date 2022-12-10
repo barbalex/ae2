@@ -1,9 +1,9 @@
 import React, { useCallback, useContext } from 'react'
 import styled from '@emotion/styled'
-import FormGroup from '@mui/material/FormGroup'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
 import { observer } from 'mobx-react-lite'
+import { gql, useApolloClient } from '@apollo/client'
 
 import Taxonomies from './Taxonomies'
 import storeContext from '../../../../../../storeContext'
@@ -16,14 +16,6 @@ const exportTypeTAXToReadable = {
 }
 
 const TypeContainer = styled.div``
-const TaxContainer = styled.div`
-  margin-left: 39px;
-  margin-bottom: 10px;
-  margin-top: 3px;
-`
-const TaxTitle = styled.div`
-  margin-left: -5px;
-`
 const TypeLabel = styled(FormControlLabel)`
   height: 30px;
   min-height: 30px;
@@ -33,7 +25,8 @@ const TypeLabel = styled(FormControlLabel)`
   }
 `
 
-const ExportTypes = ({ type, taxonomies }) => {
+const ExportTypes = ({ type }) => {
+  const client = useApolloClient()
   const store = useContext(storeContext)
   const {
     type: exportType,
@@ -45,11 +38,26 @@ const ExportTypes = ({ type, taxonomies }) => {
   const onCheckType = useCallback(
     async (event, isChecked) => {
       const { name } = event.target
+      const taxonomiesQuery = gql`
+        query AllTaxonomiesQuery {
+          allTaxonomies(filter: {type: {equalTo: ${
+            type === 'Arten' ? 'ART' : 'LEBENSRAUM'
+          }}}, orderBy: NAME_ASC) {
+            nodes {
+              id
+              name
+              type
+            }
+          }
+        }
+      `
+      const { data, error } = client.query({ query: taxonomiesQuery })
+      const taxonomies = data?.allTaxonomies?.nodes
       if (isChecked) {
         setExportType(name)
         // check if only one Taxonomy exists
         // if so, check it
-        if (taxonomies.length === 1) {
+        if ((taxonomies ?? []).length === 1) {
           const taxonomyName = taxonomies[0]?.taxonomyName
           setTaxonomies([...exportTaxonomies, taxonomyName])
         }
@@ -64,14 +72,16 @@ const ExportTypes = ({ type, taxonomies }) => {
       } else {
         setExportType(exportTypes.find((t) => t !== name))
         // uncheck all taxonomies of this type
-        const taxonomiesToUncheck = taxonomies.map((t) => t.taxonomyName)
+        const taxonomiesToUncheck = (taxonomies ?? []).map(
+          (t) => t.taxonomyName,
+        )
         const remainingTaxonomies = exportTaxonomies.filter(
           (t) => !taxonomiesToUncheck.includes(t),
         )
         setTaxonomies(remainingTaxonomies)
       }
     },
-    [setExportType, taxonomies, exportTaxonomies, setTaxonomies],
+    [type, client, setExportType, exportTaxonomies, setTaxonomies],
   )
 
   return (
@@ -88,16 +98,7 @@ const ExportTypes = ({ type, taxonomies }) => {
           }
           label={type}
         />
-        {exportType === type && (
-          <TaxContainer>
-            <TaxTitle>
-              {taxonomies.length === 1 ? 'Taxonomie:' : 'Taxonomien:'}
-            </TaxTitle>
-            <FormGroup>
-              <Taxonomies taxonomies={taxonomies} />
-            </FormGroup>
-          </TaxContainer>
-        )}
+        {exportType === type && <Taxonomies type={type} />}
       </TypeContainer>
     </ErrorBoundary>
   )
