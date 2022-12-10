@@ -96,6 +96,7 @@ DECLARE
   rco_name text;
   rco_name2 text;
   pcoproperty pco_property;
+  rcoproperty rco_property;
   tmprow record;
   tmprow2 record;
   object record;
@@ -239,9 +240,6 @@ BEGIN
       FOREACH pcoproperty IN ARRAY pco_properties LOOP
         fieldname := trim(replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(pcoproperty.pname), ' ', '_'), '(', ''), ')', ''));
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
-        name1 := trim(replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', ''));
-        pc_name := 'pc_' || name1;
-        pco_name := 'pco_' || name1;
         -- join for synonyms if used
         IF use_synonyms = TRUE THEN
           sql2 := format('
@@ -264,6 +262,34 @@ BEGIN
       END LOOP;
     END IF;
     -- TODO: add rco-properties
+    -- field naming: pcname__relationtype__pname
+    IF cardinality(rco_properties) > 0 THEN
+      FOREACH rcoproperty IN ARRAY rco_properties LOOP
+        fieldname := trim(replace(replace(replace(LOWER(rcoproperty.pcname), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(rcoproperty.relationtype), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(rcoproperty.pname), ' ', '_'), '(', ''), ')', ''));
+        EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
+        -- join for synonyms if used
+        -- TODO: deal with single/multiple rows if multiple relations exist
+        IF use_synonyms = TRUE THEN
+          -- TODO: create ae.rco_of_object
+          sql2 := format('
+            UPDATE _tmp SET %1$s = (
+            SELECT distinct on (rcoo.object_id) rco.properties ->> %2$L 
+            FROM ae.rco_of_object rcoo
+              INNER JOIN ae.relation rco on rco.id = rcoo.pco_id
+              INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
+            WHERE 
+              rcoo.object_id = _tmp.id)', fieldname, rcoproperty.pname, rcoproperty.pcname);
+        ELSE
+          sql2 := format('
+            UPDATE _tmp SET %1$s = (
+            SELECT properties ->> %2$L 
+            FROM ae.relation rco 
+            inner join ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
+            WHERE rco.object_id = _tmp.id)', fieldname, rcoproperty.pname, rcoproperty.pcname);
+        END IF;
+        EXECUTE sql2;
+      END LOOP;
+    END IF;
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
     --RAISE EXCEPTION 'tax_sql: %:', tax_sql;
     RETURN QUERY
