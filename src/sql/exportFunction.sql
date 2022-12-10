@@ -241,23 +241,23 @@ BEGIN
         name1 := trim(replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', ''));
         pc_name := 'pc_' || name1;
         pco_name := 'pco_' || name1;
-        -- TODO: join for synonyms if used
+        -- join for synonyms if used
         IF use_synonyms = TRUE THEN
           sql2 := format('
             UPDATE _tmp SET %1$s = (
             SELECT distinct on (pcoo.object_id) pco.properties ->> %2$L 
             FROM ae.pco_of_object pcoo
               INNER JOIN ae.property_collection_object pco on pco.id = pcoo.pco_id
-              INNER JOIN ae.property_collection pc on pc.id = pco.property_collection_id
+              INNER JOIN ae.property_collection pc on pc.id = pco.property_collection_id and pc.name = %3$L
             WHERE 
-              pcoo.object_id = _tmp.id and pc.name = %3$L)', fieldname, pcoproperty.pname, pcoproperty.pcname);
+              pcoo.object_id = _tmp.id)', fieldname, pcoproperty.pname, pcoproperty.pcname);
         ELSE
           sql2 := format('
             UPDATE _tmp SET %1$s = (
             SELECT properties ->> %2$L 
             FROM ae.property_collection_object pco 
-            inner join ae.property_collection pc on pc.id = pco.property_collection_id 
-            WHERE pco.object_id = _tmp.id and pc.name = %3$L)', fieldname, pcoproperty.pname, pcoproperty.pcname);
+            inner join ae.property_collection pc on pc.id = pco.property_collection_id and pc.name = %3$L
+            WHERE pco.object_id = _tmp.id)', fieldname, pcoproperty.pname, pcoproperty.pcname);
         END IF;
         EXECUTE sql2;
       END LOOP;
