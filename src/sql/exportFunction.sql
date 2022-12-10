@@ -91,6 +91,7 @@ DECLARE
   pc_name text;
   pc_name2 text;
   pco_name text;
+  pcoo_name text;
   pco_name2 text;
   rco_name text;
   rco_name2 text;
@@ -121,11 +122,12 @@ BEGIN
         name1 := trim(replace(replace(replace(LOWER(pc_of_pco_filters), ' ', '_'), '(', ''), ')', ''));
         pc_name := 'pc_' || name1;
         pco_name := 'pco_' || name1;
+        pcoo_name := 'pcoo_' || name1;
         IF use_synonyms = TRUE THEN
           -- if synonyms are used, filter pcos via pco_of_object
-          tax_sql := tax_sql || format(' INNER JOIN ae.pco_of_object pcoo ON pcoo.object_id = object.id
-                                INNER JOIN ae.property_collection_object %1$s ON %1$s.id = pcoo.pco_id
-                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', pco_name, pc_name, pc_of_pco_filters);
+          tax_sql := tax_sql || format(' INNER JOIN ae.pco_of_object %4$s ON %4$s.object_id = object.id
+                                INNER JOIN ae.property_collection_object %1$s ON %1$s.id = %4$s.pco_id
+                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', pco_name, pc_name, pc_of_pco_filters, pcoo_name);
         ELSE
           -- filter directly by property_collection_object
           tax_sql := tax_sql || format(' INNER JOIN ae.property_collection_object %1$s ON %1$s.object_id = object.id
@@ -234,7 +236,7 @@ BEGIN
     END IF;
     IF cardinality(pco_properties) > 0 THEN
       FOREACH pcoproperty IN ARRAY pco_properties LOOP
-        fieldname := trim(replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(LOWER(pcoproperty.pname), ' ', '_'));
+        fieldname := trim(replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(pcoproperty.pname), ' ', '_'), '(', ''), ')', ''));
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         name1 := trim(replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', ''));
         pc_name := 'pc_' || name1;
