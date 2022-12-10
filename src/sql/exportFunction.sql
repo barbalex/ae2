@@ -107,8 +107,7 @@ DECLARE
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
-  -- TODO: redeclare temporary
-  CREATE TABLE _tmp (
+  CREATE temporary TABLE _tmp (
     id uuid PRIMARY KEY
   );
   -- insert object_ids
@@ -136,7 +135,6 @@ BEGIN
         END IF;
       END LOOP;
     END IF;
-    -- TODO:
     -- join to filter by rcos
     IF cardinality(pcs_of_rco_filters) > 0 THEN
       FOREACH pc_of_rco_filters IN ARRAY pcs_of_rco_filters LOOP
@@ -187,7 +185,7 @@ BEGIN
         IF rcofilter.comparator IN ('ILIKE', 'LIKE') THEN
           tax_sql := tax_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
         ELSE
-          tax_sql := tax_sql || format(' AND %1$s.properties->>%2$L %3$s 4$L', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
+          tax_sql := tax_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
         END IF;
         tax_sql := tax_sql || format(' AND %1$s.relation_type = %2$L', rco_name2, rcofilter.relationtype);
       END LOOP;
@@ -207,17 +205,6 @@ BEGIN
     EXECUTE tax_sql
     USING taxonomies, object_ids;
   END LOOP;
-    -- add tax_fields in properties
-    -- this always returns an error, no mather how many hours are put into it
-    -- FOREACH taxfield IN ARRAY tax_fields LOOP
-    --   FOR tmprow IN
-    --   SELECT
-    --     *
-    --   FROM
-    --     _tmp LOOP
-    --       EXECUTE format('UPDATE _tmp SET properties = jsonb_set(properties, %1$L, (SELECT properties ->> %2$L FROM ae.object WHERE id = %3$L)::jsonb)', ARRAY[quote_literal(taxfield.fieldname)], taxfield.fieldname, tmprow.id);
-    --     END LOOP;
-    -- END LOOP;
     -- add tax_fields as extra columns
     IF cardinality(tax_fields) > 0 THEN
       FOREACH taxfield IN ARRAY tax_fields LOOP
@@ -261,10 +248,10 @@ BEGIN
         EXECUTE sql2;
       END LOOP;
     END IF;
-    -- TODO: add rco-properties
-    -- field naming: pcname__relationtype__pname
+    -- add rco-properties
     IF cardinality(rco_properties) > 0 THEN
       FOREACH rcoproperty IN ARRAY rco_properties LOOP
+        -- field naming: pcname__relationtype__pname
         fieldname := trim(replace(replace(replace(LOWER(rcoproperty.pcname), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(rcoproperty.relationtype), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(rcoproperty.pname), ' ', '_'), '(', ''), ')', ''));
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         -- join for synonyms if used
@@ -278,14 +265,27 @@ BEGIN
               INNER JOIN ae.relation rco on rco.id = rcoo.pco_id
               INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
             WHERE 
-              rcoo.object_id = _tmp.id)', fieldname, rcoproperty.pname, rcoproperty.pcname);
+              rcoo.object_id = _tmp.id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
         ELSE
-          sql2 := format('
-            UPDATE _tmp SET %1$s = (
-            SELECT properties ->> %2$L 
-            FROM ae.relation rco 
-            inner join ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
-            WHERE rco.object_id = _tmp.id)', fieldname, rcoproperty.pname, rcoproperty.pcname);
+          -- sql2 := format('
+          --   UPDATE _tmp SET %1$s = (
+          --   SELECT properties ->> %2$L
+          --   FROM ae.relation rco
+          --   inner join ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
+          --   WHERE rco.object_id = _tmp.id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+          sql2 := format(' UPDATE
+              _tmp
+            SET
+              %1$s = (
+                SELECT
+                  string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L))
+                FROM ae.relation rco
+                INNER JOIN ae.property_collection pc ON pc.id = rco.property_collection_id
+                  AND pc.name = %3$L
+                INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
+                WHERE
+                  rco.object_id = _tmp.id
+                  AND rco.relation_type = %4$L GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
         END IF;
         EXECUTE sql2;
       END LOOP;
@@ -298,12 +298,11 @@ BEGIN
       row_to_json(ROW) AS properties
     FROM
       _tmp ROW;
-    -- DROP TABLE _tmp;
+    DROP TABLE _tmp;
 END
 $$
 LANGUAGE plpgsql;
 
--- fehlerhafte Arraykonstante: »)«
 ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[]) OWNER TO postgres;
 
 -- test from grqphiql:
