@@ -255,8 +255,11 @@ BEGIN
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         -- join for synonyms if used
         -- TODO: deal with single/multiple rows if multiple relations exist
-        IF use_synonyms = TRUE THEN
-          sql2 := format('
+        -- only add rows if exactly one rco-property exists
+        IF line_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
+          -- TODO: create multiple rows
+          IF use_synonyms = TRUE THEN
+            sql2 := format('
             UPDATE _tmp SET %1$s = (
               SELECT 
                 string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L))
@@ -267,8 +270,8 @@ BEGIN
               WHERE
                 rco.object_id = _tmp.id
                 AND rco.relation_type = %4$L GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
-        ELSE
-          sql2 := format(' UPDATE
+          ELSE
+            sql2 := format(' UPDATE
               _tmp
             SET
               %1$s = (
@@ -281,6 +284,35 @@ BEGIN
                 WHERE
                   rco.object_id = _tmp.id
                   AND rco.relation_type = %4$L GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+          END IF;
+        ELSE
+          IF use_synonyms = TRUE THEN
+            sql2 := format('
+            UPDATE _tmp SET %1$s = (
+              SELECT 
+                string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L))
+              FROM ae.rco_of_object rcoo
+                INNER JOIN ae.relation rco on rco.id = rcoo.rco_id
+                INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
+                INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
+              WHERE
+                rco.object_id = _tmp.id
+                AND rco.relation_type = %4$L GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+          ELSE
+            sql2 := format(' UPDATE
+              _tmp
+            SET
+              %1$s = (
+                SELECT
+                  string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L))
+                FROM ae.relation rco
+                INNER JOIN ae.property_collection pc ON pc.id = rco.property_collection_id
+                  AND pc.name = %3$L
+                INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
+                WHERE
+                  rco.object_id = _tmp.id
+                  AND rco.relation_type = %4$L GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+          END IF;
         END IF;
         EXECUTE sql2;
       END LOOP;
