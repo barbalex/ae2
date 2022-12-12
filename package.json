@@ -72,7 +72,7 @@
   },
   "dependenciesComments": {
     "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583. Also: as react cant be upgraded to 18, can't upgrade gatsby",
-    "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why. react-reflex? react-vtree?"
+    "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why. react-reflex? react-vtree? react-data-grid?"
   },
   "devDependencies": {
     "@babel/core": "7.20.5",
