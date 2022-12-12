@@ -39,8 +39,8 @@ WHERE
 --    see: https://www.enterprisedb.com/postgres-tutorials/how-combine-multiple-queries-single-result-set-using-union-intersect-and-except
 --    or: select into rec? (https://stackoverflow.com/a/6085167/712005)
 -- 5. use crosstab to get list of objects with all columns (https://stackoverflow.com/a/11751905/712005, safe form)
--- TODO: add relation collections?
--- TODO: how to efficiently handle previews? Sort by object_id and limit to 15?
+-- add relation collections?
+-- how to efficiently handle previews? Sort by object_id and limit to 15?
 --
 -- alternative idea with temporary table and record: (https://stackoverflow.com/a/23957098/712005)
 -- 1. create temporary table _tmp with column id
@@ -72,7 +72,7 @@ CREATE TYPE tax_field AS (
 --
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
-CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], line_per_rco boolean)
+CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean)
   RETURNS SETOF ae.export_row
   AS $$
 DECLARE
@@ -255,60 +255,51 @@ BEGIN
         fieldname := trim(replace(replace(replace(LOWER(rcoproperty.pcname), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(rcoproperty.relationtype), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(rcoproperty.pname), ' ', '_'), '(', ''), ')', ''));
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         -- join for synonyms if used
-        -- TODO: deal with single/multiple rows if multiple relations exist
+        -- deal with single/multiple rows if multiple relations exist
         -- only add rows if exactly one rco-property exists
-        IF line_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
+        IF row_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
           -- create multiple rows
-          -- query _tmp.* while adding rco-property, grouping over id and rco-property
-          -- return this query
-          -- or:
-          -- add column row_number
-          -- insert extra rows, setting row_number value
-          -- or:
           -- query object_id, property
           -- inner join _tmp with query on object_id
           IF use_synonyms = TRUE THEN
             sql2 := format('
             WITH properties_per_object as (
-              SELECT 
-                rco.object_id,
+              SELECT DISTINCT
+                rcoo.object_id,
                 rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L) AS %1$s
-              FROM _tmp
-                inner join ae.rco_of_object rcoo on rcoo.object_id = _tmp.id
-                INNER JOIN ae.relation rco on rco.id = rcoo.rco_id
-                INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id 
+              FROM ae.rco_of_object rcoo
+                INNER JOIN ae.relation rco ON rco.id = rcoo.rco_id
+                INNER JOIN ae.property_collection pc ON pc.id = rco.property_collection_id 
                 INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
               WHERE
-                rco.object_id = _tmp.id
-                AND rco.relation_type = %4$L
-                and pc.name = %3$L 
-              GROUP BY 
-                rco.object_id, 
-                rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L)
+                rco.relation_type = %4$L
+                AND pc.name = %3$L
             ) 
             SELECT 
               _tmp.*, 
               properties_per_object.%1$s 
-            FROM _tmp 
-            INNER JOIN properties_per_object on properties_per_object.object_id = _tmp.id', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+            FROM 
+              _tmp 
+              INNER JOIN properties_per_object on properties_per_object.object_id = _tmp.id', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           ELSE
-            sql2 := format(' UPDATE
-              _tmp
-            SET
-              SELECT
-                _tmp.*,
-                string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L)) as %1$s
-              FROM _tmp
-              inner join ae.relation rco on rco.object_id = _tmp.id
-              INNER JOIN ae.property_collection pc ON pc.id = rco.property_collection_id
-              INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
+            sql2 := format('
+            WITH properties_per_object as (
+              SELECT DISTINCT
+                rco.object_id,
+                rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L) AS %1$s
+              FROM _ae.relation rco
+                INNER JOIN ae.property_collection pc ON pc.id = rco.property_collection_id 
+                INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
               WHERE
-                rco.object_id = _tmp.id
-                AND rco.relation_type = %4$L 
+                rco.relation_type = %4$L
                 AND pc.name = %3$L 
-              GROUP BY 
-              _tmp.id, 
-              rco.properties ->> %2$L', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+            ) 
+            SELECT 
+              _tmp.*, 
+              properties_per_object.%1$s 
+            FROM 
+              _tmp 
+              INNER JOIN properties_per_object ON properties_per_object.object_id = _tmp.id', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           END IF;
           -- return query
           return_query := format('
@@ -321,7 +312,7 @@ BEGIN
           IF use_synonyms = TRUE THEN
             sql2 := format('
             UPDATE _tmp SET %1$s = (
-              SELECT 
+              SELECT distinct
                 string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L))
               FROM ae.rco_of_object rcoo
                 INNER JOIN ae.relation rco on rco.id = rcoo.rco_id
@@ -336,15 +327,15 @@ BEGIN
               _tmp
             SET
               %1$s = (
-                SELECT
+                SELECT distinct
                   string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L))
                 FROM ae.relation rco
-                INNER JOIN ae.property_collection pc ON pc.id = rco.property_collection_id
-                  AND pc.name = %3$L
-                INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
+                  INNER JOIN ae.property_collection pc ON pc.id = rco.property_collection_id
+                  INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
                 WHERE
                   rco.object_id = _tmp.id
                   AND rco.relation_type = %4$L 
+                  AND pc.name = %3$L 
                 GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           END IF;
         END IF;
@@ -353,7 +344,7 @@ BEGIN
     END IF;
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
     --RAISE EXCEPTION 'tax_sql: %:', tax_sql;
-    IF line_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
+    IF row_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
       RETURN QUERY EXECUTE return_query;
     ELSE
       RETURN QUERY
@@ -368,7 +359,7 @@ END
 $$
 LANGUAGE plpgsql;
 
-ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], line_per_rco boolean) OWNER TO postgres;
+ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean) OWNER TO postgres;
 
 -- test from grqphiql:
 -- mutation exportDataMutation($taxonomies: [String]!, $taxFields: [TaxFieldInput]!, $taxFilters: [TaxFilterInput]!, $pcoFilters: [PcoFilterInput]!, $pcsOfPcoFilters: [String]!, $pcsOfRcoFilters: [String]!, $pcoProperties: [PcoPropertyInput]!, $rcoFilters: [RcoFilterInput]!, $rcoProperties: [RcoPropertyInput]!, $useSynonyms: Boolean!, $count: Int!, $objectIds: [UUID]!) {
