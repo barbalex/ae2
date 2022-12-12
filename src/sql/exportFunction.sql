@@ -264,25 +264,33 @@ BEGIN
           -- or:
           -- add column row_number
           -- insert extra rows, setting row_number value
-          --
+          -- or:
+          -- query object_id, property
+          -- inner join _tmp with query on object_id
           IF use_synonyms = TRUE THEN
             sql2 := format('
+            WITH properties_per_object as (
+              SELECT 
+                rco.object_id,
+                rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L) AS %1$s
+              FROM _tmp
+                inner join ae.rco_of_object rcoo on rcoo.object_id = _tmp.id
+                INNER JOIN ae.relation rco on rco.id = rcoo.rco_id
+                INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id 
+                INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
+              WHERE
+                rco.object_id = _tmp.id
+                AND rco.relation_type = %4$L
+                and pc.name = %3$L 
+              GROUP BY 
+                rco.object_id, 
+                rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L)
+            ) 
             SELECT 
-              _tmp.*,
-              string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L)) as %1$s,
-              () as %1$s
-            FROM _tmp
-              inner join ae.rco_of_object rcoo on rcoo.object_id = _tmp.id
-              INNER JOIN ae.relation rco on rco.id = rcoo.rco_id
-              INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id 
-              INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
-            WHERE
-              rco.object_id = _tmp.id
-              AND rco.relation_type = %4$L
-              and pc.name = %3$L 
-            GROUP BY 
-              _tmp.id, 
-              rco.properties ->> %2$L', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+              _tmp.*, 
+              properties_per_object.%1$s 
+            FROM _tmp 
+            INNER JOIN properties_per_object on properties_per_object.object_id = _tmp.id', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           ELSE
             sql2 := format(' UPDATE
               _tmp
