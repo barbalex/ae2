@@ -104,6 +104,7 @@ DECLARE
   taxfield_sql text;
   taxfield_sql2 text;
   object_id uuid;
+  return_query text;
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
@@ -257,34 +258,57 @@ BEGIN
         -- TODO: deal with single/multiple rows if multiple relations exist
         -- only add rows if exactly one rco-property exists
         IF line_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
-          -- TODO: create multiple rows
+          -- create multiple rows
+          -- query _tmp.* while adding rco-property, grouping over id and rco-property
+          -- return this query
+          -- or:
+          -- add column row_number
+          -- insert extra rows, setting row_number value
+          --
           IF use_synonyms = TRUE THEN
             sql2 := format('
-            UPDATE _tmp SET %1$s = (
-              SELECT 
-                string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L))
-              FROM ae.rco_of_object rcoo
-                INNER JOIN ae.relation rco on rco.id = rcoo.rco_id
-                INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
-                INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
-              WHERE
-                rco.object_id = _tmp.id
-                AND rco.relation_type = %4$L GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+            SELECT 
+              _tmp.*,
+              string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L)) as %1$s,
+              () as %1$s
+            FROM _tmp
+              inner join ae.rco_of_object rcoo on rcoo.object_id = _tmp.id
+              INNER JOIN ae.relation rco on rco.id = rcoo.rco_id
+              INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id 
+              INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
+            WHERE
+              rco.object_id = _tmp.id
+              AND rco.relation_type = %4$L
+              and pc.name = %3$L 
+            GROUP BY 
+              _tmp.id, 
+              rco.properties ->> %2$L', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           ELSE
             sql2 := format(' UPDATE
               _tmp
             SET
-              %1$s = (
-                SELECT
-                  string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L))
-                FROM ae.relation rco
-                INNER JOIN ae.property_collection pc ON pc.id = rco.property_collection_id
-                  AND pc.name = %3$L
-                INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
-                WHERE
-                  rco.object_id = _tmp.id
-                  AND rco.relation_type = %4$L GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+              SELECT
+                _tmp.*,
+                string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L)) as %1$s
+              FROM _tmp
+              inner join ae.relation rco on rco.object_id = _tmp.id
+              INNER JOIN ae.property_collection pc ON pc.id = rco.property_collection_id
+              INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
+              WHERE
+                rco.object_id = _tmp.id
+                AND rco.relation_type = %4$L 
+                AND pc.name = %3$L 
+              GROUP BY 
+              _tmp.id, 
+              rco.properties ->> %2$L', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           END IF;
+          -- return query
+          return_query := format('
+            SELECT
+              row.id,
+              row_to_json(ROW) AS properties
+            FROM
+              (%1$s) row', sql2);
         ELSE
           IF use_synonyms = TRUE THEN
             sql2 := format('
@@ -297,7 +321,8 @@ BEGIN
                 INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
               WHERE
                 rco.object_id = _tmp.id
-                AND rco.relation_type = %4$L GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+                AND rco.relation_type = %4$L 
+              GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           ELSE
             sql2 := format(' UPDATE
               _tmp
@@ -311,7 +336,8 @@ BEGIN
                 INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
                 WHERE
                   rco.object_id = _tmp.id
-                  AND rco.relation_type = %4$L GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+                  AND rco.relation_type = %4$L 
+                GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           END IF;
         END IF;
         EXECUTE sql2;
@@ -319,12 +345,16 @@ BEGIN
     END IF;
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
     --RAISE EXCEPTION 'tax_sql: %:', tax_sql;
-    RETURN QUERY
-    SELECT
-      row.id,
-      row_to_json(ROW) AS properties
-    FROM
-      _tmp ROW;
+    IF line_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
+      RETURN QUERY EXECUTE return_query;
+    ELSE
+      RETURN QUERY
+      SELECT
+        row.id,
+        row_to_json(ROW) AS properties
+      FROM
+        _tmp ROW;
+    END IF;
     DROP TABLE _tmp;
 END
 $$
