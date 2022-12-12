@@ -72,7 +72,7 @@ CREATE TYPE tax_field AS (
 --
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
-CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[])
+CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], line_per_rco boolean)
   RETURNS SETOF ae.export_row
   AS $$
 DECLARE
@@ -142,7 +142,6 @@ BEGIN
         pc_name2 := 'rpc_' || name1;
         rco_name := 'rco_' || name1;
         IF use_synonyms = TRUE THEN
-          -- TODO: create ae.rco_of_object
           tax_sql := tax_sql || format(' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
                                 INNER JOIN ae.relation %1$s ON %1$s.id = rcoo.rco_id
                                 INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', rco_name, pc_name2, pc_of_rco_filters);
@@ -257,13 +256,12 @@ BEGIN
         -- join for synonyms if used
         -- TODO: deal with single/multiple rows if multiple relations exist
         IF use_synonyms = TRUE THEN
-          -- TODO: create ae.rco_of_object
           sql2 := format('
             UPDATE _tmp SET %1$s = (
               SELECT 
                 string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L))
               FROM ae.rco_of_object rcoo
-                INNER JOIN ae.relation rco on rco.id = rcoo.pco_id
+                INNER JOIN ae.relation rco on rco.id = rcoo.rco_id
                 INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
                 INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
               WHERE
@@ -300,7 +298,7 @@ END
 $$
 LANGUAGE plpgsql;
 
-ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[]) OWNER TO postgres;
+ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], line_per_rco boolean) OWNER TO postgres;
 
 -- test from grqphiql:
 -- mutation exportDataMutation($taxonomies: [String]!, $taxFields: [TaxFieldInput]!, $taxFilters: [TaxFilterInput]!, $pcoFilters: [PcoFilterInput]!, $pcsOfPcoFilters: [String]!, $pcsOfRcoFilters: [String]!, $pcoProperties: [PcoPropertyInput]!, $rcoFilters: [RcoFilterInput]!, $rcoProperties: [RcoPropertyInput]!, $useSynonyms: Boolean!, $count: Int!, $objectIds: [UUID]!) {
