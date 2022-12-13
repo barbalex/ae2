@@ -64,6 +64,46 @@ const StyledSnackbar = styled(Snackbar)`
     background-color: #2e7d32 !important;
   }
 `
+const exportMutation = gql`
+  mutation exportDataMutation(
+    $taxonomies: [String]!
+    $taxFields: [TaxFieldInput]!
+    $taxFilters: [TaxFilterInput]!
+    $pcoFilters: [PcoFilterInput]!
+    $pcsOfPcoFilters: [String]!
+    $pcsOfRcoFilters: [String]!
+    $pcoProperties: [PcoPropertyInput]!
+    $rcoFilters: [RcoFilterInput]!
+    $rcoProperties: [RcoPropertyInput]!
+    $useSynonyms: Boolean!
+    $count: Int!
+    $objectIds: [UUID]!
+    $rowPerRco: Boolean!
+  ) {
+    export(
+      input: {
+        taxonomies: $taxonomies
+        taxFields: $taxFields
+        taxFilters: $taxFilters
+        pcoFilters: $pcoFilters
+        pcsOfPcoFilters: $pcsOfPcoFilters
+        pcsOfRcoFilters: $pcsOfRcoFilters
+        pcoProperties: $pcoProperties
+        rcoFilters: $rcoFilters
+        rcoProperties: $rcoProperties
+        useSynonyms: $useSynonyms
+        count: $count
+        objectIds: $objectIds
+        rowPerRco: $rowPerRco
+      }
+    ) {
+      exportRows {
+        id
+        properties
+      }
+    }
+  }
+`
 const exportObjectQuery = gql`
   query PreviewColumnExportObjectQuery(
     $exportTaxonomies: [String]!
@@ -174,33 +214,81 @@ const Preview = () => {
   // 2019 08 20: No idea why suddenly need to getSnapshot
   // because without changes are not detected????
   const pcoFilters = getSnapshot(pcoFiltersPassed)
+  const pcsOfPcoFilters = [new Set(pcoFilters.map((f) => f.pcname))]
   const rcoFilters = getSnapshot(rcoFiltersPassed)
+  const pcsOfRcoFilters = [new Set(rcoFilters.map((f) => f.pcname))]
   const taxFilters = getSnapshot(taxFiltersPassed)
   const rcoProperties = getSnapshot(rcoPropertiesPassed)
   const pcoProperties = getSnapshot(pcoPropertiesPassed)
-  const taxProperties = getSnapshot(taxPropertiesPassed)
-  const fetchTaxProperties = taxProperties.length > 0
-  const exportTaxonomies = store.export.taxonomies.toJSON()
+  const taxFields = getSnapshot(taxPropertiesPassed)
+  const fetchTaxProperties = taxFields.length > 0
+  const taxonomies = store.export.taxonomies.toJSON()
   const exportIds = store.export.ids.toJSON()
+
+  const {
+    isLoading: exportLoading,
+    error: exportError,
+    data: exportData,
+  } = useQuery({
+    queryKey: [
+      'exportQuery',
+      taxonomies,
+      taxFields,
+      taxFilters,
+      pcoFilters,
+      pcsOfPcoFilters,
+      pcsOfRcoFilters,
+      pcoProperties,
+      rcoFilters,
+      rcoProperties,
+      withSynonymData,
+      exportIds,
+      rcoInOneRow,
+    ],
+    queryFn: async () => {
+      if (taxonomies.length === 0) return []
+
+      const data = await client.mutate({
+        mutation: exportMutation,
+        variables: {
+          taxonomies,
+          taxFields,
+          taxFilters,
+          pcoFilters,
+          pcsOfPcoFilters,
+          pcsOfRcoFilters,
+          pcoProperties,
+          rcoFilters,
+          rcoProperties,
+          useSynonyms: withSynonymData,
+          count: 13,
+          objectIds: exportIds,
+          rowPerRco: !rcoInOneRow,
+        },
+      })
+      return data
+    },
+  })
+
+  console.log('Preview, exportData:', {
+    exportData,
+    exportLoading,
+    exportError,
+  })
 
   const {
     isLoading: exportObjectLoading,
     error: exportObjectError,
     data: exportObjectData,
   } = useQuery({
-    queryKey: [
-      'exportObjectQuery',
-      exportTaxonomies,
-      taxFilters,
-      fetchTaxProperties,
-    ],
+    queryKey: ['exportObjectQuery', taxonomies, taxFilters, fetchTaxProperties],
     queryFn: async () => {
-      if (exportTaxonomies.length === 0) return []
+      if (taxonomies.length === 0) return []
 
       const data = await client.query({
         query: exportObjectQuery,
         variables: {
-          exportTaxonomies,
+          exportTaxonomies: taxonomies,
           taxFilters,
           fetchTaxProperties,
         },
@@ -212,7 +300,7 @@ const Preview = () => {
   const objects = exportObjectData?.data?.exportObject?.nodes ?? []
 
   console.log('Preview rendering', {
-    exportTaxonomies,
+    exportTaxonomies: taxonomies,
     exportObjectData,
     pcoFilters,
     pcoProperties,
@@ -224,12 +312,12 @@ const Preview = () => {
     error: synonymError,
     data: synonymData,
   } = useQuery({
-    queryKey: ['synonymQuery', exportTaxonomies],
+    queryKey: ['synonymQuery', taxonomies],
     queryFn: async () => {
-      if (exportTaxonomies.length === 0) return []
+      if (taxonomies.length === 0) return []
       const data = await client.query({
         query: synonymQuery,
-        variables: { exportTaxonomies },
+        variables: { exportTaxonomies: taxonomies },
       })
       return data
     },
@@ -240,12 +328,12 @@ const Preview = () => {
     error: exportPcoError,
     data: exportPcoData,
   } = useQuery({
-    queryKey: ['exportPcoQuery', exportTaxonomies, pcoFilters, pcoProperties],
+    queryKey: ['exportPcoQuery', taxonomies, pcoFilters, pcoProperties],
     queryFn: async () =>
       client.query({
         query: exportPcoQuery,
         variables: {
-          exportTaxonomies,
+          exportTaxonomies: taxonomies,
           pcoFilters,
           pcoProperties,
           fetchPcoProperties: pcoProperties.length > 0,
@@ -258,12 +346,12 @@ const Preview = () => {
     error: exportRcoError,
     data: exportRcoData,
   } = useQuery({
-    queryKey: ['exportRcoQuery', exportTaxonomies, rcoFilters, rcoProperties],
+    queryKey: ['exportRcoQuery', taxonomies, rcoFilters, rcoProperties],
     queryFn: () =>
       client.query({
         query: exportRcoQuery,
         variables: {
-          exportTaxonomies,
+          exportTaxonomies: taxonomies,
           rcoFilters,
           rcoProperties,
           fetchRcoProperties: rcoProperties.length > 0,
@@ -291,7 +379,7 @@ const Preview = () => {
   // need taxFields to filter only data with properties
   const rowsResult = rowsFromObjects({
     objects,
-    taxProperties,
+    taxProperties: taxFields,
     withSynonymData,
     rcoInOneRow,
     pcoProperties,
