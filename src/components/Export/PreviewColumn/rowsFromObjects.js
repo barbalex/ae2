@@ -122,7 +122,7 @@ const rowsFromObjects = ({
     resizable: true,
     sortable: true,
   }))
-  return { rowsUnsorted: rows, pvColumns }
+  return { rows, pvColumns }
 }
 
 export default rowsFromObjects

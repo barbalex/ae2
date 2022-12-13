@@ -44,6 +44,11 @@ CREATE TYPE ae.export_data AS (
   export_data json -- this is a json array
 );
 
+CREATE TYPE tax_field AS (
+    pname text,
+    taxname text
+);
+
 --
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
@@ -215,14 +220,14 @@ BEGIN
         -- several fieldnames exist in many taxonomies, so need not add taxonmy-name if multiple taxonomies are used
         -- if only one taxonomy is used, do add taxonomy-name
         IF cardinality(taxonomies) > 1 THEN
-          fieldname := 'taxonomie__' || replace(LOWER(taxfield.fieldname), ' ', '_');
+          fieldname := 'taxonomie__' || replace(LOWER(taxfield.pname), ' ', '_');
         ELSE
-          fieldname := trim(replace(replace(replace(LOWER(taxonomies[1]), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(LOWER(taxfield.fieldname), ' ', '_'));
+          fieldname := trim(replace(replace(replace(LOWER(taxonomies[1]), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(LOWER(taxfield.pname), ' ', '_'));
         END IF;
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         -- EXECUTE 'ALTER TABLE _tmp ADD COLUMN $1 text'
         -- USING fieldname;
-        EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = _tmp.id)', fieldname, taxfield.fieldname);
+        EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = _tmp.id)', fieldname, taxfield.pname);
       END LOOP;
     END IF;
     -- add property fields as extra columns
@@ -392,7 +397,7 @@ ALTER FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_fil
 --   ],
 --   "taxFields": [
 --     {
---       "fieldname": "Artname vollständig",
+--       "pname": "Artname vollständig",
 --       "taxname": "SISF (2005)"
 --     }
 --   ],

@@ -274,10 +274,13 @@ const Preview = () => {
     },
   })
 
+  const newRows = exportData?.data?.export?.rows ?? []
+
   console.log('Preview, exportData:', {
     exportData,
     exportLoading,
     exportError,
+    taxFields,
   })
 
   const {
@@ -363,8 +366,6 @@ const Preview = () => {
       }),
   })
 
-  const [sortField, setSortField] = useState('id')
-  const [sortDirection, setSortDirection] = useState('asc')
   const [message, setMessage] = useState('')
 
   const onSetMessage = useCallback((message) => {
@@ -394,23 +395,18 @@ const Preview = () => {
     rcoProperties,
     exportIds,
   })
-  const rowsUnsorted = rowsResult?.rowsUnsorted ?? []
+  const rows = rowsResult?.rows
   const pvColumns = rowsResult?.pvColumns ?? []
 
-  console.log('Preview, pvColumns:', pvColumns)
+  console.log('Preview', { pvColumns, rows })
 
-  const rows = orderBy(rowsUnsorted, sortField, sortDirection)
-  const anzFelder = rows[0] ? Object.keys(rows[0]).length : 0
+  const anzFelder = rows?.[0] ? Object.keys(rows[0]).length : 0
   const loading =
     exportRcoLoading ||
     exportObjectLoading ||
     exportPcoLoading ||
     synonymLoading
 
-  const onGridSort = useCallback((column, direction) => {
-    setSortField(column)
-    setSortDirection(direction.toLowerCase())
-  }, [])
   const onClickXlsx = useCallback(() => {
     // TODO:
     // 1. download the full rows
@@ -461,7 +457,6 @@ const Preview = () => {
             {!isSSR && (
               <React.Suspense fallback={<div />}>
                 <ReactDataGridLazy
-                  onGridSort={onGridSort}
                   columns={pvColumns}
                   rowGetter={(i) => rows[i]}
                   rowsCount={rows.length}
