@@ -80,7 +80,7 @@ const exportMutation = gql`
     $objectIds: [UUID]!
     $rowPerRco: Boolean!
   ) {
-    export(
+    exportAll(
       input: {
         taxonomies: $taxonomies
         taxFields: $taxFields
@@ -97,9 +97,10 @@ const exportMutation = gql`
         rowPerRco: $rowPerRco
       }
     ) {
-      exportRows {
+      exportDatum {
         id
-        properties
+        count
+        exportData
       }
     }
   }
@@ -214,9 +215,13 @@ const Preview = () => {
   // 2019 08 20: No idea why suddenly need to getSnapshot
   // because without changes are not detected????
   const pcoFilters = getSnapshot(pcoFiltersPassed)
-  const pcsOfPcoFilters = [new Set(pcoFilters.map((f) => f.pcname))]
+  const pcsOfPcoFilters = pcoFilters?.length
+    ? [new Set(pcoFilters.map((f) => f.pcname))]
+    : []
   const rcoFilters = getSnapshot(rcoFiltersPassed)
-  const pcsOfRcoFilters = [new Set(rcoFilters.map((f) => f.pcname))]
+  const pcsOfRcoFilters = rcoFilters?.length
+    ? [new Set(rcoFilters.map((f) => f.pcname))]
+    : []
   const taxFilters = getSnapshot(taxFiltersPassed)
   const rcoProperties = getSnapshot(rcoPropertiesPassed)
   const pcoProperties = getSnapshot(pcoPropertiesPassed)
