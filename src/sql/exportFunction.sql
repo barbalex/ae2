@@ -49,6 +49,16 @@ CREATE TYPE tax_field AS (
   taxname text
 );
 
+CREATE OR REPLACE FUNCTION ae.remove_bad_chars (var text)
+  RETURNS text
+  AS $$
+BEGIN
+  RETURN trim(replace(replace(replace(replace(LOWER(var), ' ', '_'), '(', ''), ')', ''), '-', ''));
+END;
+$$
+LANGUAGE plpgsql
+IMMUTABLE STRICT;
+
 --
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
@@ -110,7 +120,7 @@ BEGIN
     -- join to filter by pcos
     IF cardinality(pcs_of_pco_filters) > 0 THEN
       FOREACH pc_of_pco_filters IN ARRAY pcs_of_pco_filters LOOP
-        name1 := trim(replace(replace(replace(LOWER(pc_of_pco_filters), ' ', '_'), '(', ''), ')', ''));
+        name1 := ae.remove_bad_chars (pc_of_pco_filters);
         pc_name := 'pc_' || name1;
         pco_name := 'pco_' || name1;
         pcoo_name := 'pcoo_' || name1;
@@ -134,7 +144,7 @@ BEGIN
     -- join to filter by rcos
     IF cardinality(pcs_of_rco_filters) > 0 THEN
       FOREACH pc_of_rco_filters IN ARRAY pcs_of_rco_filters LOOP
-        name1 := trim(replace(replace(replace(LOWER(pc_of_rco_filters), ' ', '_'), '(', ''), ')', ''));
+        name1 := ae.remove_bad_chars (pc_of_rco_filters);
         pc_name2 := 'rpc_' || name1;
         rco_name := 'rco_' || name1;
         IF use_synonyms = TRUE THEN
@@ -172,7 +182,7 @@ BEGIN
     -- TODO: error caused by $
     IF cardinality(pco_filters) > 0 THEN
       FOREACH pcofilter IN ARRAY pco_filters LOOP
-        pco_name2 := 'pco_' || trim(replace(replace(replace(LOWER(pcofilter.pcname), ' ', '_'), '(', ''), ')', ''));
+        pco_name2 := 'pco_' || ae.remove_bad_chars (pcofilter.pcname);
         IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
           insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
           count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
@@ -185,7 +195,7 @@ BEGIN
     -- -- add where clauses for rco_filters
     IF cardinality(rco_filters) > 0 THEN
       FOREACH rcofilter IN ARRAY rco_filters LOOP
-        rco_name2 := 'rco_' || trim(replace(replace(replace(LOWER(rcofilter.pcname), ' ', '_'), '(', ''), ')', ''));
+        rco_name2 := 'rco_' || ae.remove_bad_chars (rcofilter.pcname);
         IF rcofilter.comparator IN ('ILIKE', 'LIKE') THEN
           insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
           count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
@@ -223,7 +233,7 @@ BEGIN
         IF cardinality(taxonomies) > 1 THEN
           fieldname := 'taxonomie__' || replace(LOWER(taxfield.pname), ' ', '_');
         ELSE
-          fieldname := trim(replace(replace(replace(LOWER(taxonomies[1]), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(LOWER(taxfield.pname), ' ', '_'));
+          fieldname := ae.remove_bad_chars (taxonomies[1] || '__' || taxfield.pname);
         END IF;
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = _tmp.id)', fieldname, taxfield.pname);
@@ -233,7 +243,7 @@ BEGIN
     -- and insert values
     IF cardinality(pco_properties) > 0 THEN
       FOREACH pcoproperty IN ARRAY pco_properties LOOP
-        fieldname := trim(replace(replace(replace(LOWER(pcoproperty.pcname), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(pcoproperty.pname), ' ', '_'), '(', ''), ')', ''));
+        fieldname := ae.remove_bad_chars (pcoproperty.pcname || '__' || pcoproperty.pname);
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         -- join for synonyms if used
         IF use_synonyms = TRUE THEN
@@ -260,7 +270,7 @@ BEGIN
     IF cardinality(rco_properties) > 0 THEN
       FOREACH rcoproperty IN ARRAY rco_properties LOOP
         -- field naming: pcname__relationtype__pname
-        fieldname := trim(replace(replace(replace(LOWER(rcoproperty.pcname), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(rcoproperty.relationtype), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(replace(replace(LOWER(rcoproperty.pname), ' ', '_'), '(', ''), ')', ''));
+        fieldname := ae.remove_bad_chars (rcoproperty.pcname || '__' || rcoproperty.relationtype || '__' || rcoproperty.pname);
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         -- join for synonyms if used
         -- deal with single/multiple rows if multiple relations exist
