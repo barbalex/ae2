@@ -122,11 +122,11 @@ const Preview = () => {
   // because without changes are not detected????
   const pcoFilters = getSnapshot(pcoFiltersPassed)
   const pcsOfPcoFilters = pcoFilters?.length
-    ? [new Set(pcoFilters.map((f) => f.pcname))]
+    ? [...new Set(pcoFilters.map((f) => f.pcname))]
     : []
   const rcoFilters = getSnapshot(rcoFiltersPassed)
   const pcsOfRcoFilters = rcoFilters?.length
-    ? [new Set(rcoFilters.map((f) => f.pcname))]
+    ? [...new Set(rcoFilters.map((f) => f.pcname))]
     : []
   const taxFilters = getSnapshot(taxFiltersPassed)
   const rcoProperties = getSnapshot(rcoPropertiesPassed)
@@ -192,6 +192,8 @@ const Preview = () => {
     taxFields,
     newCount,
     newRows,
+    pcoFilters,
+    pcsOfPcoFilters,
   })
 
   const [message, setMessage] = useState('')
