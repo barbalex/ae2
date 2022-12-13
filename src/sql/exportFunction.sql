@@ -170,22 +170,21 @@ BEGIN
     IF cardinality(tax_filters) > 0 THEN
       FOREACH taxfilter IN ARRAY tax_filters LOOP
         IF taxfilter.comparator IN ('ILIKE', 'LIKE') THEN
-          insert_sql := insert_sql || format(' AND object.properties->>%1$L %2$s ''%%3$s%''', taxfilter.pname, taxfilter.comparator, taxfilter.value);
-          count_sql := count_sql || format(' AND object.properties->>%1$L %2$s ''%%3$s%''', taxfilter.pname, taxfilter.comparator, taxfilter.value);
+          insert_sql := insert_sql || format(' AND object.properties->>%1$L %2$s %3$L', taxfilter.pname, taxfilter.comparator, '%' || taxfilter.value || '%');
+          count_sql := count_sql || format(' AND object.properties->>%1$L %2$s %3$L', taxfilter.pname, taxfilter.comparator, '%' || taxfilter.value || '%');
         ELSE
           insert_sql := insert_sql || format(' AND object.properties->>%1$L %2$s %3$L', taxfilter.pname, taxfilter.comparator, taxfilter.value);
           count_sql := count_sql || format(' AND object.properties->>%1$L %2$s %3$L', taxfilter.pname, taxfilter.comparator, taxfilter.value);
         END IF;
       END LOOP;
     END IF;
-    -- -- add where clauses for pco_filters
-    -- TODO: error caused by $
+    -- add where clauses for pco_filters
     IF cardinality(pco_filters) > 0 THEN
       FOREACH pcofilter IN ARRAY pco_filters LOOP
         pco_name2 := 'pco_' || ae.remove_bad_chars (pcofilter.pcname);
         IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
-          insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
-          count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
+          insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', pco_name2, pcofilter.pname, pcofilter.comparator, '%' || pcofilter.value || '%');
+          count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', pco_name2, pcofilter.pname, pcofilter.comparator, '%' || pcofilter.value || '%');
         ELSE
           insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
           count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
@@ -197,8 +196,8 @@ BEGIN
       FOREACH rcofilter IN ARRAY rco_filters LOOP
         rco_name2 := 'rco_' || ae.remove_bad_chars (rcofilter.pcname);
         IF rcofilter.comparator IN ('ILIKE', 'LIKE') THEN
-          insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
-          count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
+          insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', rco_name2, rcofilter.pname, rcofilter.comparator, '%' || rcofilter.value || '%');
+          count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', rco_name2, rcofilter.pname, rcofilter.comparator, '%' || rcofilter.value || '%');
         ELSE
           insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
           count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
@@ -371,14 +370,9 @@ BEGIN
         json_agg(ROW)
       FROM
         _tmp ROW INTO return_data_json;
-      --RAISE EXCEPTION 'return_data_json: %:', return_data_json; no error
       return_data.export_data := return_data_json::jsonb;
     END IF;
-    --RAISE EXCEPTION 'return_data: %', return_data;
-    -- "return_data: (911c9323-382d-42da-b1da-26061a83b43f,9315,\"[{\"\"id\"\": \"\"b6a97fea-7b0e-11e8-b9a5-bd4f79edbcc4\"\", \"\"sisf_2005__artname_vollständig\"\": null}]\")"
     RETURN return_data;
-    -- wenn jsonb[]: "fehlerhafte Arraykonstante: »[{\"id\":\"b6a97fea-7b0e-11e8-b9a5-bd4f79edbcc4\",\"sisf_2005__artname_vollständig\":null}]«"
-    -- wenn jsonb: fehlerhafte Record-Konstante (9155c5e1-bcdc-45d3-ab91-af3e94161579,9315,\"[{\"\"id\"\": \"\"b6a97fea-7b0e-11e8-b9a5-bd4f79edbcc4\"\", \"\"sisf_2005__artname_vollständig\"\": null}]\")
     DROP TABLE _tmp;
 END
 $$
