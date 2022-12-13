@@ -202,7 +202,6 @@ const Preview = () => {
   const isSSR = typeof window === 'undefined'
   const store = useContext(storeContext)
   const {
-    onlyRowsWithProperties: exportOnlyRowsWithProperties,
     withSynonymData,
     pcoFilters: pcoFiltersPassed,
     rcoFilters: rcoFiltersPassed,
@@ -394,10 +393,11 @@ const Preview = () => {
     exportRcoPropertyNames,
     rcoProperties,
     exportIds,
-    exportOnlyRowsWithProperties,
   })
   const rowsUnsorted = rowsResult?.rowsUnsorted ?? []
   const pvColumns = rowsResult?.pvColumns ?? []
+
+  console.log('Preview, pvColumns:', pvColumns)
 
   const rows = orderBy(rowsUnsorted, sortField, sortDirection)
   const anzFelder = rows[0] ? Object.keys(rows[0]).length : 0

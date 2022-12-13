@@ -39,13 +39,12 @@ export default types
       types.array(types.optional(RcoFilter, defaultRcoFilter)),
       [],
     ),
-    onlyRowsWithProperties: types.optional(types.boolean, true),
     withSynonymData: types.optional(types.boolean, true),
     tooManyProperties: types.optional(types.boolean, false), // TODO
     addFilterFields: types.optional(types.boolean, true),
     rcoInOneRow: types.optional(types.boolean, true),
   })
-  .actions(self => ({
+  .actions((self) => ({
     setType(value) {
       self.type = value
     },
@@ -54,9 +53,6 @@ export default types
     },
     setIds(value) {
       self.ids = value
-    },
-    setOnlyRowsWithProperties(value) {
-      self.onlyRowsWithProperties = value
     },
     setWithSynonymData(value) {
       self.withSynonymData = value
@@ -69,7 +65,7 @@ export default types
     },
     setRcoInOneRow(value) {
       const rcoPCTypes = uniq(
-        self.rcoProperties.map(e => `${e.pcname}/${e.relationtype}`),
+        self.rcoProperties.map((e) => `${e.pcname}/${e.relationtype}`),
       )
       if (rcoPCTypes.length < 2) {
         self.rcoInOneRow = value
@@ -82,12 +78,12 @@ export default types
     },
     setPcoFilter({ pcname, pname, comparator, value }) {
       const pcoFilter = self.pcoFilters.find(
-        x => x.pcname === pcname && x.pname === pname,
+        (x) => x.pcname === pcname && x.pname === pname,
       )
       if (!comparator && !value && value !== 0) {
         // remove
         self.pcoFilters = self.pcoFilters.filter(
-          x => !(x.pcname === pcname && x.pname === pname),
+          (x) => !(x.pcname === pcname && x.pname === pname),
         )
       } else if (!pcoFilter) {
         // add new one
@@ -104,7 +100,7 @@ export default types
         // edit = add new one instead of existing
         self.pcoFilters = [
           ...self.pcoFilters.filter(
-            x => !(x.pcname === pcname && x.pname === pname),
+            (x) => !(x.pcname === pcname && x.pname === pname),
           ),
           {
             pcname,
@@ -126,7 +122,7 @@ export default types
         // only add if not yet done
         if (
           !self.pcoProperties.find(
-            t => t.pcname === pcname && t.pname === pname,
+            (t) => t.pcname === pcname && t.pname === pname,
           )
         ) {
           self.pcoProperties = [
@@ -141,7 +137,7 @@ export default types
     },
     removePcoProperty({ pcname, pname }) {
       self.pcoProperties = self.pcoProperties.filter(
-        x => !(x.pcname === pcname && x.pname === pname),
+        (x) => !(x.pcname === pcname && x.pname === pname),
       )
     },
     resetRcoFilters() {
@@ -149,7 +145,7 @@ export default types
     },
     setRcoFilters({ pcname, relationtype, pname, comparator, value }) {
       const rcoFilter = self.rcoFilters.find(
-        x =>
+        (x) =>
           x.pcname === pcname &&
           x.relationtype === relationtype &&
           x.pname === pname,
@@ -157,7 +153,7 @@ export default types
       if (!comparator && !value && value !== 0) {
         // remove
         self.rcoFilters = self.rcoFilters.filter(
-          x =>
+          (x) =>
             !(
               x.pcname === pcname &&
               x.relationtype === relationtype &&
@@ -180,7 +176,7 @@ export default types
         // edit = add new one instead of existing
         self.rcoFilters = [
           ...self.rcoFilters.filter(
-            x =>
+            (x) =>
               !(
                 x.pcname === pcname &&
                 x.relationtype === relationtype &&
@@ -205,7 +201,7 @@ export default types
     },
     removeRcoProperty({ pcname, relationtype, pname }) {
       self.rcoProperties = self.rcoProperties.filter(
-        x =>
+        (x) =>
           !(
             x.pcname === pcname &&
             x.relationtype === relationtype &&
@@ -223,7 +219,7 @@ export default types
       } else {
         // only add if not yet done
         const rcoProperty = self.rcoProperties.find(
-          t =>
+          (t) =>
             t.pcname === pcname &&
             t.relationtype === relationtype &&
             t.pname === pname,
@@ -240,7 +236,7 @@ export default types
           self.rcoProperties = rcoProperties
           // set self.rcoInOneRow if more than one type of rco is choosen
           const rcoPCTypes = uniq(
-            rcoProperties.map(e => `${e.pcname}/${e.relationtype}`),
+            rcoProperties.map((e) => `${e.pcname}/${e.relationtype}`),
           )
           if (rcoPCTypes.length > 1 && !self.rcoInOneRow) {
             self.rcoInOneRow = true
@@ -258,7 +254,7 @@ export default types
       } else {
         // only add if not yet done
         const taxProperty = self.taxProperties.find(
-          t => t.taxname === taxname && t.pname === pname,
+          (t) => t.taxname === taxname && t.pname === pname,
         )
         if (!taxProperty) {
           self.taxProperties = [...self.taxProperties, { taxname, pname }]
@@ -267,7 +263,7 @@ export default types
     },
     removeTaxProperty({ taxname, pname }) {
       self.taxProperties = self.taxProperties.filter(
-        x => !(x.taxname === taxname && x.pname === pname),
+        (x) => !(x.taxname === taxname && x.pname === pname),
       )
     },
     resetTaxProperties() {
@@ -278,12 +274,12 @@ export default types
     },
     setTaxFilters({ taxname, pname, comparator, value }) {
       const taxFilter = self.taxFilters.find(
-        x => x.taxname === taxname && x.pname === pname,
+        (x) => x.taxname === taxname && x.pname === pname,
       )
       if (!comparator && !value && value !== 0) {
         // remove
         self.taxFilters = self.taxFilters.filter(
-          x => !(x.taxname === taxname && x.pname === pname),
+          (x) => !(x.taxname === taxname && x.pname === pname),
         )
       } else if (!taxFilter) {
         // add new one
@@ -300,7 +296,7 @@ export default types
         // edit = add new one instead of existing
         self.taxFilters = [
           ...self.taxFilters.filter(
-            x => !(x.taxname === taxname && x.pname === pname),
+            (x) => !(x.taxname === taxname && x.pname === pname),
           ),
           {
             taxname,

@@ -2,8 +2,6 @@
  * would be nice if this code could be moved
  * to a worker
  */
-import omit from 'lodash/omit'
-import some from 'lodash/some'
 import sortBy from 'lodash/sortBy'
 
 import booleanToJaNein from '../../../modules/booleanToJaNein'
@@ -21,14 +19,8 @@ const rowsFromObjects = ({
   synonyms,
   rcoProperties,
   exportIds,
-  exportOnlyRowsWithProperties,
   rcoInOneRow,
 }) => {
-  // need taxFields to filter only data with properties
-  const taxFields = [
-    'id',
-    ...taxProperties.map((p) => `${conv(p.taxname)}__${conv(p.pname)}`),
-  ]
   const aditionalRows = []
   let rows = objects.map((o) => {
     // 1. object
@@ -124,19 +116,6 @@ const rowsFromObjects = ({
   rows = sortBy(rows, 'id')
 
   const fields = rows[0] ? Object.keys(rows[0]).map((k) => k) : []
-  const propertyFields = fields.filter((f) => !taxFields.includes(f))
-  if (exportOnlyRowsWithProperties && propertyFields.length > 0) {
-    // filter rows that only contain values in taxFields
-    rows = rows.filter((row) => {
-      // check if any property field contains a value
-      const propertyRow = omit(row, taxFields)
-      const valueExists = some(
-        propertyRow,
-        (v) => v !== undefined && v !== null,
-      )
-      return valueExists
-    })
-  }
   const pvColumns = fields.map((k) => ({
     key: k,
     name: k,

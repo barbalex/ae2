@@ -50,7 +50,6 @@ const OptionsChoosen = () => {
     type: exportType,
     setTaxonomies,
     onlyRowsWithProperties,
-    setOnlyRowsWithProperties,
     withSynonymData,
     setWithSynonymData,
     pcoFilters: pcoFiltersPassed,
@@ -95,7 +94,6 @@ const OptionsChoosen = () => {
     resetTaxFilters()
     resetPcoFilters()
     resetRcoFilters()
-    setOnlyRowsWithProperties(true)
     setWithSynonymData(true)
   }, [
     resetPcoFilters,
@@ -104,7 +102,6 @@ const OptionsChoosen = () => {
     resetRcoProperties,
     resetTaxFilters,
     resetTaxProperties,
-    setOnlyRowsWithProperties,
     setTaxonomies,
     setType,
     setWithSynonymData,
@@ -119,9 +116,6 @@ const OptionsChoosen = () => {
   const onClickResetExportWithSynonymData = useCallback(() => {
     setWithSynonymData(true)
   }, [setWithSynonymData])
-  const onClickResetExportOnlyRowsWithProperties = useCallback(() => {
-    setOnlyRowsWithProperties(true)
-  }, [setOnlyRowsWithProperties])
 
   if (noDataChoosen) return null
 
@@ -153,18 +147,6 @@ const OptionsChoosen = () => {
           }`}
           {!withSynonymData && (
             <ResetSpan onClick={onClickResetExportWithSynonymData}>
-              zurücksetzen
-            </ResetSpan>
-          )}
-        </li>
-        <li>
-          {`${
-            onlyRowsWithProperties
-              ? 'Nur Datensätze mit Eigenschaften exportieren'
-              : 'Auch Datensätze ohne Eigenschaften exportieren'
-          }`}
-          {!onlyRowsWithProperties && (
-            <ResetSpan onClick={onClickResetExportOnlyRowsWithProperties}>
               zurücksetzen
             </ResetSpan>
           )}

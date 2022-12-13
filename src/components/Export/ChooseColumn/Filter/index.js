@@ -61,8 +61,6 @@ const Filter = () => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
   const {
-    onlyRowsWithProperties: exportOnlyRowsWithProperties,
-    setOnlyRowsWithProperties,
     setWithSynonymData,
     withSynonymData,
     addFilterFields,
@@ -138,18 +136,6 @@ const Filter = () => {
               />
             }
             label="Informationen von Synonymen mit exportieren"
-          />
-          <Label
-            control={
-              <Checkbox
-                color="primary"
-                checked={exportOnlyRowsWithProperties}
-                onChange={(event, checked) =>
-                  setOnlyRowsWithProperties(checked)
-                }
-              />
-            }
-            label="Nur Datensätze mit Eigenschaften exportieren"
           />
           <Label
             control={
