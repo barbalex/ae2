@@ -2,7 +2,6 @@ import React, { useState, useCallback, useContext } from 'react'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import styled from '@emotion/styled'
-import orderBy from 'lodash/orderBy'
 import { gql, useApolloClient } from '@apollo/client'
 import { useQuery } from '@tanstack/react-query'
 import { observer } from 'mobx-react-lite'
@@ -10,7 +9,6 @@ import { getSnapshot } from 'mobx-state-tree'
 
 import exportXlsx from '../../../modules/exportXlsx'
 import exportCsv from '../../../modules/exportCsv'
-import rowsFromObjects from './rowsFromObjects'
 import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
 
@@ -105,97 +103,6 @@ const exportMutation = gql`
     }
   }
 `
-const exportObjectQuery = gql`
-  query PreviewColumnExportObjectQuery(
-    $exportTaxonomies: [String]!
-    $taxFilters: [TaxFilterInput]!
-    $fetchTaxProperties: Boolean!
-  ) {
-    exportObject(exportTaxonomies: $exportTaxonomies, taxFilters: $taxFilters) {
-      totalCount
-      nodes {
-        id
-        properties @include(if: $fetchTaxProperties)
-      }
-    }
-  }
-`
-const exportPcoQuery = gql`
-  query exportPcoQuery(
-    $exportTaxonomies: [String]!
-    $pcoFilters: [PcoFilterInput]!
-    $pcoProperties: [PcoPropertyInput]!
-    $fetchPcoProperties: Boolean!
-  ) {
-    exportPco(
-      exportTaxonomies: $exportTaxonomies
-      pcoFilters: $pcoFilters
-      pcoProperties: $pcoProperties
-    ) @include(if: $fetchPcoProperties) {
-      totalCount
-      nodes {
-        id
-        objectId
-        propertyCollectionId
-        propertyCollectionOfOrigin
-        properties
-      }
-    }
-  }
-`
-const exportRcoQuery = gql`
-  query exportRcoQuery(
-    $exportTaxonomies: [String]!
-    $rcoFilters: [RcoFilterInput]!
-    $rcoProperties: [RcoPropertyInput]!
-    $fetchRcoProperties: Boolean!
-  ) {
-    exportRco(
-      exportTaxonomies: $exportTaxonomies
-      rcoFilters: $rcoFilters
-      rcoProperties: $rcoProperties
-    ) @include(if: $fetchRcoProperties) {
-      totalCount
-      nodes {
-        id
-        propertyCollectionId
-        objectId
-        objectIdRelation
-        objectByObjectIdRelation {
-          id
-          name
-          taxonomyByTaxonomyId {
-            id
-            name
-          }
-        }
-        propertyCollectionByPropertyCollectionId {
-          id
-          name
-        }
-        propertyCollectionOfOrigin
-        relationType
-        properties
-      }
-    }
-  }
-`
-const synonymQuery = gql`
-  query exportSynonymQuery($exportTaxonomies: [String!]) {
-    allSynonyms(
-      filter: {
-        objectByObjectId: {
-          taxonomyByTaxonomyId: { name: { in: $exportTaxonomies } }
-        }
-      }
-    ) {
-      nodes {
-        objectId
-        objectIdSynonym
-      }
-    }
-  }
-`
 
 const Preview = () => {
   const client = useApolloClient()
@@ -225,7 +132,6 @@ const Preview = () => {
   const rcoProperties = getSnapshot(rcoPropertiesPassed)
   const pcoProperties = getSnapshot(pcoPropertiesPassed)
   const taxFields = getSnapshot(taxPropertiesPassed)
-  const fetchTaxProperties = taxFields.length > 0
   const taxonomies = store.export.taxonomies.toJSON()
   const exportIds = store.export.ids.toJSON()
 
@@ -288,89 +194,6 @@ const Preview = () => {
     newRows,
   })
 
-  const {
-    isLoading: exportObjectLoading,
-    error: exportObjectError,
-    data: exportObjectData,
-  } = useQuery({
-    queryKey: ['exportObjectQuery', taxonomies, taxFilters, fetchTaxProperties],
-    queryFn: async () => {
-      if (taxonomies.length === 0) return []
-
-      const data = await client.query({
-        query: exportObjectQuery,
-        variables: {
-          exportTaxonomies: taxonomies,
-          taxFilters,
-          fetchTaxProperties,
-        },
-      })
-      return data
-    },
-  })
-
-  const objects = exportObjectData?.data?.exportObject?.nodes ?? []
-
-  console.log('Preview rendering', {
-    exportTaxonomies: taxonomies,
-    exportObjectData,
-    pcoFilters,
-    pcoProperties,
-    exportPcoData,
-  })
-
-  const {
-    isLoading: synonymLoading,
-    error: synonymError,
-    data: synonymData,
-  } = useQuery({
-    queryKey: ['synonymQuery', taxonomies],
-    queryFn: async () => {
-      if (taxonomies.length === 0) return []
-      const data = await client.query({
-        query: synonymQuery,
-        variables: { exportTaxonomies: taxonomies },
-      })
-      return data
-    },
-  })
-
-  const {
-    isLoading: exportPcoLoading,
-    error: exportPcoError,
-    data: exportPcoData,
-  } = useQuery({
-    queryKey: ['exportPcoQuery', taxonomies, pcoFilters, pcoProperties],
-    queryFn: async () =>
-      client.query({
-        query: exportPcoQuery,
-        variables: {
-          exportTaxonomies: taxonomies,
-          pcoFilters,
-          pcoProperties,
-          fetchPcoProperties: pcoProperties.length > 0,
-        },
-      }),
-  })
-
-  const {
-    isLoading: exportRcoLoading,
-    error: exportRcoError,
-    data: exportRcoData,
-  } = useQuery({
-    queryKey: ['exportRcoQuery', taxonomies, rcoFilters, rcoProperties],
-    queryFn: () =>
-      client.query({
-        query: exportRcoQuery,
-        variables: {
-          exportTaxonomies: taxonomies,
-          rcoFilters,
-          rcoProperties,
-          fetchRcoProperties: rcoProperties.length > 0,
-        },
-      }),
-  })
-
   const [message, setMessage] = useState('')
 
   const onSetMessage = useCallback((message) => {
@@ -380,71 +203,28 @@ const Preview = () => {
     }
   }, [])
 
-  const exportRcoPropertyNames = rcoProperties.map((p) => p.pname)
-  const objectsCount = exportObjectData?.data?.exportObject?.totalCount
-  const pco = exportPcoData?.data?.exportPco?.nodes ?? []
-  const rco = exportRcoData?.data?.exportRco?.nodes ?? []
-  const synonyms = synonymData?.data?.allSynonyms?.nodes ?? []
+  const fields = newRows[0] ? Object.keys(newRows[0]).map((k) => k) : []
+  const pvColumns = fields.map((k) => ({
+    key: k,
+    name: k,
+    resizable: true,
+    sortable: true,
+  }))
 
-  // need taxFields to filter only data with properties
-  const rowsResult = rowsFromObjects({
-    objects,
-    taxProperties: taxFields,
-    withSynonymData,
-    rcoInOneRow,
-    pcoProperties,
-    pco,
-    rco,
-    synonyms,
-    exportRcoPropertyNames,
-    rcoProperties,
-    exportIds,
-  })
-  const rows = rowsResult?.rows
-  const pvColumns = rowsResult?.pvColumns ?? []
-
-  console.log('Preview', { pvColumns, rows })
-
-  const anzFelder = rows?.[0] ? Object.keys(rows[0]).length : 0
-  const loading =
-    exportRcoLoading ||
-    exportObjectLoading ||
-    exportPcoLoading ||
-    synonymLoading
+  const anzFelder = fields.length ?? 0
 
   const onClickXlsx = useCallback(() => {
     // TODO:
     // 1. download the full rows
     // 2. rowsFromObjects
-    exportXlsx({ rows, onSetMessage })
-  }, [rows, onSetMessage])
-  const onClickCsv = useCallback(() => exportCsv(rows), [rows])
+    exportXlsx({ newRows, onSetMessage })
+  }, [newRows, onSetMessage])
+  const onClickCsv = useCallback(() => exportCsv(newRows), [newRows])
 
-  if (exportObjectError) {
+  if (exportError) {
     return (
       <ErrorContainer>
-        `Error fetching data: ${exportObjectError.message}`
-      </ErrorContainer>
-    )
-  }
-  if (synonymError) {
-    return (
-      <ErrorContainer>
-        `Error fetching data: ${synonymError.message}`
-      </ErrorContainer>
-    )
-  }
-  if (exportPcoError) {
-    return (
-      <ErrorContainer>
-        `Error fetching data: ${exportPcoError.message}`
-      </ErrorContainer>
-    )
-  }
-  if (exportRcoError) {
-    return (
-      <ErrorContainer>
-        `Error fetching data: ${exportRcoError.message}`
+        `Error fetching data: ${exportError.message}`
       </ErrorContainer>
     )
   }
@@ -452,9 +232,9 @@ const Preview = () => {
   return (
     <ErrorBoundary>
       <Container>
-        {objectsCount > 0 && (
+        {newCount > 0 && (
           <SpreadsheetContainer>
-            <TotalDiv>{`${objectsCount.toLocaleString(
+            <TotalDiv>{`${newCount.toLocaleString(
               'de-CH',
             )} Datensätze, ${anzFelder.toLocaleString('de-CH')} ${
               anzFelder === 1 ? 'Feld' : 'Felder'
@@ -463,8 +243,8 @@ const Preview = () => {
               <React.Suspense fallback={<div />}>
                 <ReactDataGridLazy
                   columns={pvColumns}
-                  rowGetter={(i) => rows[i]}
-                  rowsCount={rows.length}
+                  rowGetter={(i) => newRows[i]}
+                  rowsCount={newRows.length}
                   minHeight={500}
                   minColumnWidth={120}
                 />
@@ -472,14 +252,14 @@ const Preview = () => {
             )}
           </SpreadsheetContainer>
         )}
-        {objectsCount === 0 && (
+        {newCount === 0 && (
           <SpreadsheetContainer>
-            <TotalDiv>{`${objectsCount.toLocaleString(
+            <TotalDiv>{`${newCount.toLocaleString(
               'de-CH',
             )} Datensätze`}</TotalDiv>
           </SpreadsheetContainer>
         )}
-        {objectsCount > 0 && (
+        {newCount > 0 && (
           <ButtonsContainer>
             <StyledButton onClick={onClickXlsx} color="inherit">
               .xlsx herunterladen
@@ -490,7 +270,7 @@ const Preview = () => {
           </ButtonsContainer>
         )}
         <StyledSnackbar open={!!message} message={message} />
-        <StyledSnackbar open={loading} message="Lade Daten..." />
+        <StyledSnackbar open={exportLoading} message="Lade Daten..." />
       </Container>
     </ErrorBoundary>
   )

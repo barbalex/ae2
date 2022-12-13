@@ -45,8 +45,8 @@ CREATE TYPE ae.export_data AS (
 );
 
 CREATE TYPE tax_field AS (
-    pname text,
-    taxname text
+  pname text,
+  taxname text
 );
 
 --
@@ -54,6 +54,10 @@ CREATE TYPE tax_field AS (
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
 -- TODO: need count of all, even when limited
 -- TODO: limit join when fetching rcos?
+-- TODO: create two versions?
+--       1. for limited query (previews): returns ae.export_all (rename: export_limited)
+--       2. for unlimited query (export): returns type with id and properties?
+--       Reason: Would be nice if JSON.parse could be circumvented
 CREATE OR REPLACE FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean)
   RETURNS ae.export_data
   AS $$
