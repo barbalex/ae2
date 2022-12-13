@@ -163,8 +163,8 @@ BEGIN
           insert_sql := insert_sql || format(' AND object.properties->>%1$L %2$s ''%%3$s%''', taxfilter.pname, taxfilter.comparator, taxfilter.value);
           count_sql := count_sql || format(' AND object.properties->>%1$L %2$s ''%%3$s%''', taxfilter.pname, taxfilter.comparator, taxfilter.value);
         ELSE
-          insert_sql := insert_sql || format(' AND object.properties->>%1$L %2$s 3$L', taxfilter.pname, taxfilter.comparator, taxfilter.value);
-          count_sql := count_sql || format(' AND object.properties->>%1$L %2$s 3$L', taxfilter.pname, taxfilter.comparator, taxfilter.value);
+          insert_sql := insert_sql || format(' AND object.properties->>%1$L %2$s %3$L', taxfilter.pname, taxfilter.comparator, taxfilter.value);
+          count_sql := count_sql || format(' AND object.properties->>%1$L %2$s %3$L', taxfilter.pname, taxfilter.comparator, taxfilter.value);
         END IF;
       END LOOP;
     END IF;
@@ -177,8 +177,8 @@ BEGIN
           insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
           count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
         ELSE
-          insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s 4$L', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
-          count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s 4$L', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
+          insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
+          count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
         END IF;
       END LOOP;
     END IF;
