@@ -74,8 +74,6 @@ DECLARE
   pc_of_pco_filters text;
   pc_of_rco_filters text;
   name1 text;
-  name2 text;
-  name3 text;
   pc_name text;
   pc_name2 text;
   pco_name text;
@@ -170,11 +168,11 @@ BEGIN
         END IF;
       END LOOP;
     END IF;
-    -- add where clauses for pco_filters
+    -- -- add where clauses for pco_filters
+    -- TODO: error caused by $
     IF cardinality(pco_filters) > 0 THEN
       FOREACH pcofilter IN ARRAY pco_filters LOOP
-        name2 := trim(replace(replace(replace(LOWER(pcofilter.pcname), ' ', '_'), '(', ''), ')', ''));
-        pco_name2 := 'pco_' || name2;
+        pco_name2 := 'pco_' || trim(replace(replace(replace(LOWER(pcofilter.pcname), ' ', '_'), '(', ''), ')', ''));
         IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
           insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
           count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
@@ -184,11 +182,10 @@ BEGIN
         END IF;
       END LOOP;
     END IF;
-    -- add where clauses for rco_filters
+    -- -- add where clauses for rco_filters
     IF cardinality(rco_filters) > 0 THEN
       FOREACH rcofilter IN ARRAY rco_filters LOOP
-        name3 := trim(replace(replace(replace(LOWER(rcofilter.pcname), ' ', '_'), '(', ''), ')', ''));
-        rco_name2 := 'rco_' || name3;
+        rco_name2 := 'rco_' || trim(replace(replace(replace(LOWER(rcofilter.pcname), ' ', '_'), '(', ''), ')', ''));
         IF rcofilter.comparator IN ('ILIKE', 'LIKE') THEN
           insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
           count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
@@ -229,8 +226,6 @@ BEGIN
           fieldname := trim(replace(replace(replace(LOWER(taxonomies[1]), ' ', '_'), '(', ''), ')', '')) || '__' || trim(replace(LOWER(taxfield.pname), ' ', '_'));
         END IF;
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
-        -- EXECUTE 'ALTER TABLE _tmp ADD COLUMN $1 text'
-        -- USING fieldname;
         EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = _tmp.id)', fieldname, taxfield.pname);
       END LOOP;
     END IF;
