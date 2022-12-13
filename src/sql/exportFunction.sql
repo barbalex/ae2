@@ -1,24 +1,3 @@
---
--- example for querying pco for pco_field with pco_filter
--- with or without info of synonyms
-SELECT
-  ae.object.*
-FROM
-  ae.object
-  INNER JOIN ae.taxonomy ON ae.taxonomy.id = ae.object.taxonomy_id
-  -- if: with info of synonyms
-  -- INNER JOIN ae.pco_of_object pcoo ON pcoo.object_id = ae.object.id
-  -- INNER JOIN ae.property_collection_object pco ON pco.id = pcoo.pco_id
-  -- INNER JOIN ae.property_collection pc ON pc.id = pco.property_collection_id
-  -- if: without info of synonyms
-  INNER JOIN ae.property_collection_object pco ON pco.object_id = ae.object.id
-  INNER JOIN ae.property_collection pc ON pc.id = pco.property_collection_id
-WHERE
-  ae.taxonomy.name IN ('SISF (2005)')
-  AND ae.object.properties ->> 'Artname vollständig' ILIKE '%rosa%'
-  AND (pc.name = 'CH OeQV'
-    AND pco.properties ->> 'Art ist Qualitätszeiger Liste A' = 'true');
-
 -- Idea:
 -- 0. get the following info passed from app:
 --    - taxonomies (minimum one)
@@ -59,20 +38,10 @@ WHERE
 --    Build directly in json or convert _tmp using to_jsonb or row_to_json, then removing id using jsonb - text → jsonb?
 --    Or: build _only_ json by using row_to_json. Then client reads that.
 --    (https://www.postgresql.org/docs/14/functions-json.html, https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE)
-CREATE TYPE ae.export_row AS (
-  id uuid,
-  properties json
-);
-
 CREATE TYPE ae.export_data AS (
-  id uuid, -- needed for apollo. Will be timestamp
-  count integer, -- enable passing total count when only returning limited data for preview
-  data jsonb -- this is an array of json objects
-);
-
-CREATE TYPE tax_field AS (
-  fieldname text,
-  taxname text
+  id uuid, -- needed for apollo
+  count integer, -- enable passing total count while only returning limited data for preview
+  export_data json -- this is a json array
 );
 
 --
@@ -80,7 +49,7 @@ CREATE TYPE tax_field AS (
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
 -- TODO: need count of all, even when limited
 -- TODO: limit join when fetching rcos?
-CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean)
+CREATE OR REPLACE FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean)
   RETURNS ae.export_data
   AS $$
 DECLARE
@@ -116,6 +85,7 @@ DECLARE
   object_id uuid;
   return_query text;
   return_data ae.export_data;
+  return_data_json jsonb;
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
@@ -336,6 +306,7 @@ BEGIN
               INNER JOIN properties_per_object ON properties_per_object.object_id = _tmp.id', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           END IF;
           -- return query
+          -- TODO: limit to count?
           return_query := format('
             SELECT
               json_agg(ROW)
@@ -377,23 +348,29 @@ BEGIN
     END IF;
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, insert_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, insert_sql, fieldname, taxfield_sql2;
     --RAISE EXCEPTION 'insert_sql: %:', insert_sql;
-    return_data.id := gen_random_uuid ();
+    return_data.id := gen_random_uuid ()::uuid;
     return_data.count = row_count;
     IF row_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
-      EXECUTE return_query INTO return_data.data;
+      EXECUTE return_query INTO return_data.export_data;
     ELSE
       SELECT
         json_agg(ROW)
       FROM
-        _tmp ROW INTO return_data.data;
+        _tmp ROW INTO return_data_json;
+      --RAISE EXCEPTION 'return_data_json: %:', return_data_json; no error
+      return_data.export_data := return_data_json::jsonb;
     END IF;
+    --RAISE EXCEPTION 'return_data: %', return_data;
+    -- "return_data: (911c9323-382d-42da-b1da-26061a83b43f,9315,\"[{\"\"id\"\": \"\"b6a97fea-7b0e-11e8-b9a5-bd4f79edbcc4\"\", \"\"sisf_2005__artname_vollständig\"\": null}]\")"
     RETURN return_data;
+    -- wenn jsonb[]: "fehlerhafte Arraykonstante: »[{\"id\":\"b6a97fea-7b0e-11e8-b9a5-bd4f79edbcc4\",\"sisf_2005__artname_vollständig\":null}]«"
+    -- wenn jsonb: fehlerhafte Record-Konstante (9155c5e1-bcdc-45d3-ab91-af3e94161579,9315,\"[{\"\"id\"\": \"\"b6a97fea-7b0e-11e8-b9a5-bd4f79edbcc4\"\", \"\"sisf_2005__artname_vollständig\"\": null}]\")
     DROP TABLE _tmp;
 END
 $$
 LANGUAGE plpgsql;
 
-ALTER FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean) OWNER TO postgres;
+ALTER FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean) OWNER TO postgres;
 
 -- test from grqphiql:
 -- mutation exportDataMutation($taxonomies: [String]!, $taxFields: [TaxFieldInput]!, $taxFilters: [TaxFilterInput]!, $pcoFilters: [PcoFilterInput]!, $pcsOfPcoFilters: [String]!, $pcsOfRcoFilters: [String]!, $pcoProperties: [PcoPropertyInput]!, $rcoFilters: [RcoFilterInput]!, $rcoProperties: [RcoPropertyInput]!, $useSynonyms: Boolean!, $count: Int!, $objectIds: [UUID]!) {
