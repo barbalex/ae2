@@ -47,7 +47,7 @@ WHERE
 -- 2. for every taxonomy: select list of object_ids and tax-fields choosen while applying all filters: insert into _tmp. Limit if count was passed
 -- 3. for every pc with fields choosen: add column to _tmp, then update it with above query
 -- 4. select _tmp into record and return it
--- 5. TODO: how to query unknown structure with graphql? Use id and jsonb instead?
+-- 5. how to query unknown structure with graphql? Use id and jsonb instead!
 --
 -- alternative idea using id and jsonb:
 -- 0. define type as (id uuid, properties json)
@@ -55,13 +55,19 @@ WHERE
 -- 2. for every taxonomy: select list of object_ids and tax-fields choosen while applying all filters: insert into _tmp. Limit if count was passed
 -- 3. for every pc with fields choosen: add column to _tmp, then update it with above query
 -- 4. select _tmp into record and return it
--- 5. TODO: how to query unknown structure with graphql? Use id and json instead?
+-- 5. how to query unknown structure with graphql? Use id and json instead.
 --    Build directly in json or convert _tmp using to_jsonb or row_to_json, then removing id using jsonb - text → jsonb?
 --    Or: build _only_ json by using row_to_json. Then client reads that.
 --    (https://www.postgresql.org/docs/14/functions-json.html, https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE)
 CREATE TYPE ae.export_row AS (
   id uuid,
   properties json
+);
+
+CREATE TYPE ae.export_data AS (
+  id integer, -- needed for apollo. Will be timestamp
+  count integer, -- enable passing total count when only returning limited data for preview
+  data json -- this is an array of json objects
 );
 
 CREATE TYPE tax_field AS (
@@ -72,12 +78,16 @@ CREATE TYPE tax_field AS (
 --
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
+-- TODO: need count of all, even when limited
+-- TODO: limit join when fetching rcos?
 CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean)
   RETURNS SETOF ae.export_row
   AS $$
 DECLARE
   taxonomy text;
-  tax_sql text;
+  insert_sql text;
+  count_sql text;
+  row_count integer;
   sql2 text;
   taxfilter tax_filter;
   taxfield tax_field;
@@ -114,9 +124,11 @@ BEGIN
   -- insert object_ids
   FOREACH taxonomy IN ARRAY taxonomies LOOP
     -- select
-    tax_sql := 'INSERT INTO _tmp (id) select object.id from ae.object object';
+    insert_sql := 'INSERT INTO _tmp (id) select object.id from ae.object object';
+    count_sql := 'SELECT count(*) FROM ae.object object';
     -- join
-    tax_sql := tax_sql || ' inner join ae.taxonomy tax on tax.id = object.taxonomy_id';
+    insert_sql := insert_sql || ' inner join ae.taxonomy tax on tax.id = object.taxonomy_id';
+    count_sql := count_sql || ' inner join ae.taxonomy tax on tax.id = object.taxonomy_id';
     -- join to filter by pcos
     IF cardinality(pcs_of_pco_filters) > 0 THEN
       FOREACH pc_of_pco_filters IN ARRAY pcs_of_pco_filters LOOP
@@ -126,12 +138,17 @@ BEGIN
         pcoo_name := 'pcoo_' || name1;
         IF use_synonyms = TRUE THEN
           -- if synonyms are used, filter pcos via pco_of_object
-          tax_sql := tax_sql || format(' INNER JOIN ae.pco_of_object %4$s ON %4$s.object_id = object.id
+          insert_sql := insert_sql || format(' INNER JOIN ae.pco_of_object %4$s ON %4$s.object_id = object.id
+                                INNER JOIN ae.property_collection_object %1$s ON %1$s.id = %4$s.pco_id
+                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', pco_name, pc_name, pc_of_pco_filters, pcoo_name);
+          count_sql := count_sql || format(' INNER JOIN ae.pco_of_object %4$s ON %4$s.object_id = object.id
                                 INNER JOIN ae.property_collection_object %1$s ON %1$s.id = %4$s.pco_id
                                 INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', pco_name, pc_name, pc_of_pco_filters, pcoo_name);
         ELSE
           -- filter directly by property_collection_object
-          tax_sql := tax_sql || format(' INNER JOIN ae.property_collection_object %1$s ON %1$s.object_id = object.id
+          insert_sql := insert_sql || format(' INNER JOIN ae.property_collection_object %1$s ON %1$s.object_id = object.id
+                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', pco_name, pc_name, pc_of_pco_filters);
+          count_sql := count_sql || format(' INNER JOIN ae.property_collection_object %1$s ON %1$s.object_id = object.id
                                 INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', pco_name, pc_name, pc_of_pco_filters);
         END IF;
       END LOOP;
@@ -143,25 +160,33 @@ BEGIN
         pc_name2 := 'rpc_' || name1;
         rco_name := 'rco_' || name1;
         IF use_synonyms = TRUE THEN
-          tax_sql := tax_sql || format(' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
+          insert_sql := insert_sql || format(' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
+                                INNER JOIN ae.relation %1$s ON %1$s.id = rcoo.rco_id
+                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', rco_name, pc_name2, pc_of_rco_filters);
+          count_sql := count_sql || format(' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
                                 INNER JOIN ae.relation %1$s ON %1$s.id = rcoo.rco_id
                                 INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', rco_name, pc_name2, pc_of_rco_filters);
         ELSE
           -- filter directly by relation
-          tax_sql := tax_sql || format(' INNER JOIN ae.relation %1$s ON %1$s.object_id = object.id
+          insert_sql := insert_sql || format(' INNER JOIN ae.relation %1$s ON %1$s.object_id = object.id
+                                INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', rco_name, pc_name2, pc_of_rco_filters);
+          count_sql := count_sql || format(' INNER JOIN ae.relation %1$s ON %1$s.object_id = object.id
                                 INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id and %2$s.name = %3$L', rco_name, pc_name2, pc_of_rco_filters);
         END IF;
       END LOOP;
     END IF;
     -- add where clauses
     -- for taxonomies
-    tax_sql := tax_sql || ' WHERE tax.name = ANY ($1)';
+    insert_sql := insert_sql || ' WHERE tax.name = ANY ($1)';
+    count_sql := count_sql || ' WHERE tax.name = ANY ($1)';
     IF cardinality(tax_filters) > 0 THEN
       FOREACH taxfilter IN ARRAY tax_filters LOOP
         IF taxfilter.comparator IN ('ILIKE', 'LIKE') THEN
-          tax_sql := tax_sql || format(' AND object.properties->>%1$L %2$s ''%%3$s%''', taxfilter.pname, taxfilter.comparator, taxfilter.value);
+          insert_sql := insert_sql || format(' AND object.properties->>%1$L %2$s ''%%3$s%''', taxfilter.pname, taxfilter.comparator, taxfilter.value);
+          count_sql := count_sql || format(' AND object.properties->>%1$L %2$s ''%%3$s%''', taxfilter.pname, taxfilter.comparator, taxfilter.value);
         ELSE
-          tax_sql := tax_sql || format(' AND object.properties->>%1$L %2$s 3$L', taxfilter.pname, taxfilter.comparator, taxfilter.value);
+          insert_sql := insert_sql || format(' AND object.properties->>%1$L %2$s 3$L', taxfilter.pname, taxfilter.comparator, taxfilter.value);
+          count_sql := count_sql || format(' AND object.properties->>%1$L %2$s 3$L', taxfilter.pname, taxfilter.comparator, taxfilter.value);
         END IF;
       END LOOP;
     END IF;
@@ -171,9 +196,11 @@ BEGIN
         name2 := trim(replace(replace(replace(LOWER(pcofilter.pcname), ' ', '_'), '(', ''), ')', ''));
         pco_name2 := 'pco_' || name2;
         IF pcofilter.comparator IN ('ILIKE', 'LIKE') THEN
-          tax_sql := tax_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
+          insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
+          count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
         ELSE
-          tax_sql := tax_sql || format(' AND %1$s.properties->>%2$L %3$s 4$L', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
+          insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s 4$L', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
+          count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s 4$L', pco_name2, pcofilter.pname, pcofilter.comparator, pcofilter.value);
         END IF;
       END LOOP;
     END IF;
@@ -183,26 +210,32 @@ BEGIN
         name3 := trim(replace(replace(replace(LOWER(rcofilter.pcname), ' ', '_'), '(', ''), ')', ''));
         rco_name2 := 'rco_' || name3;
         IF rcofilter.comparator IN ('ILIKE', 'LIKE') THEN
-          tax_sql := tax_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
+          insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
+          count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s ''%%4$s%''', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
         ELSE
-          tax_sql := tax_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
+          insert_sql := insert_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
+          count_sql := count_sql || format(' AND %1$s.properties->>%2$L %3$s %4$L', rco_name2, rcofilter.pname, rcofilter.comparator, rcofilter.value);
         END IF;
-        tax_sql := tax_sql || format(' AND %1$s.relation_type = %2$L', rco_name2, rcofilter.relationtype);
+        insert_sql := insert_sql || format(' AND %1$s.relation_type = %2$L', rco_name2, rcofilter.relationtype);
+        count_sql := count_sql || format(' AND %1$s.relation_type = %2$L', rco_name2, rcofilter.relationtype);
       END LOOP;
     END IF;
     --
     -- if object_ids were passed, only use them
     IF cardinality(object_ids) > 0 THEN
-      tax_sql := tax_sql || ' AND object.id = ANY ($2)';
+      insert_sql := insert_sql || ' AND object.id = ANY ($2)';
+      count_sql := count_sql || ' AND object.id = ANY ($2)';
     END IF;
     -- enable limiting for previews
     IF count > 0 THEN
-      tax_sql := tax_sql || ' LIMIT ' || count;
+      insert_sql := insert_sql || ' LIMIT ' || count;
     END IF;
     -- prevent duplicates
-    tax_sql := tax_sql || ' ON CONFLICT DO NOTHING';
+    insert_sql := insert_sql || ' ON CONFLICT DO NOTHING';
     -- create _tmp with all object_ids
-    EXECUTE tax_sql
+    EXECUTE insert_sql
+    USING taxonomies, object_ids;
+    row_count := EXECUTE count_sql
     USING taxonomies, object_ids;
   END LOOP;
     -- add tax_fields as extra columns
@@ -342,8 +375,8 @@ BEGIN
         EXECUTE sql2;
       END LOOP;
     END IF;
-    -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, tax_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, tax_sql, fieldname, taxfield_sql2;
-    --RAISE EXCEPTION 'tax_sql: %:', tax_sql;
+    -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, insert_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, insert_sql, fieldname, taxfield_sql2;
+    --RAISE EXCEPTION 'insert_sql: %:', insert_sql;
     IF row_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
       RETURN QUERY EXECUTE return_query;
     ELSE
