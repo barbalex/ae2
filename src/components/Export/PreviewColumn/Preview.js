@@ -274,13 +274,18 @@ const Preview = () => {
     },
   })
 
-  const newRows = exportData?.data?.export?.rows ?? []
+  const newCount = exportData?.data?.exportAll?.exportDatum?.count
+  const newRows = exportData?.data?.exportAll?.exportDatum?.exportData
+    ? JSON.parse(exportData?.data?.exportAll?.exportDatum?.exportData)
+    : []
 
   console.log('Preview, exportData:', {
     exportData,
     exportLoading,
     exportError,
     taxFields,
+    newCount,
+    newRows,
   })
 
   const {
