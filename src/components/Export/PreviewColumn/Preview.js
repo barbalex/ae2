@@ -215,12 +215,48 @@ const Preview = () => {
 
   const anzFelder = fields.length ?? 0
 
-  const onClickXlsx = useCallback(() => {
+  const onClickXlsx = useCallback(async () => {
     // TODO:
     // 1. download the full rows
     // 2. rowsFromObjects
-    exportXlsx({ newRows, onSetMessage })
-  }, [newRows, onSetMessage])
+    const data = await client.mutate({
+      mutation: exportMutation,
+      variables: {
+        taxonomies,
+        taxFields,
+        taxFilters,
+        pcoFilters,
+        pcsOfPcoFilters,
+        pcsOfRcoFilters,
+        pcoProperties,
+        rcoFilters,
+        rcoProperties,
+        useSynonyms: withSynonymData,
+        count: 0,
+        objectIds: exportIds,
+        rowPerRco: !rcoInOneRow,
+      },
+    })
+    const rows = data?.data?.exportAll?.exportDatum?.exportData
+      ? JSON.parse(data?.data?.exportAll?.exportDatum?.exportData)
+      : []
+    exportXlsx({ rows, onSetMessage })
+  }, [
+    client,
+    exportIds,
+    onSetMessage,
+    pcoFilters,
+    pcoProperties,
+    pcsOfPcoFilters,
+    pcsOfRcoFilters,
+    rcoFilters,
+    rcoInOneRow,
+    rcoProperties,
+    taxFields,
+    taxFilters,
+    taxonomies,
+    withSynonymData,
+  ])
   const onClickCsv = useCallback(() => exportCsv(newRows), [newRows])
 
   if (exportError) {
