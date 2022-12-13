@@ -65,9 +65,9 @@ CREATE TYPE ae.export_row AS (
 );
 
 CREATE TYPE ae.export_data AS (
-  id integer, -- needed for apollo. Will be timestamp
+  id uuid, -- needed for apollo. Will be timestamp
   count integer, -- enable passing total count when only returning limited data for preview
-  data json -- this is an array of json objects
+  data jsonb -- this is an array of json objects
 );
 
 CREATE TYPE tax_field AS (
@@ -81,7 +81,7 @@ CREATE TYPE tax_field AS (
 -- TODO: need count of all, even when limited
 -- TODO: limit join when fetching rcos?
 CREATE OR REPLACE FUNCTION ae.export (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean)
-  RETURNS SETOF ae.export_row
+  RETURNS ae.export_data
   AS $$
 DECLARE
   taxonomy text;
@@ -115,6 +115,7 @@ DECLARE
   taxfield_sql2 text;
   object_id uuid;
   return_query text;
+  return_data ae.export_data;
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
@@ -235,7 +236,7 @@ BEGIN
     -- create _tmp with all object_ids
     EXECUTE insert_sql
     USING taxonomies, object_ids;
-    row_count := EXECUTE count_sql
+    EXECUTE count_sql INTO row_count
     USING taxonomies, object_ids;
   END LOOP;
     -- add tax_fields as extra columns
@@ -337,8 +338,7 @@ BEGIN
           -- return query
           return_query := format('
             SELECT
-              row.id,
-              row_to_json(ROW) AS properties
+              json_agg(ROW)
             FROM
               (%1$s) row', sql2);
         ELSE
@@ -377,16 +377,17 @@ BEGIN
     END IF;
     -- RAISE EXCEPTION 'taxonomies: %, tax_fields: %, tax_filters: %, pco_filters: %, pcs_of_pco_filters: %, pco_properties: %, use_synonyms: %, count: %, object_ids: %, insert_sql: %, fieldname: %, taxfield_sql2: %', taxonomies, tax_fields, tax_filters, pco_filters, pcs_of_pco_filters, pco_properties, use_synonyms, count, object_ids, insert_sql, fieldname, taxfield_sql2;
     --RAISE EXCEPTION 'insert_sql: %:', insert_sql;
+    return_data.id := gen_random_uuid ();
+    return_data.count = row_count;
     IF row_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
-      RETURN QUERY EXECUTE return_query;
+      EXECUTE return_query INTO return_data.data;
     ELSE
-      RETURN QUERY
       SELECT
-        row.id,
-        row_to_json(ROW) AS properties
+        json_agg(ROW)
       FROM
-        _tmp ROW;
+        _tmp ROW INTO return_data.data;
     END IF;
+    RETURN return_data;
     DROP TABLE _tmp;
 END
 $$
