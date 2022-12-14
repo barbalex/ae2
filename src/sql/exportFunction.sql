@@ -435,9 +435,9 @@ BEGIN
       SELECT
         json_agg(ROW)
       FROM
-        _tmp ROW INTO return_data_json;
+        _tmp ROW INTO return_data.export_data;
       -- TODO: simplify
-      return_data.export_data := return_data_json::jsonb;
+      -- return_data.export_data := return_data_json::jsonb;
     END IF;
     RETURN return_data;
     DROP TABLE _tmp;
@@ -446,7 +446,7 @@ END
 $$
 LANGUAGE plpgsql;
 
-ALTER FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean, sort_fields sort_field[])) OWNER TO postgres;
+ALTER FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean, sort_fields sort_field[]) OWNER TO postgres;
 
 -- test from grqphiql:
 -- mutation exportDataMutation($taxonomies: [String]!, $taxFields: [TaxFieldInput]!, $taxFilters: [TaxFilterInput]!, $pcoFilters: [PcoFilterInput]!, $pcsOfPcoFilters: [String]!, $pcsOfRcoFilters: [String]!, $pcoProperties: [PcoPropertyInput]!, $rcoFilters: [RcoFilterInput]!, $rcoProperties: [RcoPropertyInput]!, $useSynonyms: Boolean!, $count: Int!, $objectIds: [UUID]!) {
