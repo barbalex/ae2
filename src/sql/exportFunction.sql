@@ -105,6 +105,7 @@ DECLARE
   return_query text;
   return_data ae.export_data;
   return_data_json jsonb;
+  sort_field sort_field;
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
@@ -228,6 +229,20 @@ BEGIN
     END IF;
     -- TODO: if sorting was passed, add it
     -- enable limiting for previews
+    rows_sql := rows_sql || ' ORDER BY';
+    IF cardinality(sort_fields) > 0 THEN
+      FOR i IN 1..array_upper(sort_fields, 1)
+      LOOP
+        IF i = 1 THEN
+          sql := format(' %1$s.properties->>%2$L %3$s', sort_field.tname, sort_field.pname, sort_field.direction);
+        ELSE
+          sql := format(', %1$s.properties->>%2$L %3$s', sort_field.tname, sort_field.pname, sort_field.direction);
+        END IF;
+        rows_sql := rows_sql || sql;
+      END LOOP;
+    ELSE
+      rows_sql := rows_sql || ' object.id';
+    END IF;
     IF count > 0 THEN
       rows_sql := rows_sql || ' LIMIT ' || count;
     END IF;

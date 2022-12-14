@@ -107,6 +107,16 @@ const exportMutation = gql`
   }
 `
 
+const removeBadChars = (str) =>
+  str
+    .trim()
+    .toLowerCase()
+    .replaceAll(' ', '_')
+    .replaceAll('(', '')
+    .replaceAll(')', '')
+    .replaceAll('-', '')
+    .replaceAll('↵', '')
+
 const Preview = () => {
   const client = useApolloClient()
   const isSSR = typeof window === 'undefined'
@@ -139,6 +149,58 @@ const Preview = () => {
   const exportIds = store.export.ids.toJSON()
 
   const [count, setCount] = useState(15)
+  const [sortFields, setSortFields] = useState([])
+
+  const onGridSort = useCallback(
+    (column, direction) => {
+      console.log('Preview, onGridSort', {
+        column,
+        direction,
+        rcoProperties,
+        pcoProperties,
+        taxFields,
+      })
+      // TODO: setSortFields
+      // 1. build array of sortFields including their column name
+      //    will be used to find the correct sortField
+      const sortFieldsWithColumn = []
+      taxFields.forEach((taxField) => {
+        sortFieldsWithColumn.push({
+          tname: 'object',
+          pname: taxField.pname,
+          relationtype: '',
+          direction,
+          columnName: removeBadChars(
+            `${taxField.taxname}__${taxField.pname}`,
+          ),
+        })
+      })
+      pcoProperties.forEach((pcoProperty) => {
+        sortFieldsWithColumn.push({
+          tname: 'property_collection_object',
+          pname: pcoProperty.pname,
+          relationtype: '',
+          direction,
+          columnName: removeBadChars(
+            `${pcoProperty.pcname}__${pcoProperty.pname}`,
+          ),
+        })
+      })
+      rcoProperties.forEach((rcoProperty) => {
+        sortFieldsWithColumn.push({
+          tname: 'relation',
+          pname: rcoProperty.pname,
+          relationtype: rcoProperty.relationtype,
+          direction,
+          columnName: removeBadChars(
+            `${rcoProperty.pcname}__${rcoProperty.relationtype}__${rcoProperty.pname}`,
+          ),
+        })
+      })
+      // 2. find sortField, remove columnName, setSortFields
+    },
+    [pcoProperties, rcoProperties, taxFields],
+  )
 
   const {
     isLoading: exportLoading,
@@ -159,6 +221,7 @@ const Preview = () => {
       withSynonymData,
       exportIds,
       rcoInOneRow,
+      sortFields,
       count,
     ],
     queryFn: async () => {
@@ -180,6 +243,7 @@ const Preview = () => {
           count,
           objectIds: exportIds,
           rowPerRco: !rcoInOneRow,
+          sortFields,
         },
       })
       return data
@@ -280,7 +344,7 @@ const Preview = () => {
               <React.Suspense fallback={<div />}>
                 <ReactDataGridLazy
                   columns={pvColumns}
-                  onGridSort={() => {}}
+                  onGridSort={onGridSort}
                   rowGetter={(i) => rows[i]}
                   rowsCount={rows.length}
                   minHeight={500}
