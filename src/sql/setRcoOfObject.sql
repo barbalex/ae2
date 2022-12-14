@@ -2,7 +2,7 @@
 -- 1. if own rco exists, it is listed
 -- 2. if no own rco exists but for a synonym: rco of synonym is listed (no priorisation if multiple exist)
 -- 3. no rco > no row?
--- This would have to be updated after every update of rcos (and objects?)
+-- This would have to be updated after every update of rcos, synonyms (and objects?)
 CREATE TABLE ae.rco_of_object (
   object_id uuid NOT NULL REFERENCES ae.object (id) ON DELETE CASCADE ON UPDATE CASCADE,
   rco_id uuid NOT NULL REFERENCES ae.relation (id) ON DELETE CASCADE ON UPDATE CASCADE,

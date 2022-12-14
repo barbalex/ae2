@@ -2,7 +2,7 @@
 -- 1. if own pco exists, it is listed
 -- 2. if no own pco exists but for a synonym: pco of synonym is listed (no priorisation if multiple exist)
 -- 3. no pco > no row?
--- This would have to be updated after every update of pcos (and objects?)
+-- This would have to be updated after every update of pcos, synonyms (and objects?)
 CREATE TABLE ae.pco_of_object (
   object_id uuid NOT NULL REFERENCES ae.object (id) ON DELETE CASCADE ON UPDATE CASCADE,
   pco_id uuid NOT NULL REFERENCES ae.property_collection_object (id) ON DELETE CASCADE ON UPDATE CASCADE,
