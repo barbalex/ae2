@@ -187,20 +187,9 @@ const Preview = () => {
   })
 
   const newCount = exportData?.data?.exportAll?.exportDatum?.count
-  const newRows = exportData?.data?.exportAll?.exportDatum?.exportData
+  const rows = exportData?.data?.exportAll?.exportDatum?.exportData
     ? JSON.parse(exportData?.data?.exportAll?.exportDatum?.exportData)
     : []
-
-  console.log('Preview, exportData:', {
-    exportData,
-    exportLoading,
-    exportError,
-    taxFields,
-    newCount,
-    newRows,
-    pcoFilters,
-    pcsOfPcoFilters,
-  })
 
   const [message, setMessage] = useState('')
 
@@ -211,7 +200,7 @@ const Preview = () => {
     }
   }, [])
 
-  const fields = newRows[0] ? Object.keys(newRows[0]).map((k) => k) : []
+  const fields = rows[0] ? Object.keys(rows[0]).map((k) => k) : []
   const pvColumns = fields.map((k) => ({
     key: k,
     name: k,
@@ -263,7 +252,7 @@ const Preview = () => {
     taxonomies,
     withSynonymData,
   ])
-  const onClickCsv = useCallback(() => exportCsv(newRows), [newRows])
+  const onClickCsv = useCallback(() => exportCsv(rows), [rows])
 
   if (exportError) {
     return (
@@ -291,8 +280,9 @@ const Preview = () => {
               <React.Suspense fallback={<div />}>
                 <ReactDataGridLazy
                   columns={pvColumns}
-                  rowGetter={(i) => newRows[i]}
-                  rowsCount={newRows.length}
+                  onGridSort={() => {}}
+                  rowGetter={(i) => rows[i]}
+                  rowsCount={rows.length}
                   minHeight={500}
                   minColumnWidth={120}
                 />
