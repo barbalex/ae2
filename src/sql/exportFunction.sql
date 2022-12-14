@@ -240,7 +240,7 @@ BEGIN
       IF use_synonyms = TRUE THEN
         count_count_sql := format('
             WITH properties_per_object as (
-              SELECT DISTINCT
+              SELECT
                 ae.rco_of_object.object_id
               FROM ae.rco_of_object
                 INNER JOIN ae.relation ON ae.relation.id = ae.rco_of_object.rco_id
@@ -258,7 +258,7 @@ BEGIN
       ELSE
         count_count_sql := format('
             WITH properties_per_object as (
-              SELECT DISTINCT
+              SELECT
                 ae.relation.object_id
               FROM ae.relation
                 INNER JOIN ae.property_collection ON ae.property_collection.id = ae.relation.property_collection_id 
