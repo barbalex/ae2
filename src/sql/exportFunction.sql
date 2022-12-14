@@ -284,8 +284,6 @@ BEGIN
     ELSE
       count_count_sql := 'SELECT count(*) FROM _tmp_count';
     END IF;
-    -- TODO: correct sql has been choosen - but wrong count is returned
-    --RAISE EXCEPTION 'count_count_sql: %', count_count_sql;
     EXECUTE count_count_sql INTO row_count;
   END LOOP;
     -- add tax_fields as extra columns
