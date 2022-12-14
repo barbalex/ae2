@@ -41,3 +41,15 @@ CREATE TYPE rco_property AS (
     pcname text
 );
 
+CREATE TYPE tax_field AS (
+    pname text,
+    taxname text
+);
+
+CREATE TYPE sort_field AS (
+    tname text, -- what table the property is extracted from. One of: object, property_collection_object, relation
+    pname text, -- property name
+    relationtype text, -- relevant for relations
+    direction text -- ASC or DESC
+);
+
