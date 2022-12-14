@@ -6,8 +6,6 @@
 --    - taxFields (optional, default: [])
 --    - pcoFields (optional, default: [])
 --    - useSynonyms (optional, default: true)
---    - onlyRowsWithProperties (optional, default: true. Is only relevant if no pco-filters were passed.
---                             TODO: IS THIS USEFUL? Nope: user may receive filtered list without realizing it...)
 --    - list of objectIds (optional)
 --    - count (optional, limit is reserved word)
 -- 1. for every pc with fields choosen, select: object_id, fieldname, value (while applying all filters)
@@ -62,12 +60,7 @@ IMMUTABLE STRICT;
 --
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
--- TODO: need count of all, even when limited
--- TODO: limit join when fetching rcos?
--- TODO: create two versions?
---       1. for limited query (previews): returns ae.export_all (rename: export_limited)
---       2. for unlimited query (export): returns type with id and properties?
---       Reason: Would be nice if JSON.parse could be circumvented
+-- need count of all, even when limited. Thus returning ae.export_data
 CREATE OR REPLACE FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean)
   RETURNS ae.export_data
   AS $$
@@ -241,7 +234,7 @@ BEGIN
     EXECUTE count_sql
     USING taxonomies, object_ids;
     --RAISE EXCEPTION 'count_sql: %:', count_sql;
-    -- TODO: if 1 rco_property was passed and row_per_rco = TRUE, need to join for count
+    -- if 1 rco_property was passed and row_per_rco = TRUE, need to join for count
     IF cardinality(rco_properties) = 1 AND row_per_rco = TRUE THEN
       rcoproperty := rco_properties[1];
       IF use_synonyms = TRUE THEN
@@ -261,7 +254,7 @@ BEGIN
               count(*)
             FROM 
               _tmp_count 
-              INNER JOIN properties_per_object on properties_per_object.object_id = _tmp_count.id', rcoproperty.pcname, rcoproperty.relationtype);
+              LEFT JOIN properties_per_object on properties_per_object.object_id = _tmp_count.id', rcoproperty.pcname, rcoproperty.relationtype);
       ELSE
         count_count_sql := format('
             WITH properties_per_object as (
@@ -278,7 +271,7 @@ BEGIN
               count(*)
             FROM 
               _tmp_count 
-              INNER JOIN properties_per_object ON properties_per_object.object_id = _tmp_count.id', rcoproperty.pcname, rcoproperty.relationtype);
+              LEFT JOIN properties_per_object ON properties_per_object.object_id = _tmp_count.id', rcoproperty.pcname, rcoproperty.relationtype);
       END IF;
     ELSE
       count_count_sql := 'SELECT count(*) FROM _tmp_count';
