@@ -48,10 +48,10 @@ CREATE TYPE tax_field AS (
 );
 
 CREATE TYPE sort_field AS (
-    tname text, -- what table the property is extracted from. One of: object, property_collection_object, relation
-    pname text, -- property name
-    relationtype text, -- relevant for relations
-    direction text -- ASC or DESC
+  tname text, -- what table the property is extracted from. One of: object, property_collection_object, relation
+  pname text, -- property name
+  relationtype text, -- relevant for relations
+  direction text -- ASC or DESC
 );
 
 CREATE OR REPLACE FUNCTION ae.remove_bad_chars (var text)
@@ -436,8 +436,6 @@ BEGIN
         json_agg(ROW)
       FROM
         _tmp ROW INTO return_data.export_data;
-      -- TODO: simplify
-      -- return_data.export_data := return_data_json::jsonb;
     END IF;
     RETURN return_data;
     DROP TABLE _tmp;
