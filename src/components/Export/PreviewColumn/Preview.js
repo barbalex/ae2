@@ -135,6 +135,8 @@ const Preview = () => {
   const taxonomies = store.export.taxonomies.toJSON()
   const exportIds = store.export.ids.toJSON()
 
+  const [count, setCount] = useState(15)
+
   const {
     isLoading: exportLoading,
     error: exportError,
@@ -171,7 +173,7 @@ const Preview = () => {
           rcoFilters,
           rcoProperties,
           useSynonyms: withSynonymData,
-          count: 13,
+          count,
           objectIds: exportIds,
           rowPerRco: !rcoInOneRow,
         },
@@ -276,7 +278,7 @@ const Preview = () => {
               'de-CH',
             )} Datensätze, ${anzFelder.toLocaleString('de-CH')} ${
               anzFelder === 1 ? 'Feld' : 'Felder'
-            }`}</TotalDiv>
+            }. Erste ${count}:`}</TotalDiv>
             {!isSSR && (
               <React.Suspense fallback={<div />}>
                 <ReactDataGridLazy
