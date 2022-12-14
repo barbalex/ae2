@@ -86,8 +86,13 @@ const rcoFieldPropQuery = gql`
 
 const noOptionsMessage = () => 'Keine Daten entsprechen dem Filter'
 const loadingMessage = () => 'lade...'
+// react-highlight-words crashes when passing some chars
+const removeBadChars = (str) => str.replaceAll('(', '').replaceAll(')', '')
 const formatOptionLabel = ({ label }, { inputValue }) => (
-  <Highlighter searchWords={[inputValue]} textToHighlight={label} />
+  <Highlighter
+    searchWords={[removeBadChars(inputValue)]}
+    textToHighlight={label}
+  />
 )
 
 const IntegrationAutosuggest = ({

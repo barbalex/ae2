@@ -46,8 +46,13 @@ const SearchIcon = styled(FaSearch)`
 
 const noOptionsMessage = () => null
 const loadingMessage = () => null
+// react-highlight-words crashes when passing some chars
+const removeBadChars = (str) => str.replaceAll('(', '').replaceAll(')', '')
 const formatOptionLabel = ({ label }, { inputValue }) => (
-  <Highlighter searchWords={[inputValue]} textToHighlight={label} />
+  <Highlighter
+    searchWords={[removeBadChars(inputValue)]}
+    textToHighlight={label}
+  />
 )
 const formatGroupLabel = (data) => <div>{data.label}</div>
 

@@ -4,6 +4,7 @@ import Highlighter from 'react-highlight-words'
 import styled from '@emotion/styled'
 import { gql, useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
+import ErrorBoundary from '../../../../../shared/ErrorBoundary'
 
 import readableType from '../../../../../../modules/readableType'
 import storeContext from '../../../../../../storeContext'
@@ -82,8 +83,13 @@ const taxFieldPropQuery = gql`
 
 const noOptionsMessage = () => 'Keine Daten entsprechen dem Filter'
 const loadingMessage = () => 'lade...'
+// react-highlight-words crashes when passing some chars
+const removeBadChars = (str) => str.replaceAll('(', '').replaceAll(')', '')
 const formatOptionLabel = ({ label }, { inputValue }) => (
-  <Highlighter searchWords={[inputValue]} textToHighlight={label} />
+  <Highlighter
+    searchWords={[removeBadChars(inputValue)]}
+    textToHighlight={label}
+  />
 )
 
 const IntegrationAutosuggest = ({
@@ -187,37 +193,39 @@ const IntegrationAutosuggest = ({
   const valueToShow = value ? { value, label: value } : undefined
 
   return (
-    <Container>
-      <Label>{`${pname} (${readableType(jsontype)})`}</Label>
-      <StyledSelect
-        key={focusCount}
-        ref={ref}
-        value={valueToShow}
-        defaultOptions={true}
-        onChange={onChange}
-        onBlur={onBlur}
-        onFocus={() => {
-          if (focusCount === 0) {
-            setFocusCount(1)
-            setTimeout(() => {
-              ref.current.onMenuOpen()
-              ref.current.focus()
-            })
-          }
-        }}
-        formatOptionLabel={formatOptionLabel}
-        placeholder={''}
-        noOptionsMessage={noOptionsMessage}
-        loadingMessage={loadingMessage}
-        classNamePrefix="react-select"
-        loadOptions={loadOptions}
-        cacheOptions
-        isClearable
-        openMenuOnFocus={true}
-        spellCheck={false}
-        data-width={width}
-      />
-    </Container>
+    <ErrorBoundary>
+      <Container>
+        <Label>{`${pname} (${readableType(jsontype)})`}</Label>
+        <StyledSelect
+          key={focusCount}
+          ref={ref}
+          value={valueToShow}
+          defaultOptions={true}
+          onChange={onChange}
+          onBlur={onBlur}
+          onFocus={() => {
+            if (focusCount === 0) {
+              setFocusCount(1)
+              setTimeout(() => {
+                ref.current.onMenuOpen()
+                ref.current.focus()
+              })
+            }
+          }}
+          formatOptionLabel={formatOptionLabel}
+          placeholder={''}
+          noOptionsMessage={noOptionsMessage}
+          loadingMessage={loadingMessage}
+          classNamePrefix="react-select"
+          loadOptions={loadOptions}
+          cacheOptions
+          isClearable
+          openMenuOnFocus={true}
+          spellCheck={false}
+          data-width={width}
+        />
+      </Container>
+    </ErrorBoundary>
   )
 }
 
