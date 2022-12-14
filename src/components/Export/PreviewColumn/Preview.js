@@ -11,6 +11,7 @@ import exportXlsx from '../../../modules/exportXlsx'
 import exportCsv from '../../../modules/exportCsv'
 import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
+import CountInput from './CountInput'
 
 // react-data-grid calls window!
 const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
@@ -52,6 +53,8 @@ const TotalDiv = styled.div`
   font-size: small;
   padding-left: 9px;
   margin-top: 4px;
+  margin-bottom: 1px;
+  user-select: none;
 `
 const StyledButton = styled(Button)`
   border: 1px solid !important;
@@ -156,6 +159,7 @@ const Preview = () => {
       withSynonymData,
       exportIds,
       rcoInOneRow,
+      count,
     ],
     queryFn: async () => {
       if (taxonomies.length === 0) return []
@@ -274,11 +278,15 @@ const Preview = () => {
       <Container>
         {newCount > 0 && (
           <SpreadsheetContainer>
-            <TotalDiv>{`${newCount.toLocaleString(
-              'de-CH',
-            )} Datensätze, ${anzFelder.toLocaleString('de-CH')} ${
-              anzFelder === 1 ? 'Feld' : 'Felder'
-            }. Erste ${count}:`}</TotalDiv>
+            <TotalDiv>
+              {`${newCount.toLocaleString(
+                'de-CH',
+              )} Datensätze, ${anzFelder.toLocaleString('de-CH')} ${
+                anzFelder === 1 ? 'Feld' : 'Felder'
+              }. Erste `}
+              <CountInput count={count} setCount={setCount} />
+              {' :'}
+            </TotalDiv>
             {!isSSR && (
               <React.Suspense fallback={<div />}>
                 <ReactDataGridLazy
