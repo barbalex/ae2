@@ -53,7 +53,7 @@ CREATE OR REPLACE FUNCTION ae.remove_bad_chars (var text)
   RETURNS text
   AS $$
 BEGIN
-  RETURN trim(replace(replace(replace(replace(LOWER(var), ' ', '_'), '(', ''), ')', ''), '-', ''));
+  RETURN trim(replace(replace(replace(replace(replace(LOWER(var), ' ', '_'), '(', ''), ')', ''), '-', ''), '↵', ''));
 END;
 $$
 LANGUAGE plpgsql
@@ -261,7 +261,7 @@ BEGIN
               count(*)
             FROM 
               _tmp_count 
-              LEFT JOIN properties_per_object on properties_per_object.object_id = _tmp_count.id', rcoproperty.pcname, rcoproperty.relationtype);
+              INNER JOIN properties_per_object on properties_per_object.object_id = _tmp_count.id', rcoproperty.pcname, rcoproperty.relationtype);
       ELSE
         count_count_sql := format('
             WITH properties_per_object as (
@@ -278,7 +278,7 @@ BEGIN
               count(*)
             FROM 
               _tmp_count 
-              LEFT JOIN properties_per_object ON properties_per_object.object_id = _tmp_count.id', rcoproperty.pcname, rcoproperty.relationtype);
+              INNER JOIN properties_per_object ON properties_per_object.object_id = _tmp_count.id', rcoproperty.pcname, rcoproperty.relationtype);
       END IF;
     ELSE
       count_count_sql := 'SELECT count(*) FROM _tmp_count';
@@ -382,12 +382,14 @@ BEGIN
               LEFT JOIN properties_per_object ON properties_per_object.object_id = _tmp.id', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           END IF;
           -- return query
-          -- TODO: limit to count?
           return_query := format('
             SELECT
               json_agg(ROW)
             FROM
               (%1$s) row', sql2);
+          -- IF count > 0 THEN
+          --   return_query := return_query || ' LIMIT ' || count;
+          -- END IF;
         ELSE
           IF use_synonyms = TRUE THEN
             sql2 := format('
