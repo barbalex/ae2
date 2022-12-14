@@ -672,7 +672,14 @@ CREATE OR REPLACE FUNCTION ae.prop_values_filtered_function (table_name text, pr
   RETURNS SETOF ae.prop_value
   AS $$
 DECLARE
-  sql text := 'SELECT DISTINCT properties->>' || quote_literal(prop_name) || ' AS value FROM ae.' || table_name || ' INNER JOIN ae.' || pc_table_name || ' ON ae.' || table_name || '.' || pc_field_name || ' = ae.' || pc_table_name || '.id WHERE ae.' || pc_table_name || '.name = ' || quote_literal(pc_name) || ' and ae.' || table_name || '.properties->>' || quote_literal(prop_name) || ' like ''%' || prop_value || '%'' ORDER BY value';
+  sql text := format('
+  SELECT DISTINCT properties->>%1$L AS value 
+  FROM ae.%2$s 
+    INNER JOIN ae.%3$s ON ae.%2$s.%4$s = ae.%3$s.id 
+  WHERE 
+    ae.%3$s.name = %5$L 
+    and ae.%2$s.properties->>%1$L like %6$L 
+  ORDER BY value', prop_name, table_name, pc_table_name, pc_field_name, pc_name, '%%' || prop_value || '%');
 BEGIN
   --RAISE EXCEPTION  'sql: %', sql;
   RETURN QUERY EXECUTE sql;
