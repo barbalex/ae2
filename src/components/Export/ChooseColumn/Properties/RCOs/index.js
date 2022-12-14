@@ -41,17 +41,6 @@ const Count = styled.span`
   padding-left: 5px;
 `
 
-const rcoCountByTaxonomyRelationTypeQuery = gql`
-  query dataQuery {
-    rcoCountByTaxonomyRelationTypeFunction {
-      nodes {
-        propertyCollectionName
-        relationType
-        count
-      }
-    }
-  }
-`
 const propsByTaxQuery = gql`
   query propsByTaxDataQuery(
     $queryExportTaxonomies: Boolean!
@@ -74,9 +63,6 @@ const RCOs = ({ rcoExpanded, onToggleRco }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
-  const { data, error: dataError } = useQuery(
-    rcoCountByTaxonomyRelationTypeQuery,
-  )
   const { data: propsByTaxData, error: propsByTaxDataError } = useQuery(
     propsByTaxQuery,
     {
@@ -96,50 +82,13 @@ const RCOs = ({ rcoExpanded, onToggleRco }) => {
     }
     return `${x.propertyCollectionName}: ${x.relationType}`
   })
-  // need to add BeziehungsPartnerId and BeziehungsPartnerName
-  const rcoCountByTaxonomyRelationType =
-    data?.rcoCountByTaxonomyRelationTypeFunction?.nodes ?? []
-  // in every key of rcoPropertiesByPropertyCollection
-  // add id and name of Beziehungspartner
 
-  Object.values(rcoPropertiesByPropertyCollection).forEach((rpc) => {
-    const myRpc = rpc[0] || {}
-    let rco = rcoCountByTaxonomyRelationType.find(
-      (r) =>
-        r.propertyCollectionName === myRpc.propertyCollectionName &&
-        r.relationType === myRpc.relationType,
-    )
-    if (!rco) {
-      rco = rcoCountByTaxonomyRelationType.find(
-        (r) =>
-          `${r.propertyCollectionName}: ${r.relationType}` ===
-            myRpc.propertyCollectionName &&
-          r.relationType === myRpc.relationType,
-      )
-    }
-    if (!rco) rco = {}
-    rpc.push({
-      count: rco.count,
-      jsontype: 'String',
-      propertyCollectionName: myRpc.propertyCollectionName,
-      propertyName: 'Beziehungspartner_id',
-      relationType: myRpc.relationType,
-    })
-    rpc.push({
-      count: rco.count,
-      jsontype: 'String',
-      propertyCollectionName: myRpc.propertyCollectionName,
-      propertyName: 'Beziehungspartner_Name',
-      relationType: myRpc.relationType,
-    })
-  })
   const rcoPropertiesFields = groupBy(rcoProperties, 'propertyName')
   const rcNames = Object.keys(rcoPropertiesByPropertyCollection)
   const rCCount = rcNames.length
 
   if (propsByTaxDataError)
     return `Error fetching data: ${propsByTaxDataError.message}`
-  if (dataError) return `Error fetching data: ${dataError.message}`
 
   return (
     <ErrorBoundary>
