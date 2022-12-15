@@ -69,7 +69,7 @@ IMMUTABLE STRICT;
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
 -- need count of all, even when limited. Thus returning ae.export_data
-CREATE OR REPLACE FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean, sort_fields sort_field[])
+CREATE OR REPLACE FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean, sort_fields sort_field[])
   RETURNS ae.export_data
   AS $$
 DECLARE
@@ -85,7 +85,14 @@ DECLARE
   pcofilter pco_filter;
   rcofilter rco_filter;
   pc_of_pco_filters text;
-  --pcs_of_pco_filters text[];
+  pcs_of_pco_filters text[] := ( SELECT DISTINCT
+      pcname
+    FROM
+      pco_filters);
+  pcs_of_rco_filters text[] := ( SELECT DISTINCT
+      pcname
+    FROM
+      rco_filters);
   pc_of_rco_filters text;
   name1 text;
   pc_name text;
@@ -112,10 +119,6 @@ DECLARE
   sort_field sort_field;
   orderby_sql text;
 BEGIN
-  -- pcs_of_pco_filters: = SELECT DISTINCT
-  --   pcname
-  -- FROM
-  --   pco_filters;
   -- create table
   DROP TABLE IF EXISTS _tmp;
   -- TODO: re-declare temporary
@@ -487,7 +490,7 @@ END
 $$
 LANGUAGE plpgsql;
 
-ALTER FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pcs_of_rco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean, sort_fields sort_field[]) OWNER TO postgres;
+ALTER FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean, sort_fields sort_field[]) OWNER TO postgres;
 
 -- test from grqphiql:
 -- mutation exportDataMutation($taxonomies: [String]!, $taxFields: [TaxFieldInput]!, $taxFilters: [TaxFilterInput]!, $pcoFilters: [PcoFilterInput]!, $pcsOfPcoFilters: [String]!, $pcsOfRcoFilters: [String]!, $pcoProperties: [PcoPropertyInput]!, $rcoFilters: [RcoFilterInput]!, $rcoProperties: [RcoPropertyInput]!, $useSynonyms: Boolean!, $count: Int!, $objectIds: [UUID]!) {
