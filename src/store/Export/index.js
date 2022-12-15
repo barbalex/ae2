@@ -248,7 +248,6 @@ export default types
       // TODO:
       // if single self.taxonomies, use taxname instead of 'taxonomie'
       // if multiple self.taxonomies, rename all taxProperties to 'taxonomie'
-      console.log('store, addTaxProperty', { taxname, pname })
       const nrOfPropertiesExported =
         self.taxProperties.length +
         self.rcoProperties.length +
