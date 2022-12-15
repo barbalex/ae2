@@ -184,8 +184,24 @@ BEGIN
                           INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id', pco_name, pc_name); rows_sql := rows_sql || sql;
               END IF;
         END IF;
-      -- WHEN 'relation' THEN
-      --   'TODO:'
+      WHEN 'relation' THEN
+        -- only join if not already joined due to filtering
+        IF cardinality(pcs_of_rco_filters) = 0 THEN
+          name := ae.remove_bad_chars (sort_field.pcname);
+          pc_name2 := 'rpc_' || name;
+          rco_name := 'rco_' || name;
+          IF use_synonyms = TRUE THEN
+            sql := format(' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
+                          INNER JOIN ae.relation %1$s ON %1$s.id = rcoo.rco_id
+                          INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id', rco_name, pc_name2, sort_field.pcname);
+            rows_sql := rows_sql || sql;
+          ELSE
+            -- filter directly by relation
+            sql := format(' INNER JOIN ae.relation %1$s ON %1$s.object_id = object.id
+                          INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id', rco_name, pc_name2, sort_field.pcname);
+            rows_sql := rows_sql || sql;
+          END IF;
+        END IF;
       -- ELSE
       --   'TODO:'
       END CASE;
