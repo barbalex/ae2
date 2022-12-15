@@ -78,7 +78,7 @@ const exportMutation = gql`
     $count: Int!
     $objectIds: [UUID]!
     $rowPerRco: Boolean!
-    $sortFields: [SortFieldInput]!
+    $sortField: SortFieldInput
   ) {
     exportAll(
       input: {
@@ -93,7 +93,7 @@ const exportMutation = gql`
         count: $count
         objectIds: $objectIds
         rowPerRco: $rowPerRco
-        sortFields: $sortFields
+        sortField: $sortField
       }
     ) {
       exportDatum {
@@ -141,10 +141,11 @@ const Preview = () => {
   const exportIds = store.export.ids.toJSON()
 
   const [count, setCount] = useState(15)
-  const [sortFields, setSortFields] = useState([])
+  const [sortField, setSortField] = useState()
 
   const onGridSort = useCallback(
     (column, direction) => {
+      if (direction === 'NONE') return setSortField(undefined)
       // TODO: setSortFields
       // 1. build array of sortFields including their column name
       //    will be used to find the correct sortField
@@ -198,13 +199,13 @@ const Preview = () => {
       })
       if (sortField) {
         delete sortField.columnName
-        setSortFields([sortField])
+        setSortField(sortField)
       }
     },
     [pcoProperties, rcoProperties, taxFields],
   )
 
-  console.log('Preview', { sortFields })
+  console.log('Preview', { sortField })
 
   const {
     isLoading: exportLoading,
@@ -223,7 +224,7 @@ const Preview = () => {
       withSynonymData,
       exportIds,
       rcoInOneRow,
-      sortFields,
+      sortField,
       count,
     ],
     queryFn: async () => {
@@ -243,7 +244,7 @@ const Preview = () => {
           count,
           objectIds: exportIds,
           rowPerRco: !rcoInOneRow,
-          sortFields,
+          sortField,
         },
       })
       return data
@@ -292,7 +293,7 @@ const Preview = () => {
         count: 0,
         objectIds: exportIds,
         rowPerRco: !rcoInOneRow,
-        sortFields,
+        sortField,
       },
     })
     const rows = data?.data?.exportAll?.exportDatum?.exportData
@@ -308,7 +309,7 @@ const Preview = () => {
     rcoFilters,
     rcoInOneRow,
     rcoProperties,
-    sortFields,
+    sortField,
     taxFields,
     taxFilters,
     taxonomies,

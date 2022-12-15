@@ -69,7 +69,7 @@ IMMUTABLE STRICT;
 -- need to use a record type or jsonb, as there exists no predefined structure
 -- docs: https://www.postgresql.org/docs/15/plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS
 -- need count of all, even when limited. Thus returning ae.export_data
-CREATE OR REPLACE FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pcs_of_pco_filters text[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean, sort_fields sort_field[])
+CREATE OR REPLACE FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean, sort_field sort_field)
   RETURNS ae.export_data
   AS $$
 DECLARE
@@ -85,14 +85,24 @@ DECLARE
   pcofilter pco_filter;
   rcofilter rco_filter;
   pc_of_pco_filters text;
-  pcs_of_pco_filters text[] := ( SELECT DISTINCT
-      pcname
-    FROM
-      pco_filters);
-  pcs_of_rco_filters text[] := ( SELECT DISTINCT
-      pcname
-    FROM
-      rco_filters);
+  pcs_of_pco_filters text[] := (
+    SELECT
+      ARRAY ( SELECT DISTINCT
+          _row.pcname
+        FROM
+          unnest(pco_filters) AS _row (comparator,
+            pname,
+            pcname,
+            value)));
+  pcs_of_rco_filters text[] := (
+    SELECT
+      ARRAY ( SELECT DISTINCT
+          _row.pcname
+        FROM
+          unnest(rco_filters) AS _row (comparator,
+            pname,
+            pcname,
+            value)));
   pc_of_rco_filters text;
   name text;
   pc_name text;
@@ -109,15 +119,14 @@ DECLARE
   object record;
   fieldname text;
   tablename text;
-  sortfield sort_field;
   taxfield_sql text;
   taxfield_sql2 text;
   object_id uuid;
   return_query text;
   return_data ae.export_data;
   return_data_json jsonb;
-  sort_field sort_field;
-  orderby_sql text;
+  orderby_sql_in_insert text;
+  orderby_sql_in_select text;
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
@@ -161,6 +170,25 @@ BEGIN
           count_sql := count_sql || sql;
         END IF;
       END LOOP;
+    END IF;
+    -- TODO: if sorted by pco, left join to pco if not already joined due to filtering
+    IF cardinality(pcs_of_pco_filters) = 0 AND sort_field IS NOT NULL THEN
+      CASE sort_field.tname
+      WHEN 'property_collection_object' THEN
+        name := ae.remove_bad_chars (sort_field.pcname); pc_name := 'pc_' || name; pco_name := 'pco_' || name; pcoo_name := 'pcoo_' || name; IF use_synonyms = TRUE THEN
+            sql := format(' LEFT JOIN ae.pco_of_object %3$s ON %3$s.object_id = object.id
+                          INNER JOIN ae.property_collection_object %1$s ON %1$s.id = %3$s.pco_id
+                          INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id', pco_name, pc_name, pcoo_name); rows_sql := rows_sql || sql;
+          ELSE
+            sql := format(' LEFT JOIN ae.property_collection_object %1$s ON %1$s.object_id = object.id
+                          INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id', pco_name, pc_name); rows_sql := rows_sql || sql;
+          END IF;
+      -- WHEN 'relation' THEN
+      --   'TODO:'
+      -- ELSE
+      --   'TODO:'
+      END CASE;
+      --RAISE EXCEPTION 'sql: %:', sql;
     END IF;
     -- join to filter by rcos
     IF cardinality(pcs_of_rco_filters) > 0 THEN
@@ -247,31 +275,22 @@ BEGIN
     END IF;
     -- TODO: if sorting was passed, add it
     -- enable limiting for previews
-    IF cardinality(sort_fields) > 0 THEN
-      orderby_sql := ' ORDER BY';
-      FOR i IN 1..array_upper(sort_fields, 1)
-      LOOP
-        sortfield := sort_fields[i];
-        CASE sortfield.tname
-        WHEN 'property_collection_object' THEN
-          fieldname := ae.remove_bad_chars (sortfield.pcname || '__' || sortfield.pname);
-        WHEN 'relation' THEN
-          fieldname := ae.remove_bad_chars (sortfield.pcname || '__' || sortfield.relationtype || '__' || sortfield.pname);
-        ELSE
-          IF cardinality(taxonomies) > 1 THEN
-              fieldname := 'taxonomie__' || ae.remove_bad_chars (sortfield.pname);
-            ELSE
-              fieldname := ae.remove_bad_chars (sortfield.pcname || '__' || sortfield.pname);
-            END IF;
-        END CASE;
-        IF i = 1 THEN
-          -- TODO: need to name the table as when setting the properties
-          orderby_sql := orderby_sql || format(' %1$s %2$s', fieldname, sortfield.direction);
-        ELSE
-          orderby_sql := orderby_sql || format(', %1$s %2$s', fieldname, sortfield.direction);
-        END IF;
-      END LOOP;
-      rows_sql := rows_sql || orderby_sql;
+    IF sort_field IS NOT NULL THEN
+      CASE sort_field.tname
+      WHEN 'property_collection_object' THEN
+        tablename := 'pco_' || ae.remove_bad_chars (sort_field.pcname); fieldname := ae.remove_bad_chars (sort_field.pcname || '__' || sort_field.pname);
+      WHEN 'relation' THEN
+        tablename := 'rco_' || ae.remove_bad_chars (sort_field.pcname); fieldname := ae.remove_bad_chars (sort_field.pcname || '__' || sort_field.relationtype || '__' || sort_field.pname);
+      WHEN 'object' THEN
+        tablename := 'object'; IF cardinality(taxonomies) > 1 THEN
+            fieldname := 'taxonomie__' || ae.remove_bad_chars (sort_field.pname);
+          ELSE
+            fieldname := ae.remove_bad_chars (sort_field.pcname || '__' || sort_field.pname);
+          END IF;
+      END CASE;
+      orderby_sql_in_insert := format(' ORDER BY %1$s.properties->>%2$L %3$s NULLS LAST', tablename, sort_field.pname, sort_field.direction);
+      orderby_sql_in_select := format(' ORDER BY %1$s %2$s NULLS LAST', fieldname, sort_field.direction);
+      rows_sql := rows_sql || orderby_sql_in_insert;
     END IF;
     IF count > 0 THEN
       rows_sql := rows_sql || ' LIMIT ' || count;
@@ -423,7 +442,7 @@ BEGIN
             FROM 
               _tmp 
               LEFT JOIN properties_per_object ON properties_per_object.object_id = _tmp.id
-            %5$s', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype, orderby_sql);
+            %5$s', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype, orderby_sql_in_insert);
           END IF;
           -- return query
           return_query := format('
@@ -476,11 +495,20 @@ BEGIN
     IF row_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
       EXECUTE return_query INTO return_data.export_data;
     ELSE
-      return_query := '
+      -- TODO: update other return_query
+      IF orderby_sql_in_select IS NOT NULL THEN
+        return_query := format('
+      SELECT
+        json_agg(ROW)
+      FROM
+        (select * from _tmp %s) ROW', orderby_sql_in_select);
+      ELSE
+        return_query := '
       SELECT
         json_agg(ROW)
       FROM
         _tmp ROW';
+      END IF;
       EXECUTE return_query INTO return_data.export_data;
     END IF;
     RETURN return_data;
@@ -490,7 +518,7 @@ END
 $$
 LANGUAGE plpgsql;
 
-ALTER FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean, sort_fields sort_field[]) OWNER TO postgres;
+ALTER FUNCTION ae.export_all (taxonomies text[], tax_fields tax_field[], tax_filters tax_filter[], pco_filters pco_filter[], pco_properties pco_property[], rco_filters rco_filter[], rco_properties rco_property[], use_synonyms boolean, count integer, object_ids uuid[], row_per_rco boolean, sort_field sort_field) OWNER TO postgres;
 
 -- test from grqphiql:
 -- mutation exportDataMutation($taxonomies: [String]!, $taxFields: [TaxFieldInput]!, $taxFilters: [TaxFilterInput]!, $pcoFilters: [PcoFilterInput]!, $pcsOfPcoFilters: [String]!, $pcsOfRcoFilters: [String]!, $pcoProperties: [PcoPropertyInput]!, $rcoFilters: [RcoFilterInput]!, $rcoProperties: [RcoPropertyInput]!, $useSynonyms: Boolean!, $count: Int!, $objectIds: [UUID]!) {
