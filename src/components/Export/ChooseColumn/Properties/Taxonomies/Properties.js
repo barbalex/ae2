@@ -8,7 +8,7 @@ const TaxProperties = ({ properties, columns }) => {
   return properties.map((p) => (
     <Chooser
       key={`${p.propertyName}${p.jsontype}`}
-      taxname={'Taxonomie'}
+      taxname={p.taxonomyName}
       pname={p.propertyName}
       jsontype={p.jsontype}
       count={p.count}
