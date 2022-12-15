@@ -169,7 +169,7 @@ BEGIN
         END IF;
       END LOOP;
     END IF;
-    -- TODO: if sorted by pco, left join to pco if not already joined due to filtering
+    -- if sorted, left join to pco if not already joined due to filtering
     IF sort_field IS NOT NULL THEN
       CASE sort_field.tname
       WHEN 'property_collection_object' THEN
@@ -203,9 +203,9 @@ BEGIN
           END IF;
         END IF;
     ELSE
+      -- no need to join, data is in object
       rows_sql := rows_sql || '';
       END CASE;
-      --RAISE EXCEPTION 'sql: %:', sql;
     END IF;
     -- join to filter by rcos
     IF cardinality(pcs_of_rco_filters) > 0 THEN
@@ -517,7 +517,6 @@ BEGIN
     --RAISE EXCEPTION 'rows_sql: %:', rows_sql;
     return_data.id := gen_random_uuid ()::uuid;
     return_data.count = row_count;
-    -- TODO: sort
     IF row_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
       EXECUTE return_query INTO return_data.export_data;
     ELSE
