@@ -71,8 +71,6 @@ const exportMutation = gql`
     $taxFields: [TaxFieldInput]!
     $taxFilters: [TaxFilterInput]!
     $pcoFilters: [PcoFilterInput]!
-    $pcsOfPcoFilters: [String]!
-    $pcsOfRcoFilters: [String]!
     $pcoProperties: [PcoPropertyInput]!
     $rcoFilters: [RcoFilterInput]!
     $rcoProperties: [RcoPropertyInput]!
@@ -88,8 +86,6 @@ const exportMutation = gql`
         taxFields: $taxFields
         taxFilters: $taxFilters
         pcoFilters: $pcoFilters
-        pcsOfPcoFilters: $pcsOfPcoFilters
-        pcsOfRcoFilters: $pcsOfRcoFilters
         pcoProperties: $pcoProperties
         rcoFilters: $rcoFilters
         rcoProperties: $rcoProperties
@@ -136,13 +132,7 @@ const Preview = () => {
   // 2019 08 20: No idea why suddenly need to getSnapshot
   // because without changes are not detected????
   const pcoFilters = getSnapshot(pcoFiltersPassed)
-  const pcsOfPcoFilters = pcoFilters?.length
-    ? [...new Set(pcoFilters.map((f) => f.pcname))]
-    : []
   const rcoFilters = getSnapshot(rcoFiltersPassed)
-  const pcsOfRcoFilters = rcoFilters?.length
-    ? [...new Set(rcoFilters.map((f) => f.pcname))]
-    : []
   const taxFilters = getSnapshot(taxFiltersPassed)
   const rcoProperties = getSnapshot(rcoPropertiesPassed)
   const pcoProperties = getSnapshot(pcoPropertiesPassed)
@@ -227,8 +217,6 @@ const Preview = () => {
       taxFields,
       taxFilters,
       pcoFilters,
-      pcsOfPcoFilters,
-      pcsOfRcoFilters,
       pcoProperties,
       rcoFilters,
       rcoProperties,
@@ -248,8 +236,6 @@ const Preview = () => {
           taxFields,
           taxFilters,
           pcoFilters,
-          pcsOfPcoFilters,
-          pcsOfRcoFilters,
           pcoProperties,
           rcoFilters,
           rcoProperties,
@@ -299,8 +285,6 @@ const Preview = () => {
         taxFields,
         taxFilters,
         pcoFilters,
-        pcsOfPcoFilters,
-        pcsOfRcoFilters,
         pcoProperties,
         rcoFilters,
         rcoProperties,
@@ -321,11 +305,10 @@ const Preview = () => {
     onSetMessage,
     pcoFilters,
     pcoProperties,
-    pcsOfPcoFilters,
-    pcsOfRcoFilters,
     rcoFilters,
     rcoInOneRow,
     rcoProperties,
+    sortFields,
     taxFields,
     taxFilters,
     taxonomies,
