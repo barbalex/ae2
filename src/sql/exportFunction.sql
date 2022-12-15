@@ -49,6 +49,7 @@ CREATE TYPE tax_field AS (
 
 CREATE TYPE sort_field AS (
   tname text, -- what table the property is extracted from. One of: object, property_collection_object, relation
+  pcname text, -- name of property collection or taxonomy
   pname text, -- property name
   relationtype text, -- relevant for relations
   direction text -- ASC or DESC
@@ -99,6 +100,7 @@ DECLARE
   tmprow2 record;
   object record;
   fieldname text;
+  tablename text;
   taxfield_sql text;
   taxfield_sql2 text;
   object_id uuid;
@@ -231,12 +233,28 @@ BEGIN
     -- enable limiting for previews
     rows_sql := rows_sql || ' ORDER BY';
     IF cardinality(sort_fields) > 0 THEN
+      IF sort_field.tname = 'object' THEN
+        IF cardinality(taxonomies) > 1 THEN
+          tablename := 'taxonomie__' || replace(LOWER(taxfield.pname), ' ', '_');
+        ELSE
+          tablename := ae.remove_bad_chars (tax_field.pcname || '__' || taxfield.pname);
+        END IF;
+      ELSE
+        IF sort_field.tname = 'property_collection_object' THEN
+          tablename := ae.remove_bad_chars (tax_field.pcname || '__' || tax_field.pname);
+        ELSE
+          IF sort_field.tname = 'relation' THEN
+            tablename := ae.remove_bad_chars (tax_field.pcname || '__' || tax_field.relationtype || '__' || tax_field.pname);
+          END IF;
+        END IF;
+      END IF;
       FOR i IN 1..array_upper(sort_fields, 1)
       LOOP
         IF i = 1 THEN
-          sql := format(' %1$s.properties->>%2$L %3$s', sort_field.tname, sort_field.pname, sort_field.direction);
+          -- TODO: need to name the table as when setting the properties
+          sql := format(' %1$s.properties->>%2$L %3$s', tablename, sort_field.pname, sort_field.direction);
         ELSE
-          sql := format(', %1$s.properties->>%2$L %3$s', sort_field.tname, sort_field.pname, sort_field.direction);
+          sql := format(', %1$s.properties->>%2$L %3$s', tablename, sort_field.pname, sort_field.direction);
         END IF;
         rows_sql := rows_sql || sql;
       END LOOP;
@@ -307,7 +325,7 @@ BEGIN
         -- several fieldnames exist in many taxonomies, so need not add taxonmy-name if multiple taxonomies are used
         -- if only one taxonomy is used, do add taxonomy-name
         IF cardinality(taxonomies) > 1 THEN
-          fieldname := 'taxonomie__' || replace(LOWER(taxfield.pname), ' ', '_');
+          fieldname := 'taxonomie__' || ae.remove_bad_chars (taxfield.pname);
         ELSE
           fieldname := ae.remove_bad_chars (taxonomies[1] || '__' || taxfield.pname);
         END IF;
