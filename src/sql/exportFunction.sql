@@ -202,8 +202,8 @@ BEGIN
             rows_sql := rows_sql || sql;
           END IF;
         END IF;
-      -- ELSE
-      --   'TODO:'
+    ELSE
+      rows_sql := rows_sql || '';
       END CASE;
       --RAISE EXCEPTION 'sql: %:', sql;
     END IF;
