@@ -130,13 +130,11 @@ DECLARE
 BEGIN
   -- create table
   DROP TABLE IF EXISTS _tmp;
-  -- TODO: re-declare temporary
-  CREATE TABLE _tmp (
+  CREATE TEMPORARY TABLE _tmp (
     id uuid PRIMARY KEY
   );
   DROP TABLE IF EXISTS _tmp_count;
-  -- TODO: re-declare temporary
-  CREATE TABLE _tmp_count (
+  CREATE TEMPORARY TABLE _tmp_count (
     id uuid PRIMARY KEY
   );
   -- insert object_ids
@@ -172,17 +170,20 @@ BEGIN
       END LOOP;
     END IF;
     -- TODO: if sorted by pco, left join to pco if not already joined due to filtering
-    IF cardinality(pcs_of_pco_filters) = 0 AND sort_field IS NOT NULL THEN
+    IF sort_field IS NOT NULL THEN
       CASE sort_field.tname
       WHEN 'property_collection_object' THEN
-        name := ae.remove_bad_chars (sort_field.pcname); pc_name := 'pc_' || name; pco_name := 'pco_' || name; pcoo_name := 'pcoo_' || name; IF use_synonyms = TRUE THEN
-            sql := format(' LEFT JOIN ae.pco_of_object %3$s ON %3$s.object_id = object.id
+        -- only join if not already joined due to filtering
+        IF cardinality(pcs_of_pco_filters) = 0 THEN
+            name := ae.remove_bad_chars (sort_field.pcname); pc_name := 'pc_' || name; pco_name := 'pco_' || name; pcoo_name := 'pcoo_' || name; IF use_synonyms = TRUE THEN
+                sql := format(' LEFT JOIN ae.pco_of_object %3$s ON %3$s.object_id = object.id
                           INNER JOIN ae.property_collection_object %1$s ON %1$s.id = %3$s.pco_id
                           INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id', pco_name, pc_name, pcoo_name); rows_sql := rows_sql || sql;
-          ELSE
-            sql := format(' LEFT JOIN ae.property_collection_object %1$s ON %1$s.object_id = object.id
+              ELSE
+                sql := format(' LEFT JOIN ae.property_collection_object %1$s ON %1$s.object_id = object.id
                           INNER JOIN ae.property_collection %2$s ON %2$s.id = %1$s.property_collection_id', pco_name, pc_name); rows_sql := rows_sql || sql;
-          END IF;
+              END IF;
+        END IF;
       -- WHEN 'relation' THEN
       --   'TODO:'
       -- ELSE
@@ -273,8 +274,8 @@ BEGIN
       rows_sql := rows_sql || sql;
       count_sql := count_sql || sql;
     END IF;
-    -- TODO: if sorting was passed, add it
     -- enable limiting for previews
+    -- need to join to enable sorting before limiting
     IF sort_field IS NOT NULL THEN
       CASE sort_field.tname
       WHEN 'property_collection_object' THEN
@@ -442,14 +443,23 @@ BEGIN
             FROM 
               _tmp 
               LEFT JOIN properties_per_object ON properties_per_object.object_id = _tmp.id
-            %5$s', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype, orderby_sql_in_insert);
+            %5$s', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
           END IF;
           -- return query
-          return_query := format('
-            SELECT
-              json_agg(ROW)
-            FROM
-              (%1$s) row', sql2);
+          IF orderby_sql_in_select IS NOT NULL THEN
+            -- need to sort again here
+            return_query := format('
+              SELECT
+                json_agg(ROW)
+              FROM
+                (select * from (%1$s) %2$s) row', sql2, orderby_sql_in_select);
+          ELSE
+            return_query := format('
+              SELECT
+                json_agg(ROW)
+              FROM
+                (%1$s) row', sql2);
+          END IF;
           -- IF count > 0 THEN
           --   return_query := return_query || ' LIMIT ' || count;
           -- END IF;
@@ -495,7 +505,7 @@ BEGIN
     IF row_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
       EXECUTE return_query INTO return_data.export_data;
     ELSE
-      -- TODO: update other return_query
+      -- need to sort again here
       IF orderby_sql_in_select IS NOT NULL THEN
         return_query := format('
       SELECT
@@ -512,8 +522,8 @@ BEGIN
       EXECUTE return_query INTO return_data.export_data;
     END IF;
     RETURN return_data;
-    -- DROP TABLE _tmp; TODO: re-enable
-    -- DROP TABLE _tmp_count; TODO: re-enable
+    DROP TABLE _tmp;
+    DROP TABLE _tmp_count;
 END
 $$
 LANGUAGE plpgsql;
