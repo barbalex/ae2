@@ -234,11 +234,7 @@ BEGIN
     rows_sql := rows_sql || ' ORDER BY';
     IF cardinality(sort_fields) > 0 THEN
       IF sort_field.tname = 'object' THEN
-        IF cardinality(taxonomies) > 1 THEN
-          tablename := 'taxonomie__' || replace(LOWER(taxfield.pname), ' ', '_');
-        ELSE
-          tablename := ae.remove_bad_chars (tax_field.pcname || '__' || taxfield.pname);
-        END IF;
+        tablename := 'object';
       ELSE
         IF sort_field.tname = 'property_collection_object' THEN
           tablename := ae.remove_bad_chars (tax_field.pcname || '__' || tax_field.pname);

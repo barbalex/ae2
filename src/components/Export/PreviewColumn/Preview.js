@@ -153,13 +153,6 @@ const Preview = () => {
 
   const onGridSort = useCallback(
     (column, direction) => {
-      console.log('Preview, onGridSort', {
-        column,
-        direction,
-        rcoProperties,
-        pcoProperties,
-        taxFields,
-      })
       // TODO: setSortFields
       // 1. build array of sortFields including their column name
       //    will be used to find the correct sortField
@@ -167,17 +160,17 @@ const Preview = () => {
       taxFields.forEach((taxField) => {
         sortFieldsWithColumn.push({
           tname: 'object',
+          pcname: taxField.taxname,
           pname: taxField.pname,
           relationtype: '',
           direction,
-          columnName: removeBadChars(
-            `${taxField.taxname}__${taxField.pname}`,
-          ),
+          columnName: removeBadChars(`${taxField.taxname}__${taxField.pname}`),
         })
       })
       pcoProperties.forEach((pcoProperty) => {
         sortFieldsWithColumn.push({
           tname: 'property_collection_object',
+          pcname: pcoProperty.pcname,
           pname: pcoProperty.pname,
           relationtype: '',
           direction,
@@ -189,6 +182,7 @@ const Preview = () => {
       rcoProperties.forEach((rcoProperty) => {
         sortFieldsWithColumn.push({
           tname: 'relation',
+          pcname: rcoProperty.pcname,
           pname: rcoProperty.pname,
           relationtype: rcoProperty.relationtype,
           direction,
@@ -198,9 +192,27 @@ const Preview = () => {
         })
       })
       // 2. find sortField, remove columnName, setSortFields
+      const sortField = sortFieldsWithColumn.find(
+        (sf) => sf.columnName === column,
+      )
+      console.log('Preview, onGridSort', {
+        column,
+        direction,
+        rcoProperties,
+        pcoProperties,
+        taxFields,
+        sortFieldsWithColumn,
+        sortField,
+      })
+      if (sortField) {
+        delete sortField.columnName
+        setSortFields([sortField])
+      }
     },
     [pcoProperties, rcoProperties, taxFields],
   )
+
+  console.log('Preview', { sortFields })
 
   const {
     isLoading: exportLoading,
