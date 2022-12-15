@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useContext } from 'react'
+import React, { useState, useCallback, useContext, useMemo } from 'react'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import styled from '@emotion/styled'
@@ -146,7 +146,7 @@ const Preview = () => {
   const onGridSort = useCallback(
     (column, direction) => {
       if (direction === 'NONE') return setSortField(undefined)
-      // TODO: setSortFields
+      // setSortFields
       // 1. build array of sortFields including their column name
       //    will be used to find the correct sortField
       const sortFieldsWithColumn = []
@@ -188,15 +188,7 @@ const Preview = () => {
       const sortField = sortFieldsWithColumn.find(
         (sf) => sf.columnName === column,
       )
-      console.log('Preview, onGridSort', {
-        column,
-        direction,
-        rcoProperties,
-        pcoProperties,
-        taxFields,
-        sortFieldsWithColumn,
-        sortField,
-      })
+
       if (sortField) {
         delete sortField.columnName
         setSortField(sortField)
@@ -204,8 +196,6 @@ const Preview = () => {
     },
     [pcoProperties, rcoProperties, taxFields],
   )
-
-  console.log('Preview', { sortField })
 
   const {
     isLoading: exportLoading,
@@ -252,9 +242,13 @@ const Preview = () => {
   })
 
   const newCount = exportData?.data?.exportAll?.exportDatum?.count
-  const rows = exportData?.data?.exportAll?.exportDatum?.exportData
-    ? JSON.parse(exportData?.data?.exportAll?.exportDatum?.exportData)
-    : []
+  const rows = useMemo(
+    () =>
+      exportData?.data?.exportAll?.exportDatum?.exportData
+        ? JSON.parse(exportData?.data?.exportAll?.exportDatum?.exportData)
+        : [],
+    [exportData?.data?.exportAll?.exportDatum?.exportData],
+  )
 
   const [message, setMessage] = useState('')
 
@@ -276,7 +270,6 @@ const Preview = () => {
   const anzFelder = fields.length ?? 0
 
   const onClickXlsx = useCallback(async () => {
-    // TODO:
     // 1. download the full rows
     // 2. rowsFromObjects
     const data = await client.mutate({
