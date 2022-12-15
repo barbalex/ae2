@@ -27,9 +27,9 @@ CREATE TYPE rco_filter AS (
     value text
 );
 
-ALTER TYPE rco_filter
-    ADD ATTRIBUTE relationtype text;
-
+-- ALTER TYPE rco_filter
+--     ADD ATTRIBUTE relationtype text;
+--
 CREATE TYPE pco_property AS (
     pname text,
     pcname text
