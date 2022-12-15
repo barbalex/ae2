@@ -21,13 +21,7 @@ const Label = styled(FormControlLabel)`
   }
 `
 
-const TaxChooser = ({
-  taxname,
-  pname,
-  count,
-  columns,
-  propertiesLength,
-}) => {
+const TaxChooser = ({ taxname, pname, count, columns, propertiesLength }) => {
   const store = useContext(storeContext)
   const { taxProperties, addTaxProperty, removeTaxProperty } = store.export
 
