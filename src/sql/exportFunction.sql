@@ -94,7 +94,7 @@ DECLARE
     FROM
       rco_filters);
   pc_of_rco_filters text;
-  name1 text;
+  name text;
   pc_name text;
   pc_name2 text;
   pco_name text;
@@ -142,10 +142,10 @@ BEGIN
     -- join to filter by pcos
     IF cardinality(pcs_of_pco_filters) > 0 THEN
       FOREACH pc_of_pco_filters IN ARRAY pcs_of_pco_filters LOOP
-        name1 := ae.remove_bad_chars (pc_of_pco_filters);
-        pc_name := 'pc_' || name1;
-        pco_name := 'pco_' || name1;
-        pcoo_name := 'pcoo_' || name1;
+        name := ae.remove_bad_chars (pc_of_pco_filters);
+        pc_name := 'pc_' || name;
+        pco_name := 'pco_' || name;
+        pcoo_name := 'pcoo_' || name;
         IF use_synonyms = TRUE THEN
           -- if synonyms are used, filter pcos via pco_of_object
           sql := format(' INNER JOIN ae.pco_of_object %4$s ON %4$s.object_id = object.id
@@ -165,9 +165,9 @@ BEGIN
     -- join to filter by rcos
     IF cardinality(pcs_of_rco_filters) > 0 THEN
       FOREACH pc_of_rco_filters IN ARRAY pcs_of_rco_filters LOOP
-        name1 := ae.remove_bad_chars (pc_of_rco_filters);
-        pc_name2 := 'rpc_' || name1;
-        rco_name := 'rco_' || name1;
+        name := ae.remove_bad_chars (pc_of_rco_filters);
+        pc_name2 := 'rpc_' || name;
+        rco_name := 'rco_' || name;
         IF use_synonyms = TRUE THEN
           sql := format(' INNER JOIN ae.rco_of_object rcoo ON rcoo.object_id = object.id
                           INNER JOIN ae.relation %1$s ON %1$s.id = rcoo.rco_id
