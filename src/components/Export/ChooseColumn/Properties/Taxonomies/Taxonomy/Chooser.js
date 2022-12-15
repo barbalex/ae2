@@ -24,7 +24,6 @@ const Label = styled(FormControlLabel)`
 const TaxChooser = ({
   taxname,
   pname,
-  jsontype,
   count,
   columns,
   propertiesLength,
