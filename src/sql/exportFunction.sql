@@ -85,6 +85,7 @@ DECLARE
   pcofilter pco_filter;
   rcofilter rco_filter;
   pc_of_pco_filters text;
+  --pcs_of_pco_filters text[];
   pc_of_rco_filters text;
   name1 text;
   pc_name text;
@@ -101,6 +102,7 @@ DECLARE
   object record;
   fieldname text;
   tablename text;
+  sortfield sort_field;
   taxfield_sql text;
   taxfield_sql2 text;
   object_id uuid;
@@ -108,14 +110,21 @@ DECLARE
   return_data ae.export_data;
   return_data_json jsonb;
   sort_field sort_field;
+  orderby_sql text;
 BEGIN
+  -- pcs_of_pco_filters: = SELECT DISTINCT
+  --   pcname
+  -- FROM
+  --   pco_filters;
   -- create table
   DROP TABLE IF EXISTS _tmp;
-  CREATE TEMPORARY TABLE _tmp (
+  -- TODO: re-declare temporary
+  CREATE TABLE _tmp (
     id uuid PRIMARY KEY
   );
   DROP TABLE IF EXISTS _tmp_count;
-  CREATE TEMPORARY TABLE _tmp_count (
+  -- TODO: re-declare temporary
+  CREATE TABLE _tmp_count (
     id uuid PRIMARY KEY
   );
   -- insert object_ids
@@ -176,6 +185,10 @@ BEGIN
     sql := ' WHERE tax.name = ANY ($1)';
     rows_sql := rows_sql || sql;
     count_sql := count_sql || sql;
+    -- include only objects with Taxonomie ID (exclude objects added for hierarchy)
+    sql := format(' AND object.properties->>%L is not null', 'Taxonomie ID');
+    rows_sql := rows_sql || sql;
+    count_sql := count_sql || sql;
     IF cardinality(tax_filters) > 0 THEN
       FOREACH taxfilter IN ARRAY tax_filters LOOP
         IF taxfilter.comparator IN ('ILIKE', 'LIKE') THEN
@@ -231,31 +244,31 @@ BEGIN
     END IF;
     -- TODO: if sorting was passed, add it
     -- enable limiting for previews
-    rows_sql := rows_sql || ' ORDER BY';
     IF cardinality(sort_fields) > 0 THEN
-      IF sort_field.tname = 'object' THEN
-        tablename := 'object';
-      ELSE
-        IF sort_field.tname = 'property_collection_object' THEN
-          tablename := ae.remove_bad_chars (tax_field.pcname || '__' || tax_field.pname);
-        ELSE
-          IF sort_field.tname = 'relation' THEN
-            tablename := ae.remove_bad_chars (tax_field.pcname || '__' || tax_field.relationtype || '__' || tax_field.pname);
-          END IF;
-        END IF;
-      END IF;
+      orderby_sql := ' ORDER BY';
       FOR i IN 1..array_upper(sort_fields, 1)
       LOOP
+        sortfield := sort_fields[i];
+        CASE sortfield.tname
+        WHEN 'property_collection_object' THEN
+          fieldname := ae.remove_bad_chars (sortfield.pcname || '__' || sortfield.pname);
+        WHEN 'relation' THEN
+          fieldname := ae.remove_bad_chars (sortfield.pcname || '__' || sortfield.relationtype || '__' || sortfield.pname);
+        ELSE
+          IF cardinality(taxonomies) > 1 THEN
+              fieldname := 'taxonomie__' || ae.remove_bad_chars (sortfield.pname);
+            ELSE
+              fieldname := ae.remove_bad_chars (sortfield.pcname || '__' || sortfield.pname);
+            END IF;
+        END CASE;
         IF i = 1 THEN
           -- TODO: need to name the table as when setting the properties
-          sql := format(' %1$s.properties->>%2$L %3$s', tablename, sort_field.pname, sort_field.direction);
+          orderby_sql := orderby_sql || format(' %1$s %2$s', fieldname, sortfield.direction);
         ELSE
-          sql := format(', %1$s.properties->>%2$L %3$s', tablename, sort_field.pname, sort_field.direction);
+          orderby_sql := orderby_sql || format(', %1$s %2$s', fieldname, sortfield.direction);
         END IF;
-        rows_sql := rows_sql || sql;
       END LOOP;
-    ELSE
-      rows_sql := rows_sql || ' object.id';
+      rows_sql := rows_sql || orderby_sql;
     END IF;
     IF count > 0 THEN
       rows_sql := rows_sql || ' LIMIT ' || count;
@@ -270,7 +283,6 @@ BEGIN
     USING taxonomies, object_ids;
     EXECUTE count_sql
     USING taxonomies, object_ids;
-    --RAISE EXCEPTION 'count_sql: %:', count_sql;
     -- if 1 rco_property was passed and row_per_rco = TRUE, need to join for count
     IF cardinality(rco_properties) = 1 AND row_per_rco = TRUE THEN
       rcoproperty := rco_properties[1];
@@ -407,7 +419,8 @@ BEGIN
               properties_per_object.%1$s 
             FROM 
               _tmp 
-              LEFT JOIN properties_per_object ON properties_per_object.object_id = _tmp.id', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+              LEFT JOIN properties_per_object ON properties_per_object.object_id = _tmp.id
+            %5$s', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype, orderby_sql);
           END IF;
           -- return query
           return_query := format('
@@ -456,17 +469,20 @@ BEGIN
     --RAISE EXCEPTION 'rows_sql: %:', rows_sql;
     return_data.id := gen_random_uuid ()::uuid;
     return_data.count = row_count;
+    -- TODO: sort
     IF row_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
       EXECUTE return_query INTO return_data.export_data;
     ELSE
+      return_query := '
       SELECT
         json_agg(ROW)
       FROM
-        _tmp ROW INTO return_data.export_data;
+        _tmp ROW';
+      EXECUTE return_query INTO return_data.export_data;
     END IF;
     RETURN return_data;
-    DROP TABLE _tmp;
-    DROP TABLE _tmp_count;
+    -- DROP TABLE _tmp; TODO: re-enable
+    -- DROP TABLE _tmp_count; TODO: re-enable
 END
 $$
 LANGUAGE plpgsql;

@@ -80,6 +80,7 @@ const exportMutation = gql`
     $count: Int!
     $objectIds: [UUID]!
     $rowPerRco: Boolean!
+    $sortFields: [SortFieldInput]!
   ) {
     exportAll(
       input: {
@@ -96,6 +97,7 @@ const exportMutation = gql`
         count: $count
         objectIds: $objectIds
         rowPerRco: $rowPerRco
+        sortFields: $sortFields
       }
     ) {
       exportDatum {
@@ -306,6 +308,7 @@ const Preview = () => {
         count: 0,
         objectIds: exportIds,
         rowPerRco: !rcoInOneRow,
+        sortFields,
       },
     })
     const rows = data?.data?.exportAll?.exportDatum?.exportData
