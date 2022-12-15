@@ -254,15 +254,14 @@ export default types
         self.rcoProperties.length +
         self.pcoProperties.length
       if (nrOfPropertiesExported > constants.export.maxFields) {
-        self.tooManyProperties = true
-      } else {
-        // only add if not yet done
-        const taxProperty = self.taxProperties.find(
-          (t) => t.taxname === taxname && t.pname === pname,
-        )
-        if (!taxProperty) {
-          self.taxProperties = [...self.taxProperties, { taxname, pname }]
-        }
+        return (self.tooManyProperties = true)
+      }
+      // only add if not yet done
+      const taxProperty = self.taxProperties.find(
+        (t) => t.taxname === taxname && t.pname === pname,
+      )
+      if (!taxProperty) {
+        self.taxProperties = [...self.taxProperties, { taxname, pname }]
       }
     },
     removeTaxProperty({ taxname, pname }) {
