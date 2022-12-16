@@ -44,6 +44,7 @@ const Container = styled.div`
   padding: 0 5px;
   overflow-x: hidden !important;
   height: 100%;
+  user-select: none !important;
 `
 
 const Export = () => {
