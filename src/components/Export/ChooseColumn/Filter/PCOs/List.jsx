@@ -57,12 +57,13 @@ const PcosCardList = () => {
     )
   }
 
-  if (loading)
+  if (loading) {
     return (
       <SpinnerContainer>
         <Spinner message="" />
       </SpinnerContainer>
     )
+  }
 
   return (
     <ErrorBoundary>

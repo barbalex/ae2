@@ -63,18 +63,14 @@ const RCOs = ({ rcoExpanded, onToggleRco }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
-  const { data: propsByTaxData, error: propsByTaxDataError } = useQuery(
-    propsByTaxQuery,
-    {
-      variables: {
-        exportTaxonomies,
-        queryExportTaxonomies: exportTaxonomies.length > 0,
-      },
+  const { data, error, loading } = useQuery(propsByTaxQuery, {
+    variables: {
+      exportTaxonomies,
+      queryExportTaxonomies: exportTaxonomies.length > 0,
     },
-  )
+  })
 
-  const rcoProperties =
-    propsByTaxData?.rcoPropertiesByTaxonomiesFunction?.nodes ?? []
+  const rcoProperties = data?.rcoPropertiesByTaxonomiesFunction?.nodes ?? []
 
   const rcoPropertiesByPropertyCollection = groupBy(rcoProperties, (x) => {
     if (x.propertyCollectionName.includes(x.relationType)) {
@@ -87,8 +83,7 @@ const RCOs = ({ rcoExpanded, onToggleRco }) => {
   const rcNames = Object.keys(rcoPropertiesByPropertyCollection)
   const rCCount = rcNames.length
 
-  if (propsByTaxDataError)
-    return `Error fetching data: ${propsByTaxDataError.message}`
+  if (error) return `Error fetching data: ${error.message}`
 
   return (
     <ErrorBoundary>
@@ -97,15 +92,13 @@ const RCOs = ({ rcoExpanded, onToggleRco }) => {
           <StyledCardActions disableSpacing onClick={onToggleRco}>
             <CardActionTitle>
               Beziehungssammlungen
-              {rCCount > 0 && (
-                <Count>{`(${rCCount} Sammlungen, ${
-                  Object.keys(rcoPropertiesFields).length
-                } ${
-                  Object.keys(rcoPropertiesFields).length === 1
-                    ? 'Feld'
-                    : 'Felder'
-                })`}</Count>
-              )}
+              <Count>{`(${loading ? '...' : rCCount} Sammlungen, ${
+                loading ? '...' : Object.keys(rcoPropertiesFields).length
+              } ${
+                Object.keys(rcoPropertiesFields).length === 1
+                  ? 'Feld'
+                  : 'Felder'
+              })`}</Count>
             </CardActionTitle>
             <CardActionIconButton
               data-expanded={rcoExpanded}

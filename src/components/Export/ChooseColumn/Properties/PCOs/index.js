@@ -60,14 +60,13 @@ const PcoList = ({ pcoExpanded, onTogglePco }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
-  const { data: propsData, error: propsDataError } = useQuery(propsByTaxQuery, {
+  const { data, error, loading } = useQuery(propsByTaxQuery, {
     variables: {
       exportTaxonomies,
       queryExportTaxonomies: exportTaxonomies.length > 0,
     },
   })
-  const pcoProperties =
-    propsData?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
+  const pcoProperties = data?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
   const pcoPropertiesByPropertyCollection = groupBy(
     pcoProperties,
     'propertyCollectionName',
@@ -75,7 +74,7 @@ const PcoList = ({ pcoExpanded, onTogglePco }) => {
   const pcoPropertiesFields = groupBy(pcoProperties, 'propertyName')
   const pCCount = Object.keys(pcoPropertiesByPropertyCollection).length
 
-  if (propsDataError) return `Error fetching data: ${propsDataError.message}`
+  if (error) return `Error fetching data: ${error.message}`
 
   return (
     <ErrorBoundary>
@@ -84,15 +83,13 @@ const PcoList = ({ pcoExpanded, onTogglePco }) => {
           <StyledCardActions disableSpacing onClick={onTogglePco}>
             <CardActionTitle>
               Eigenschaftensammlungen
-              {pCCount > 0 && (
-                <Count>{`(${pCCount} Sammlungen, ${
-                  Object.keys(pcoPropertiesFields).length
-                } ${
-                  Object.keys(pcoPropertiesFields).length === 1
-                    ? 'Feld'
-                    : 'Felder'
-                })`}</Count>
-              )}
+              <Count>{`(${loading ? '...' : pCCount} Sammlungen, ${
+                loading ? '...' : Object.keys(pcoPropertiesFields).length
+              } ${
+                Object.keys(pcoPropertiesFields).length === 1
+                  ? 'Feld'
+                  : 'Felder'
+              })`}</Count>
             </CardActionTitle>
             <CardActionIconButton
               data-expanded={pcoExpanded}
@@ -105,7 +102,7 @@ const PcoList = ({ pcoExpanded, onTogglePco }) => {
             </CardActionIconButton>
           </StyledCardActions>
           <Collapse in={pcoExpanded} timeout="auto" unmountOnExit>
-            <PCOs pcNames={Object.keys(pcoPropertiesByPropertyCollection)} />
+            <PCOs />
           </Collapse>
         </StyledCard>
       </Container>
