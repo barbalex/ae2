@@ -6,11 +6,10 @@ import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from '@emotion/styled'
-import groupBy from 'lodash/groupBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
-import PCO from './PCO'
+import PcoList from './List'
 import storeContext from '../../../../../storeContext'
 import ErrorBoundary from '../../../../shared/ErrorBoundary'
 
@@ -72,12 +71,7 @@ const PcosCard = ({ pcoExpanded, onTogglePco }) => {
       exportTaxonomies,
     },
   })
-  // TODO:
-  const pcoProperties = data?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
-  const pcoPropertiesByPropertyCollection = groupBy(
-    pcoProperties,
-    'propertyCollectionName',
-  )
+
   const pcCount = data?.pc_count?.totalCount ?? 0
   const propertyCount = data?.property_count ?? 0
 
@@ -109,9 +103,7 @@ const PcosCard = ({ pcoExpanded, onTogglePco }) => {
             </CardActionIconButton>
           </StyledCardActions>
           <Collapse in={pcoExpanded} timeout="auto" unmountOnExit>
-            {Object.keys(pcoPropertiesByPropertyCollection).map((pc) => (
-              <PCO key={pc} pc={pc} />
-            ))}
+            <PcoList />
           </Collapse>
         </StyledCard>
       </Container>
