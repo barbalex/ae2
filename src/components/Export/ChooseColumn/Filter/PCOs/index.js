@@ -63,17 +63,13 @@ const PcosCard = ({ pcoExpanded, onTogglePco }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
-  const { data: propsByTaxData, error: propsByTaxDataError } = useQuery(
-    propsByTaxQuery,
-    {
-      variables: {
-        exportTaxonomies,
-        queryExportTaxonomies: exportTaxonomies.length > 0,
-      },
+  const { data, error, loading } = useQuery(propsByTaxQuery, {
+    variables: {
+      exportTaxonomies,
+      queryExportTaxonomies: exportTaxonomies.length > 0,
     },
-  )
-  const pcoProperties =
-    propsByTaxData?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
+  })
+  const pcoProperties = data?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
   const pcoPropertiesByPropertyCollection = groupBy(
     pcoProperties,
     'propertyCollectionName',
@@ -81,11 +77,9 @@ const PcosCard = ({ pcoExpanded, onTogglePco }) => {
   const pcoPropertiesFields = groupBy(pcoProperties, 'propertyName')
   const pCCount = Object.keys(pcoPropertiesByPropertyCollection).length
 
-  if (propsByTaxDataError) {
+  if (error) {
     return (
-      <ErrorContainer>
-        `Error loading data: ${propsByTaxDataError.message}`
-      </ErrorContainer>
+      <ErrorContainer>`Error loading data: ${error.message}`</ErrorContainer>
     )
   }
 
@@ -96,7 +90,9 @@ const PcosCard = ({ pcoExpanded, onTogglePco }) => {
           <StyledCardActions disableSpacing onClick={onTogglePco}>
             <CardActionTitle>
               Eigenschaftensammlungen
-              {pCCount > 0 && (
+              {loading ? (
+                <Count>{`(... Sammlungen, ...Felder')`}</Count>
+              ) : (
                 <Count>{`(${pCCount} Sammlungen, ${
                   Object.keys(pcoPropertiesFields).length
                 } ${
