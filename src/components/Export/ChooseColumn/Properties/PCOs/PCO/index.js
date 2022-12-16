@@ -66,7 +66,7 @@ const propsByTaxQuery = gql`
   }
 `
 
-const PCO = ({ pc, width = 500 }) => {
+const PCO = ({ pcName, count, width = 500 }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
@@ -86,7 +86,7 @@ const PCO = ({ pc, width = 500 }) => {
     pcoProperties,
     'propertyCollectionName',
   )
-  const properties = pcoPropertiesByPropertyCollection[pc]
+  const properties = pcoPropertiesByPropertyCollection[pcName]
 
   const columns = Math.floor(width / constants.export.properties.columnWidth)
 
@@ -97,10 +97,8 @@ const PCO = ({ pc, width = 500 }) => {
       <StyledCard>
         <StyledCardActions disableSpacing onClick={onClickActions}>
           <CardActionTitle>
-            {pc}
-            <Count>{`(${properties.length} ${
-              properties.length === 1 ? 'Feld' : 'Felder'
-            })`}</Count>
+            {pcName}
+            <Count>{`(${count} ${count === 1 ? 'Feld' : 'Felder'})`}</Count>
           </CardActionTitle>
           <CardActionIconButton
             data-expanded={expanded}
@@ -114,7 +112,7 @@ const PCO = ({ pc, width = 500 }) => {
         </StyledCardActions>
         <StyledCollapse in={expanded} timeout="auto" unmountOnExit>
           <>
-            {properties.length > 1 && <AllChooser properties={properties} />}
+            {count > 1 && <AllChooser properties={properties} />}
             <PropertiesContainer>
               <Properties properties={properties} columns={columns} />
             </PropertiesContainer>
