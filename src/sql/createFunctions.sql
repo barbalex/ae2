@@ -518,7 +518,7 @@ DECLARE
   WHERE 
     ae.%3$s.name = %5$L 
     and ae.%2$s.properties->>%1$L like %6$L 
-  ORDER BY value', prop_name, table_name, pc_table_name, pc_field_name, pc_name, '%%' || prop_value || '%');
+  ORDER BY value', prop_name, table_name, pc_table_name, pc_field_name, pc_name, '%' || prop_value || '%');
 BEGIN
   --RAISE EXCEPTION  'sql: %', sql;
   RETURN QUERY EXECUTE sql;
