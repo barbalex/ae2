@@ -1,6 +1,5 @@
 import React, { useContext } from 'react'
 import styled from '@emotion/styled'
-import groupBy from 'lodash/groupBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
@@ -16,7 +15,6 @@ const SpinnerContainer = styled.div`
   padding-top: 15px;
 `
 
-// TODO: load most of this data later, when user clicks on PCO
 const query = gql`
   query propsByTaxDataQueryForFilterPCOs($exportTaxonomies: [String!]) {
     pcoPropertiesByTaxonomiesCountPerPc(exportTaxonomies: $exportTaxonomies) {
@@ -37,7 +35,6 @@ const PcosCardList = () => {
       exportTaxonomies,
     },
   })
-  // TODO:
   const nodes = data?.pcoPropertiesByTaxonomiesCountPerPc?.nodes ?? []
 
   if (error) {
@@ -57,7 +54,7 @@ const PcosCardList = () => {
   return (
     <ErrorBoundary>
       {nodes.map(({ name, count }) => (
-        <PCO key={name} pc={name} />
+        <PCO key={name} pc={name} count={count} />
       ))}
     </ErrorBoundary>
   )

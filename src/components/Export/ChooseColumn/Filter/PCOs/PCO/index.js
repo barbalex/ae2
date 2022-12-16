@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useContext } from 'react'
+import React, { useCallback, useState } from 'react'
 import Card from '@mui/material/Card'
 import CardActions from '@mui/material/CardActions'
 import Collapse from '@mui/material/Collapse'
@@ -6,20 +6,13 @@ import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from '@emotion/styled'
-import groupBy from 'lodash/groupBy'
-import { useQuery, gql } from '@apollo/client'
-import { observer } from 'mobx-react-lite'
 import { withResizeDetector } from 'react-resize-detector'
 
 import Properties from './Properties'
-import storeContext from '../../../../../../storeContext'
 import ErrorBoundary from '../../../../../shared/ErrorBoundary'
 import getConstants from '../../../../../../modules/constants'
 const constants = getConstants()
 
-const ErrorContainer = styled.div`
-  padding: 5px;
-`
 const StyledCard = styled(Card)`
   margin: 0;
   background-color: rgb(255, 243, 224) !important;
@@ -51,61 +44,12 @@ const PropertiesContainer = styled.div`
   flex-wrap: wrap;
 `
 
-const propsByTaxQuery = gql`
-  query propsByTaxDataQueryForFilterPCO(
-    $queryExportTaxonomies: Boolean!
-    $exportTaxonomies: [String]
-  ) {
-    pcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        propertyName
-        jsontype
-        count
-      }
-    }
-  }
-`
-
-const PcoCard = ({ pc, width = 500 }) => {
-  const store = useContext(storeContext)
-  const exportTaxonomies = store.export.taxonomies.toJSON()
-
-  console.log('PcoCard, pc:', pc)
-
+const PcoCard = ({ pc, count, width = 500 }) => {
   const [expanded, setExpanded] = useState(false)
 
   const columns = Math.floor(width / constants.export.properties.columnWidth)
 
-  const { data: propsByTaxData, error: propsByTaxDataError } = useQuery(
-    propsByTaxQuery,
-    {
-      variables: {
-        exportTaxonomies,
-        queryExportTaxonomies: exportTaxonomies.length > 0,
-      },
-    },
-  )
-
-  const pcoProperties =
-    propsByTaxData?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
-  const pcoPropertiesByPropertyCollection = groupBy(
-    pcoProperties,
-    'propertyCollectionName',
-  )
-
-  console.log('PCO, ', { pcoPropertiesByPropertyCollection, pcoProperties, pc })
-
   const onClickAction = useCallback(() => setExpanded(!expanded), [expanded])
-
-  if (propsByTaxDataError) {
-    return (
-      <ErrorContainer>
-        `Error loading data: ${propsByTaxDataError.message}`
-      </ErrorContainer>
-    )
-  }
 
   return (
     <ErrorBoundary>
@@ -113,11 +57,7 @@ const PcoCard = ({ pc, width = 500 }) => {
         <StyledCardActions disableSpacing onClick={onClickAction}>
           <CardActionTitle>
             {pc}
-            <Count>{`(${pcoPropertiesByPropertyCollection[pc]?.length} ${
-              pcoPropertiesByPropertyCollection[pc]?.length === 1
-                ? 'Feld'
-                : 'Felder'
-            })`}</Count>
+            <Count>{`(${count} ${count === 1 ? 'Feld' : 'Felder'})`}</Count>
           </CardActionTitle>
           <CardActionIconButton
             data-expanded={expanded}
@@ -131,10 +71,7 @@ const PcoCard = ({ pc, width = 500 }) => {
         </StyledCardActions>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <PropertiesContainer>
-            <Properties
-              properties={pcoPropertiesByPropertyCollection[pc]}
-              columns={columns}
-            />
+            {expanded && <Properties pc={pc} columns={columns} />}
           </PropertiesContainer>
         </Collapse>
       </StyledCard>
@@ -142,4 +79,4 @@ const PcoCard = ({ pc, width = 500 }) => {
   )
 }
 
-export default withResizeDetector(observer(PcoCard))
+export default withResizeDetector(PcoCard)
