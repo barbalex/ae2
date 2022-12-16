@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from '@emotion/styled'
-import groupBy from 'lodash/groupBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
@@ -39,20 +38,24 @@ const Count = styled.span`
   padding-left: 5px;
 `
 
-const propsByTaxQuery = gql`
-  query propsByTaxDataQueryForPropertiesPCOs(
-    $queryExportTaxonomies: Boolean!
-    $exportTaxonomies: [String]
-  ) {
-    pcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        propertyName
-        jsontype
-        count
+const query = gql`
+  query propsByTaxDataQueryForFilterRCOs($exportTaxonomies: [String!]) {
+    pc_count: allPropertyCollections(
+      filter: {
+        relationsByPropertyCollectionId: {
+          some: {
+            objectByObjectId: {
+              taxonomyByTaxonomyId: { name: { in: $exportTaxonomies } }
+            }
+          }
+        }
       }
+    ) {
+      totalCount
     }
+    property_count: rcoPropertiesByTaxonomiesCountFunction(
+      exportTaxonomies: $exportTaxonomies
+    )
   }
 `
 
@@ -60,19 +63,14 @@ const PcoList = ({ pcoExpanded, onTogglePco }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
-  const { data, error, loading } = useQuery(propsByTaxQuery, {
+  const { data, error, loading } = useQuery(query, {
     variables: {
       exportTaxonomies,
-      queryExportTaxonomies: exportTaxonomies.length > 0,
     },
   })
-  const pcoProperties = data?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
-  const pcoPropertiesByPropertyCollection = groupBy(
-    pcoProperties,
-    'propertyCollectionName',
-  )
-  const pcoPropertiesFields = groupBy(pcoProperties, 'propertyName')
-  const pCCount = Object.keys(pcoPropertiesByPropertyCollection).length
+
+  const pcCount = data?.pc_count?.totalCount ?? 0
+  const propertyCount = data?.property_count ?? 0
 
   if (error) return `Error fetching data: ${error.message}`
 
@@ -83,13 +81,9 @@ const PcoList = ({ pcoExpanded, onTogglePco }) => {
           <StyledCardActions disableSpacing onClick={onTogglePco}>
             <CardActionTitle>
               Eigenschaftensammlungen
-              <Count>{`(${loading ? '...' : pCCount} Sammlungen, ${
-                loading ? '...' : Object.keys(pcoPropertiesFields).length
-              } ${
-                Object.keys(pcoPropertiesFields).length === 1
-                  ? 'Feld'
-                  : 'Felder'
-              })`}</Count>
+              <Count>{`(${loading ? '...' : pcCount} Sammlungen, ${
+                loading ? '...' : propertyCount
+              } ${propertyCount === 1 ? 'Feld' : 'Felder'})`}</Count>
             </CardActionTitle>
             <CardActionIconButton
               data-expanded={pcoExpanded}

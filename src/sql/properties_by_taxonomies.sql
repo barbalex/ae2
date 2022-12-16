@@ -29,7 +29,7 @@ SELECT
 FROM
   pco_properties;
 
--- function:
+-- function for pco:
 CREATE OR REPLACE FUNCTION ae.pco_properties_by_taxonomies_count_function (export_taxonomies text[])
   RETURNS integer
   AS $$
@@ -51,4 +51,27 @@ LANGUAGE sql
 STABLE;
 
 ALTER FUNCTION ae.pco_properties_by_taxonomies_count_function (export_taxonomies text[]) OWNER TO postgres;
+
+-- function for rco:
+CREATE OR REPLACE FUNCTION ae.rco_properties_by_taxonomies_count_function (export_taxonomies text[])
+  RETURNS integer
+  AS $$
+  WITH rco_properties AS (
+    SELECT DISTINCT
+      jsonb_object_keys(rco.properties) AS property
+    FROM
+      ae.relation rco
+      INNER JOIN ae.object object ON object.id = rco.object_id
+      INNER JOIN ae.taxonomy tax ON tax.id = object.taxonomy_id
+    WHERE
+      tax.name = ANY (export_taxonomies))
+  SELECT
+    count(*)
+  FROM
+    rco_properties
+$$
+LANGUAGE sql
+STABLE;
+
+ALTER FUNCTION ae.rco_properties_by_taxonomies_count_function (export_taxonomies text[]) OWNER TO postgres;
 
