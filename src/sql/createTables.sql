@@ -145,7 +145,7 @@ DROP TABLE IF EXISTS ae.property_collection CASCADE;
 CREATE TABLE ae.property_collection (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v1mc (),
   -- later add UNIQUE
-  name text DEFAULT NULL,
+  name text DEFAULT NULL, -- is unique
   tree_category uuid DEFAULT '33744e59-1942-4341-8b2d-088d4ac96434' REFERENCES ae.tree_category (id) ON DELETE SET NULL ON UPDATE CASCADE,
   description text DEFAULT NULL,
   links text[] DEFAULT NULL,

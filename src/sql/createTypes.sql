@@ -60,3 +60,9 @@ CREATE TYPE ae.export_data AS (
     export_data json -- this is a json array
 );
 
+drop type ae.pc_count cascade;
+CREATE TYPE ae.pc_count AS (
+    name text,
+    count integer
+);
+

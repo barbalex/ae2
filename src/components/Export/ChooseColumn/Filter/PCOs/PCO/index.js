@@ -72,6 +72,8 @@ const PcoCard = ({ pc, width = 500 }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
+  console.log('PcoCard, pc:', pc)
+
   const [expanded, setExpanded] = useState(false)
 
   const columns = Math.floor(width / constants.export.properties.columnWidth)
@@ -93,6 +95,8 @@ const PcoCard = ({ pc, width = 500 }) => {
     'propertyCollectionName',
   )
 
+  console.log('PCO, ', { pcoPropertiesByPropertyCollection, pcoProperties, pc })
+
   const onClickAction = useCallback(() => setExpanded(!expanded), [expanded])
 
   if (propsByTaxDataError) {
@@ -109,8 +113,8 @@ const PcoCard = ({ pc, width = 500 }) => {
         <StyledCardActions disableSpacing onClick={onClickAction}>
           <CardActionTitle>
             {pc}
-            <Count>{`(${pcoPropertiesByPropertyCollection[pc].length} ${
-              pcoPropertiesByPropertyCollection[pc].length === 1
+            <Count>{`(${pcoPropertiesByPropertyCollection[pc]?.length} ${
+              pcoPropertiesByPropertyCollection[pc]?.length === 1
                 ? 'Feld'
                 : 'Felder'
             })`}</Count>

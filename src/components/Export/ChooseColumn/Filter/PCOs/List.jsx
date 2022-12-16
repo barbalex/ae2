@@ -18,16 +18,10 @@ const SpinnerContainer = styled.div`
 
 // TODO: load most of this data later, when user clicks on PCO
 const query = gql`
-  query propsByTaxDataQueryForFilterPCOs(
-    $queryExportTaxonomies: Boolean!
-    $exportTaxonomies: [String]
-  ) {
-    pcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
+  query propsByTaxDataQueryForFilterPCOs($exportTaxonomies: [String!]) {
+    pcoPropertiesByTaxonomiesCountPerPc(exportTaxonomies: $exportTaxonomies) {
       nodes {
-        propertyCollectionName
-        propertyName
-        jsontype
+        name
         count
       }
     }
@@ -41,15 +35,10 @@ const PcosCardList = () => {
   const { data, error, loading } = useQuery(query, {
     variables: {
       exportTaxonomies,
-      queryExportTaxonomies: exportTaxonomies.length > 0,
     },
   })
   // TODO:
-  const pcoProperties = data?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
-  const pcoPropertiesByPropertyCollection = groupBy(
-    pcoProperties,
-    'propertyCollectionName',
-  )
+  const nodes = data?.pcoPropertiesByTaxonomiesCountPerPc?.nodes ?? []
 
   if (error) {
     return (
@@ -67,8 +56,8 @@ const PcosCardList = () => {
 
   return (
     <ErrorBoundary>
-      {Object.keys(pcoPropertiesByPropertyCollection).map((pc) => (
-        <PCO key={pc} pc={pc} />
+      {nodes.map(({ name, count }) => (
+        <PCO key={name} pc={name} />
       ))}
     </ErrorBoundary>
   )
