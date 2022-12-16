@@ -275,20 +275,6 @@ CREATE OR REPLACE FUNCTION request.user_role ()
 $$ STABLE
 LANGUAGE sql;
 
--- 2.: actual app FUNCTIONS
--- example query:
--- SELECT
---   ae.object.*
--- FROM
---   ae.object
---   INNER JOIN ae.taxonomy ON ae.taxonomy.id = ae.object.taxonomy_id
--- WHERE
---   ae.taxonomy.name in('SISF (2005)')
---   AND ae.object.properties ->> 'Artname vollständig' ILIKE '%rosa%';
-drop FUNCTION ae.export_object;
-drop FUNCTION ae.export_pco;
-drop FUNCTION ae.export_rco;
-
 CREATE OR REPLACE FUNCTION ae.object_by_object_name (object_name text)
   RETURNS SETOF ae.object
   AS $$
