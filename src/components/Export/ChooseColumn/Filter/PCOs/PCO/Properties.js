@@ -1,6 +1,5 @@
 import React, { useContext } from 'react'
 import styled from '@emotion/styled'
-import groupBy from 'lodash/groupBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
@@ -14,18 +13,19 @@ const SpinnerContainer = styled.div`
 `
 
 // TODO: query only for this pc
-const propsByTaxQuery = gql`
+const query = gql`
   query propsByTaxDataQueryForFilterPCO(
-    $queryExportTaxonomies: Boolean!
     $exportTaxonomies: [String]
+    $pcName: String!
   ) {
-    pcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
+    pcoPropertiesByTaxonomiesAndPc(
+      taxonomyNames: $exportTaxonomies
+      pcName: $pcName
+    ) {
+      totalCount
       nodes {
-        propertyCollectionName
-        propertyName
-        jsontype
-        count
+        property
+        type
       }
     }
   }
@@ -35,19 +35,14 @@ const Properties = ({ columns, pc }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
-  const { data, error, loading } = useQuery(propsByTaxQuery, {
+  const { data, error, loading } = useQuery(query, {
     variables: {
       exportTaxonomies,
-      queryExportTaxonomies: exportTaxonomies.length > 0,
+      pcName: pc,
     },
   })
 
-  const pcoProperties = data?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
-  const pcoPropertiesByPropertyCollection = groupBy(
-    pcoProperties,
-    'propertyCollectionName',
-  )
-  const properties = pcoPropertiesByPropertyCollection?.[pc] ?? []
+  const properties = data?.pcoPropertiesByTaxonomiesAndPc?.nodes ?? []
 
   if (error) {
     return `Error loading data: ${error.message}`
@@ -63,10 +58,10 @@ const Properties = ({ columns, pc }) => {
 
   return properties.map((field) => (
     <Property
-      key={`${field.propertyName}${field.jsontype}`}
-      pcname={field.propertyCollectionName}
-      pname={field.propertyName}
-      jsontype={field.jsontype}
+      key={`${field.property}${field.type}`}
+      pcname={pc}
+      pname={field.property}
+      jsontype={field.type}
       columns={columns}
       propertiesLength={properties.length}
     />

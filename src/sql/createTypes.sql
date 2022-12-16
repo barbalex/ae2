@@ -66,3 +66,7 @@ CREATE TYPE ae.pc_count AS (
     count integer
 );
 
+CREATE TYPE AE.property_and_type as (
+    property text,
+    type text
+);
