@@ -54,3 +54,9 @@ CREATE TYPE sort_field AS (
     direction text -- ASC or DESC
 );
 
+CREATE TYPE ae.export_data AS (
+    id uuid, -- needed for apollo
+    count integer, -- enable passing total count while only returning limited data for preview
+    export_data json -- this is a json array
+);
+
