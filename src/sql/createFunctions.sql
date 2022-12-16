@@ -322,6 +322,7 @@ CREATE TYPE ae.pco_properties_by_taxonomy AS (
   count bigint
 );
 
+-- TODO: do not load this for all taxonomies, but only for the selected rc
 CREATE OR REPLACE FUNCTION ae.pco_properties_by_taxonomies_function (taxonomy_names text[])
   RETURNS SETOF ae.pco_properties_by_taxonomy
   AS $$
@@ -584,6 +585,7 @@ CREATE TYPE ae.rco_properties_by_taxonomy AS (
   count bigint
 );
 
+-- TODO: do not load this for all taxonomies, but only for the selected rc
 CREATE OR REPLACE FUNCTION ae.rco_properties_by_taxonomies_function (taxonomy_names text[])
   RETURNS SETOF ae.rco_properties_by_taxonomy
   AS $$
