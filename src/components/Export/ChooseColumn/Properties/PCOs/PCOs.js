@@ -1,7 +1,8 @@
-import React,{useContext} from 'react'
+import React, { useContext } from 'react'
 import { useQuery, gql } from '@apollo/client'
 import groupBy from 'lodash/groupBy'
 import styled from '@emotion/styled'
+import { observer } from 'mobx-react-lite'
 
 import PCO from './PCO'
 import storeContext from '../../../../../storeContext'
@@ -58,4 +59,4 @@ const PCOs = () => {
   return pcNames.map((name) => <PCO key={name} pc={name} />)
 }
 
-export default PCOs
+export default observer(PCOs)
