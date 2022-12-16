@@ -65,17 +65,13 @@ const TaxonomiesCard = ({ taxonomiesExpanded, onToggleTaxonomies }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
-  const { data: propsByTaxData, error: propsByTaxDataError } = useQuery(
-    propsByTaxQuery,
-    {
-      variables: {
-        exportTaxonomies,
-        queryExportTaxonomies: exportTaxonomies.length > 0,
-      },
+  const { data, error, loading } = useQuery(propsByTaxQuery, {
+    variables: {
+      exportTaxonomies,
+      queryExportTaxonomies: exportTaxonomies.length > 0,
     },
-  )
-  const taxProperties =
-    propsByTaxData?.taxPropertiesByTaxonomiesFunction?.nodes ?? []
+  })
+  const taxProperties = data?.taxPropertiesByTaxonomiesFunction?.nodes ?? []
 
   const taxPropertiesByTaxonomy = groupBy(taxProperties, 'taxonomyName')
   const taxPropertiesFields = groupBy(taxProperties, 'propertyName')
@@ -97,11 +93,9 @@ const TaxonomiesCard = ({ taxonomiesExpanded, onToggleTaxonomies }) => {
   }
   const initiallyExpanded = Object.keys(taxPropertiesByTaxonomy).length === 1
 
-  if (propsByTaxDataError) {
+  if (error) {
     return (
-      <ErrorContainer>
-        `Error loading data: ${propsByTaxDataError.message}`
-      </ErrorContainer>
+      <ErrorContainer>`Error loading data: ${error.message}`</ErrorContainer>
     )
   }
 
@@ -112,13 +106,11 @@ const TaxonomiesCard = ({ taxonomiesExpanded, onToggleTaxonomies }) => {
           <StyledCardActions disableSpacing onClick={onToggleTaxonomies}>
             <CardActionTitle>
               Taxonomien
-              {taxCount > 0 && (
-                <Count>{`(${taxCount} ${
-                  taxCount === 1 ? 'Taxonomie' : 'Taxonomien'
-                }, ${taxFieldsCount} ${
-                  taxFieldsCount === 1 ? 'Feld' : 'Felder'
-                })`}</Count>
-              )}
+              <Count>{`(${loading ? '...' : taxCount} ${
+                taxCount === 1 ? 'Taxonomie' : 'Taxonomien'
+              }, ${loading ? '...' : taxFieldsCount} ${
+                taxFieldsCount === 1 ? 'Feld' : 'Felder'
+              })`}</Count>
             </CardActionTitle>
             <CardActionIconButton
               data-expanded={taxonomiesExpanded}

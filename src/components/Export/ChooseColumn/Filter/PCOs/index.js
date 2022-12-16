@@ -90,17 +90,13 @@ const PcosCard = ({ pcoExpanded, onTogglePco }) => {
           <StyledCardActions disableSpacing onClick={onTogglePco}>
             <CardActionTitle>
               Eigenschaftensammlungen
-              {loading ? (
-                <Count>{`(... Sammlungen, ...Felder')`}</Count>
-              ) : (
-                <Count>{`(${pCCount} Sammlungen, ${
-                  Object.keys(pcoPropertiesFields).length
-                } ${
-                  Object.keys(pcoPropertiesFields).length === 1
-                    ? 'Feld'
-                    : 'Felder'
-                })`}</Count>
-              )}
+              <Count>{`(${loading ? '...' : pCCount} Sammlungen, ${
+                loading ? '...' : Object.keys(pcoPropertiesFields).length
+              } ${
+                Object.keys(pcoPropertiesFields).length === 1
+                  ? 'Feld'
+                  : 'Felder'
+              })`}</Count>
             </CardActionTitle>
             <CardActionIconButton
               data-expanded={pcoExpanded}
