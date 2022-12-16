@@ -1,7 +1,6 @@
 import React, { useContext } from 'react'
 import styled from '@emotion/styled'
 import Paper from '@mui/material/Paper'
-import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
 import HowTo from './HowTo'
@@ -26,77 +25,26 @@ const StyledPaper = styled(Paper)`
   margin-top: 10px;
 `
 
-const propsByTaxQuery = gql`
-  query propsByTaxDataQuery(
-    $queryExportTaxonomies: Boolean!
-    $exportTaxonomies: [String]
-  ) {
-    pcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        propertyName
-        jsontype
-        count
-      }
-    }
-    rcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        relationType
-        propertyName
-        jsontype
-        count
-      }
-    }
-    taxPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        taxonomyName
-        propertyName
-        jsontype
-        count
-      }
-    }
-  }
-`
-
 const Taxonomies = () => {
   const store = useContext(storeContext)
   const { type: exportType } = store.export
   const exportTaxonomies = store.export.taxonomies.toJSON()
-
-  const { loading: propsByTaxLoading, error: propsByTaxError } = useQuery(
-    propsByTaxQuery,
-    {
-      variables: {
-        exportTaxonomies,
-        queryExportTaxonomies: exportTaxonomies.length > 0,
-      },
-    },
-  )
 
   let paperBackgroundColor = '#1565C0'
   let textProperties = 'Wählen Sie eine oder mehrere Taxonomien.'
   if (!exportType) {
     textProperties = 'Wählen Sie Arten oder Lebensräume.'
   }
-  if (propsByTaxLoading) {
-    textProperties = 'Die Eigenschaften werden ergänzt...'
-  }
-  if (!propsByTaxLoading && exportTaxonomies.length > 0) {
+  if (exportTaxonomies.length > 0) {
     paperBackgroundColor = '#2E7D32'
     textProperties = 'Die Eigenschaften wurden geladen.'
   }
-
-  if (propsByTaxError) return `Error fetching data: ${propsByTaxError.message}`
 
   return (
     <ErrorBoundary>
       <Container>
         <HowTo />
-        <ExportTypes /> 
+        <ExportTypes />
         <StyledPaper elevation={1} data-bgcolor={paperBackgroundColor}>
           <PaperTextContainer>
             <PropertyTextDiv>{textProperties}</PropertyTextDiv>
