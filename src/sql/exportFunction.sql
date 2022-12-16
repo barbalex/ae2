@@ -366,7 +366,7 @@ BEGIN
     END IF;
     EXECUTE count_count_sql INTO row_count;
   END LOOP;
-    -- add tax_fields as extra columns
+    -- add tax_fields and insert values
     IF cardinality(tax_fields) > 0 THEN
       FOREACH taxfield IN ARRAY tax_fields LOOP
         -- several fieldnames exist in many taxonomies, so need not add taxonmy-name if multiple taxonomies are used
@@ -380,8 +380,7 @@ BEGIN
         EXECUTE format('UPDATE _tmp SET %1$s = (SELECT properties ->> %2$L FROM ae.object WHERE id = _tmp.id)', fieldname, taxfield.pname);
       END LOOP;
     END IF;
-    -- add property fields as extra columns
-    -- and insert values
+    -- add property fields as extra columns and insert values
     IF cardinality(pco_properties) > 0 THEN
       FOREACH pcoproperty IN ARRAY pco_properties LOOP
         fieldname := ae.remove_bad_chars (pcoproperty.pcname || '__' || pcoproperty.pname);
@@ -407,7 +406,7 @@ BEGIN
         EXECUTE sql2;
       END LOOP;
     END IF;
-    -- add rco-properties
+    -- add rco-property fields and insert values
     IF cardinality(rco_properties) > 0 THEN
       FOREACH rcoproperty IN ARRAY rco_properties LOOP
         -- field naming: pcname__relationtype__pname
