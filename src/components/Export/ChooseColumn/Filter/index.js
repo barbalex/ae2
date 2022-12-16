@@ -3,7 +3,6 @@ import FormGroup from '@mui/material/FormGroup'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
 import styled from '@emotion/styled'
-import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
 import HowTo from './HowTo'
@@ -18,9 +17,6 @@ import ErrorBoundary from '../../../shared/ErrorBoundary'
 const Container = styled.div`
   padding: 0 5px;
 `
-const ErrorContainer = styled.div`
-  padding: 5px;
-`
 const Label = styled(FormControlLabel)`
   height: 30px;
   min-height: 30px;
@@ -30,52 +26,14 @@ const Label = styled(FormControlLabel)`
   }
 `
 
-const propsByTaxQuery = gql`
-  query propsByTaxDataQueryForFilter(
-    $queryExportTaxonomies: Boolean!
-    $exportTaxonomies: [String]
-  ) {
-    pcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        propertyName
-        jsontype
-        count
-      }
-    }
-    rcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        relationType
-        propertyName
-        jsontype
-        count
-      }
-    }
-  }
-`
-
 const Filter = () => {
   const store = useContext(storeContext)
-  const exportTaxonomies = store.export.taxonomies.toJSON()
   const {
     setWithSynonymData,
     withSynonymData,
     addFilterFields,
     setAddFilterFields,
   } = store.export
-
-  const { data: propsByTaxData, error: propsByTaxDataError } = useQuery(
-    propsByTaxQuery,
-    {
-      variables: {
-        exportTaxonomies,
-        queryExportTaxonomies: exportTaxonomies.length > 0,
-      },
-    },
-  )
 
   const [taxonomiesExpanded, setTaxonomiesExpanded] = useState(false)
   const [pcoExpanded, setFilterExpanded] = useState(false)
@@ -107,19 +65,6 @@ const Filter = () => {
       setPropertiesExpanded(false)
     }
   }, [rcoExpanded])
-
-  const pcoProperties =
-    propsByTaxData?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
-  const rcoProperties =
-    propsByTaxData?.rcoPropertiesByTaxonomiesFunction?.nodes ?? []
-
-  if (propsByTaxDataError) {
-    return (
-      <ErrorContainer>
-        `Error loading data: ${propsByTaxDataError.message}`
-      </ErrorContainer>
-    )
-  }
 
   return (
     <ErrorBoundary>
@@ -153,12 +98,8 @@ const Filter = () => {
           taxonomiesExpanded={taxonomiesExpanded}
           onToggleTaxonomies={onToggleTaxonomies}
         />
-        {pcoProperties.length > 0 && (
-          <PCOs pcoExpanded={pcoExpanded} onTogglePco={onTogglePco} />
-        )}
-        {rcoProperties.length > 0 && (
-          <RCOs rcoExpanded={rcoExpanded} onToggleRco={onToggleRco} />
-        )}
+        <PCOs pcoExpanded={pcoExpanded} onTogglePco={onTogglePco} />
+        <RCOs rcoExpanded={rcoExpanded} onToggleRco={onToggleRco} />
       </Container>
     </ErrorBoundary>
   )
