@@ -53,7 +53,7 @@ const PropertiesContainer = styled.div`
 `
 
 const propsByTaxQuery = gql`
-  query propsByTaxDataQuery(
+  query propsByTaxDataQueryForFilterTaxonomy(
     $queryExportTaxonomies: Boolean!
     $exportTaxonomies: [String]
   ) {

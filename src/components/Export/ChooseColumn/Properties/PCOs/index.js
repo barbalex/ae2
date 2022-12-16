@@ -40,7 +40,7 @@ const Count = styled.span`
 `
 
 const propsByTaxQuery = gql`
-  query propsByTaxDataQuery(
+  query propsByTaxDataQueryForPropertiesPCOs(
     $queryExportTaxonomies: Boolean!
     $exportTaxonomies: [String]
   ) {

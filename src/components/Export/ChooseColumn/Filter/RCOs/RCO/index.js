@@ -53,7 +53,7 @@ const PropertiesContainer = styled.div`
 `
 
 const propsByTaxQuery = gql`
-  query propsByTaxDataQuery(
+  query propsByTaxDataQueryForFilterRCO(
     $queryExportTaxonomies: Boolean!
     $exportTaxonomies: [String]
   ) {

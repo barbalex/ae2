@@ -31,7 +31,7 @@ const Label = styled(FormControlLabel)`
 `
 
 const propsByTaxQuery = gql`
-  query propsByTaxDataQuery(
+  query propsByTaxDataQueryForFilter(
     $queryExportTaxonomies: Boolean!
     $exportTaxonomies: [String]
   ) {
