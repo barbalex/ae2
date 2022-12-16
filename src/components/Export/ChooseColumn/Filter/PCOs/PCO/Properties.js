@@ -12,7 +12,6 @@ const SpinnerContainer = styled.div`
   width: 100%;
 `
 
-// TODO: query only for this pc
 const query = gql`
   query propsByTaxDataQueryForFilterPCO(
     $exportTaxonomies: [String]
