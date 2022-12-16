@@ -6,13 +6,12 @@ import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from '@emotion/styled'
-import groupBy from 'lodash/groupBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
-import RCO from './RCO'
 import storeContext from '../../../../../storeContext'
 import ErrorBoundary from '../../../../shared/ErrorBoundary'
+import List from './List'
 
 const Container = styled.div`
   margin: 10px 0;
@@ -42,21 +41,24 @@ const Count = styled.span`
   padding-left: 5px;
 `
 
-const propsByTaxQuery = gql`
-  query propsByTaxDataQueryForFilterRCOs(
-    $queryExportTaxonomies: Boolean!
-    $exportTaxonomies: [String]
-  ) {
-    rcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
-      nodes {
-        propertyCollectionName
-        relationType
-        propertyName
-        jsontype
-        count
+const query = gql`
+  query propsByTaxDataQueryForFilterRCOs($exportTaxonomies: [String!]) {
+    pc_count: allPropertyCollections(
+      filter: {
+        relationsByPropertyCollectionId: {
+          some: {
+            objectByObjectId: {
+              taxonomyByTaxonomyId: { name: { in: $exportTaxonomies } }
+            }
+          }
+        }
       }
+    ) {
+      totalCount
     }
+    property_count: rcoPropertiesByTaxonomiesCountFunction(
+      exportTaxonomies: $exportTaxonomies
+    )
   }
 `
 
@@ -64,23 +66,14 @@ const RcosCard = ({ rcoExpanded, onToggleRco }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
-  const { data, error, loading } = useQuery(propsByTaxQuery, {
+  const { data, error, loading } = useQuery(query, {
     variables: {
       exportTaxonomies,
-      queryExportTaxonomies: exportTaxonomies.length > 0,
     },
   })
 
-  const rcoProperties = data?.rcoPropertiesByTaxonomiesFunction?.nodes ?? []
-
-  const rcoPropertiesByPropertyCollection = groupBy(rcoProperties, (x) => {
-    if (x.propertyCollectionName.includes(x.relationType)) {
-      return x.propertyCollectionName
-    }
-    return `${x.propertyCollectionName}: ${x.relationType}`
-  })
-  const rcoPropertiesFields = groupBy(rcoProperties, 'propertyName')
-  const rCCount = Object.keys(rcoPropertiesByPropertyCollection).length
+  const pcCount = data?.pc_count?.totalCount ?? 0
+  const propertyCount = data?.property_count ?? 0
 
   if (error) {
     return (
@@ -96,14 +89,10 @@ const RcosCard = ({ rcoExpanded, onToggleRco }) => {
             <CardActionTitle>
               Beziehungssammlungen
               {
-                <Count>{`(${loading ? '...' : rCCount} Sammlungen, ${
-                  Object.keys(rcoPropertiesFields).length
-                } ${
-                  loading
-                    ? '...'
-                    : Object.keys(rcoPropertiesFields).length === 1
-                    ? 'Feld'
-                    : 'Felder'
+                <Count>{`(${
+                  loading ? '...' : pcCount
+                } Sammlungen, ${propertyCount} ${
+                  loading ? '...' : propertyCount === 1 ? 'Feld' : 'Felder'
                 })`}</Count>
               }
             </CardActionTitle>
@@ -118,9 +107,7 @@ const RcosCard = ({ rcoExpanded, onToggleRco }) => {
             </CardActionIconButton>
           </StyledCardActions>
           <Collapse in={rcoExpanded} timeout="auto" unmountOnExit>
-            {Object.keys(rcoPropertiesByPropertyCollection).map((pc) => (
-              <RCO key={pc} pc={pc} />
-            ))}
+            <List />
           </Collapse>
         </StyledCard>
       </Container>
