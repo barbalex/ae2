@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useRef } from 'react'
+import React, { useMemo, useContext, useEffect, useRef } from 'react'
 import styled from '@emotion/styled'
 import Snackbar from '@mui/material/Snackbar'
 import { useApolloClient } from '@apollo/client'
@@ -9,6 +9,7 @@ import SimpleBar from 'simplebar-react'
 import findIndex from 'lodash/findIndex'
 import isEqual from 'lodash/isEqual'
 import { useResizeDetector } from 'react-resize-detector'
+import { useQuery } from '@tanstack/react-query'
 
 import Row from './Row'
 import Filter from './Filter'
@@ -172,16 +173,25 @@ const TreeComponent = () => {
     refreshOptions: { leading: true },
   })
 
+  const variables = getTreeDataVariables(store)
+
   const client = useApolloClient()
 
-  const [data, setData] = useState({
-    treeData: undefined,
-    error: undefined,
-    loading: true,
-    nodes: [],
+  const { isLoading, error, data } = useQuery({
+    queryKey: ['treeQuery', activeNodeArray, login.username, login.token],
+    queryFn: async () => {
+      const data = await client.query({
+        query: treeQuery,
+        variables,
+      })
+      return data
+    },
   })
 
-  const { treeData, error, loading, nodes } = data
+  const nodes = useMemo(
+    () => data?.data?.treeFunction?.nodes ?? [],
+    [data?.data?.treeFunction?.nodes],
+  )
 
   const listRef = useRef(null)
 
@@ -190,33 +200,10 @@ const TreeComponent = () => {
     listRef?.current?.scrollToItem(index)
   }, [activeNodeArray, nodes])
 
-  const userId = treeData?.userByName?.id
-
-  useEffect(() => {
-    let isActive = true
-    client
-      .query({
-        query: treeQuery,
-        variables: getTreeDataVariables(store),
-      })
-      .then(({ data: treeData, loading, error }) => {
-        if (!isActive) return
-
-        setData({
-          treeData,
-          error,
-          loading,
-          nodes: treeData?.treeFunction?.nodes ?? [],
-        })
-      })
-
-    return () => {
-      isActive = false
-    }
-  }, [activeNodeArray, client, login.username, login.token, store])
+  const userId = data?.userByName?.id
 
   const userRoles = (
-    treeData?.userByName?.organizationUsersByUserId?.nodes ?? []
+    data?.userByName?.organizationUsersByUserId?.nodes ?? []
   ).map((r) => r?.role)
   const userIsTaxWriter =
     userRoles.includes('orgAdmin') || userRoles.includes('orgTaxonomyWriter')
@@ -264,7 +251,7 @@ const TreeComponent = () => {
             )
           }}
         </SimpleBar>
-        <StyledSnackbar open={loading} message="lade Daten..." />
+        <StyledSnackbar open={isLoading} message="lade Daten..." />
         <CmBenutzerFolder />
         <CmBenutzer />
         {userIsTaxWriter && (
