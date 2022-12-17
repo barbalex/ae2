@@ -4,7 +4,7 @@ import Checkbox from '@mui/material/Checkbox'
 import styled from '@emotion/styled'
 import { observer } from 'mobx-react-lite'
 
-import storeContext from '../../../../../../storeContext'
+import storeContext from '../../../../../../../storeContext'
 
 const Container = styled.div`
   width: ${(props) => `${props['data-width']}%`};
@@ -18,12 +18,7 @@ const Label = styled(FormControlLabel)`
   }
 `
 
-const PcoChooser = ({
-  pcname,
-  pname,
-  columns,
-  propertiesLength,
-}) => {
+const PcoChooser = ({ pcname, pname, columns, propertiesLength }) => {
   const store = useContext(storeContext)
   const { pcoProperties, addPcoProperty, removePcoProperty } = store.export
 
@@ -49,11 +44,7 @@ const PcoChooser = ({
         control={
           <Checkbox color="primary" checked={checked} onChange={onCheck} />
         }
-        label={
-          <div>
-            {pname}
-          </div>
-        }
+        label={<div>{pname}</div>}
       />
     </Container>
   )

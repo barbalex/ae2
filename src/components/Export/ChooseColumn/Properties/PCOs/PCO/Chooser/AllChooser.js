@@ -4,7 +4,7 @@ import Checkbox from '@mui/material/Checkbox'
 import styled from '@emotion/styled'
 import { observer } from 'mobx-react-lite'
 
-import storeContext from '../../../../../../storeContext'
+import storeContext from '../../../../../../../storeContext'
 
 const Container = styled.div`
   margin-bottom: 16px;
