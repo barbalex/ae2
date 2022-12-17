@@ -4,10 +4,10 @@ import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
 import { withResizeDetector } from 'react-resize-detector'
 
-import Comparator from './Comparator'
+import Comparator from './Comparator' 
 import Value from './Value'
 import Checkbox from './Checkbox'
-import storeContext from '../../../../../../../storeContext'
+import storeContext from '../../../../../../../storeContext' 
 
 const Container = styled.div`
   display: flex;

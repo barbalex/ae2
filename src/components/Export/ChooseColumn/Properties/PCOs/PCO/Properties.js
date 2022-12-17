@@ -2,20 +2,16 @@ import React from 'react'
 
 import Chooser from './Chooser'
 
-const PCO = ({ properties, columns }) => {
-  const propertiesLength = properties.length
-
-  return properties.map((p) => (
+const PCO = ({ properties, columns, pcName }) =>
+  properties.map((p) => (
     <Chooser
-      key={`${p.propertyName}${p.jsontype}`}
-      pcname={p.propertyCollectionName}
-      pname={p.propertyName}
-      jsontype={p.jsontype}
-      count={p.count}
+      key={`${p.property}${p.type}`}
+      pcname={pcName}
+      pname={p.property}
+      jsontype={p.type}
       columns={columns}
-      propertiesLength={propertiesLength}
+      propertiesLength={properties.length}
     />
   ))
-}
 
 export default PCO

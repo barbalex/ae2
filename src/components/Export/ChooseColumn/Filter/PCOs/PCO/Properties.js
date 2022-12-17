@@ -55,12 +55,12 @@ const Properties = ({ columns, pc }) => {
     )
   }
 
-  return properties.map((field) => (
+  return properties.map((p) => (
     <Property
-      key={`${field.property}${field.type}`}
+      key={`${p.property}${p.type}`}
       pcname={pc}
-      pname={field.property}
-      jsontype={field.type}
+      pname={p.property}
+      jsontype={p.type}
       columns={columns}
       propertiesLength={properties.length}
     />

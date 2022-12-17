@@ -18,7 +18,7 @@ const Label = styled(FormControlLabel)`
   }
 `
 
-const AllPcoChooser = ({ properties }) => {
+const AllPcoChooser = ({ properties, pcName }) => {
   const store = useContext(storeContext)
   const { pcoProperties, addPcoProperty, removePcoProperty } = store.export
 
@@ -26,26 +26,22 @@ const AllPcoChooser = ({ properties }) => {
     (event, isChecked) => {
       if (isChecked) {
         return properties.forEach((p) => {
-          const pcname = p.propertyCollectionName
-          const pname = p.propertyName
+          const pcname = pcName
+          const pname = p.property
           addPcoProperty({ pcname, pname })
         })
       }
-      properties.forEach((p) => {
-        const pcname = p.propertyCollectionName
-        const pname = p.propertyName
-        removePcoProperty({ pcname, pname })
-      })
+      properties.forEach((p) =>
+        removePcoProperty({ pcname: pcName, pname: p.property }),
+      )
     },
-    [addPcoProperty, properties, removePcoProperty],
+    [addPcoProperty, pcName, properties, removePcoProperty],
   )
 
   const checkedArray = properties.map(
     (p) =>
-      pcoProperties.filter(
-        (x) =>
-          x.pcname === p.propertyCollectionName && x.pname === p.propertyName,
-      ).length > 0,
+      pcoProperties.filter((x) => x.pcname === pcName && x.pname === p.property)
+        .length > 0,
   )
   const checked = checkedArray.length > 0 && !checkedArray.includes(false)
 

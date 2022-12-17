@@ -9,9 +9,6 @@ import storeContext from '../../../../../../storeContext'
 const Container = styled.div`
   width: ${(props) => `${props['data-width']}%`};
 `
-const Count = styled.span`
-  font-size: xx-small;
-`
 const Label = styled(FormControlLabel)`
   height: 30px;
   min-height: 30px;
@@ -24,8 +21,6 @@ const Label = styled(FormControlLabel)`
 const PcoChooser = ({
   pcname,
   pname,
-  jsontype,
-  count,
   columns,
   propertiesLength,
 }) => {
@@ -56,7 +51,7 @@ const PcoChooser = ({
         }
         label={
           <div>
-            {pname} <Count title="Anzahl Objekte">{`(${count} Objekte)`}</Count>
+            {pname}
           </div>
         }
       />

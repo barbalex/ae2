@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from '@emotion/styled'
-import groupBy from 'lodash/groupBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { withResizeDetector } from 'react-resize-detector'
@@ -16,6 +15,8 @@ import Properties from './Properties'
 import storeContext from '../../../../../../storeContext'
 import ErrorBoundary from '../../../../../shared/ErrorBoundary'
 import getConstants from '../../../../../../modules/constants'
+import Spinner from '../../../../../shared/Spinner'
+
 const constants = getConstants()
 
 const StyledCard = styled(Card)`
@@ -48,19 +49,24 @@ const Count = styled.span`
   font-size: x-small;
   padding-left: 5px;
 `
+const SpinnerContainer = styled.div`
+  padding-top: 15px;
+  width: 100%;
+`
 
-const propsByTaxQuery = gql`
-  query propsByTaxDataQueryForPropertiesPCO(
-    $queryExportTaxonomies: Boolean!
+const query = gql`
+  query propsByTaxDataQueryForFilterPCO(
     $exportTaxonomies: [String]
+    $pcName: String!
   ) {
-    pcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
+    pcoPropertiesByTaxonomiesAndPc(
+      taxonomyNames: $exportTaxonomies
+      pcName: $pcName
+    ) {
+      totalCount
       nodes {
-        propertyCollectionName
-        propertyName
-        jsontype
-        count
+        property
+        type
       }
     }
   }
@@ -70,27 +76,29 @@ const PCO = ({ pcName, count, width = 500 }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
-  const { data: propsData, error: propsDataError } = useQuery(propsByTaxQuery, {
+  const { data, error, loading } = useQuery(query, {
     variables: {
       exportTaxonomies,
-      queryExportTaxonomies: exportTaxonomies.length > 0,
+      pcName,
     },
   })
+
+  const properties = data?.pcoPropertiesByTaxonomiesAndPc?.nodes ?? []
 
   const [expanded, setExpanded] = useState(false)
   const onClickActions = useCallback(() => setExpanded(!expanded), [expanded])
 
-  const pcoProperties =
-    propsData?.pcoPropertiesByTaxonomiesFunction?.nodes ?? []
-  const pcoPropertiesByPropertyCollection = groupBy(
-    pcoProperties,
-    'propertyCollectionName',
-  )
-  const properties = pcoPropertiesByPropertyCollection[pcName]
-
   const columns = Math.floor(width / constants.export.properties.columnWidth)
 
-  if (propsDataError) return `Error fetching data: ${propsDataError.message}`
+  if (error) return `Error fetching data: ${error.message}`
+
+  if (loading) {
+    return (
+      <SpinnerContainer>
+        <Spinner message="" />
+      </SpinnerContainer>
+    )
+  }
 
   return (
     <ErrorBoundary>
@@ -112,9 +120,9 @@ const PCO = ({ pcName, count, width = 500 }) => {
         </StyledCardActions>
         <StyledCollapse in={expanded} timeout="auto" unmountOnExit>
           <>
-            {count > 1 && <AllChooser properties={properties} />}
+            {count > 1 && <AllChooser properties={properties} pcName={pcName} />}
             <PropertiesContainer>
-              <Properties properties={properties} columns={columns} />
+              <Properties properties={properties} columns={columns} pcName={pcName} />
             </PropertiesContainer>
           </>
         </StyledCollapse>
