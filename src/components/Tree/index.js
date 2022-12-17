@@ -179,14 +179,12 @@ const TreeComponent = () => {
 
   const { isLoading, error, data } = useQuery({
     queryKey: ['treeQuery', activeNodeArray, login.username, login.token],
-    queryFn: async () => {
-      const data = await client.query({
+    queryFn: async () =>
+      await client.query({
         query: treeQuery,
         variables,
         fetchPolicy: 'no-cache',
-      })
-      return data
-    },
+      }),
   })
 
   const previousData = useRef(null)

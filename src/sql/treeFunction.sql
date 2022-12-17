@@ -440,7 +440,6 @@ FROM
 ),
 sorted AS (
   SELECT
-    level,
     name AS label,
     id,
     url,
