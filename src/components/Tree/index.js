@@ -188,10 +188,16 @@ const TreeComponent = () => {
     },
   })
 
-  const nodes = useMemo(
-    () => data?.data?.treeFunction?.nodes ?? [],
-    [data?.data?.treeFunction?.nodes],
-  )
+  const previousData = useRef(null)
+
+  // if isLoading, return previous value to avoid flickering
+  const nodes = useMemo(() => {
+    if (isLoading) return previousData.current ?? []
+    if (data?.data?.treeFunction?.nodes) {
+      previousData.current = data?.data?.treeFunction?.nodes
+    }
+    return data?.data?.treeFunction?.nodes ?? []
+  }, [data?.data?.treeFunction?.nodes, isLoading])
 
   const listRef = useRef(null)
 
