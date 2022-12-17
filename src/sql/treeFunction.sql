@@ -437,29 +437,18 @@ FROM
     menu_type
   FROM
     tree_categories
-),
-sorted AS (
-  SELECT
-    name AS label,
-    id,
-    url,
-    children_count,
-    info,
-    menu_type
-  FROM
-    unioned
-  ORDER BY
-    sort_string
 )
 SELECT
-  label,
+  name AS label,
   id,
   url,
   children_count,
   info,
   menu_type
 FROM
-  sorted
+  unioned
+ORDER BY
+  sort_string
 $$
 LANGUAGE sql
 STABLE;
