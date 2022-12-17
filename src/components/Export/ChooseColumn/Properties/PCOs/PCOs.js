@@ -1,17 +1,15 @@
 import React, { useContext } from 'react'
 import { useQuery, gql } from '@apollo/client'
-import groupBy from 'lodash/groupBy'
 import styled from '@emotion/styled'
 import { observer } from 'mobx-react-lite'
 
 import PCO from './PCO'
-import storeContext from '../../../../../storeContext' 
+import storeContext from '../../../../../storeContext'
 import Spinner from '../../../../shared/Spinner'
 
 const SpinnerContainer = styled.div`
   padding-top: 15px;
 `
-
 
 const query = gql`
   query propsByTaxDataQueryForPropertiesPCOs($exportTaxonomies: [String!]) {
@@ -32,9 +30,8 @@ const PCOs = () => {
     variables: {
       exportTaxonomies,
     },
-  })  
+  })
   const nodes = data?.pcoPropertiesByTaxonomiesCountPerPc?.nodes ?? []
-
 
   if (error) return `Error fetching data: ${error.message}`
 
@@ -46,7 +43,9 @@ const PCOs = () => {
     )
   }
 
-  return nodes.map(({name, count}) => <PCO key={name} pcName={name} count={count} />)
+  return nodes.map(({ name, count }) => (
+    <PCO key={name} pcName={name} count={count} />
+  ))
 }
 
 export default observer(PCOs)
