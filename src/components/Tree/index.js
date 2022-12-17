@@ -183,6 +183,7 @@ const TreeComponent = () => {
       const data = await client.query({
         query: treeQuery,
         variables,
+        fetchPolicy: 'no-cache',
       })
       return data
     },
