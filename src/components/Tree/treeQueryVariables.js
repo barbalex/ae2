@@ -4,7 +4,7 @@ const treeQueryVariables = (store) => {
   const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   return {
-    username: store.login.username ?? 'no_user_with_this_name_exists',
+    username: store.login.username ?? '',
     url: activeNodeArray.filter((n) => n !== 0),
     hasToken: !!store.login.token,
   }
