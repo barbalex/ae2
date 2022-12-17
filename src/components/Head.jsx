@@ -3,7 +3,7 @@ import React from 'react'
 
 const Head = () => (
   <>
-    <title>arteigenschaften v1.8.8</title>
+    <title>arteigenschaften v1.8.9</title>
     <meta name="description" content="Arteigenschaften sammeln" />
     <meta
       name="keywords"

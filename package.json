@@ -1,7 +1,7 @@
 {
   "name": "artdaten",
   "description": "Eigenschaften von Flora, Fauna, Moosen und Lebensräumen: Sichten, exportieren, importieren",
-  "version": "1.8.8",
+  "version": "1.8.9",
   "author": {
     "name": "Alexander Gabriel",
     "email": "alex@gabriel-software.ch",
@@ -62,7 +62,7 @@
     "react-typography": "0.16.23",
     "react-virtualized-auto-sizer": "1.0.7",
     "react-vtree": "3.0.0-beta.3",
-    "react-window": "1.8.8",
+    "react-window": "1.8.9",
     "simplebar-react": "2.4.3",
     "typography": "0.16.21",
     "use-debounce": "9.0.2",
