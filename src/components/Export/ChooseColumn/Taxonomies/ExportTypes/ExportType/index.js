@@ -51,7 +51,7 @@ const ExportTypes = ({ type }) => {
           }
         }
       `
-      const { data, error } = client.query({ query: taxonomiesQuery })
+      const { data } = client.query({ query: taxonomiesQuery })
       const taxonomies = data?.allTaxonomies?.nodes
       if (isChecked) {
         setExportType(name)

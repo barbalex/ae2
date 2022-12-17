@@ -121,7 +121,6 @@ const IntegrationAutosuggest = ({
 
   const loadOptions = useCallback(
     async (val) => {
-      console.log('loadOptions', { val })
       if (!focusCount) return []
       const { data, error } = await client.query({
         query: rcoFieldPropQuery,

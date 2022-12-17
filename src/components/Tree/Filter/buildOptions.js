@@ -13,7 +13,7 @@ const filterSuggestionsQuery = gql`
       nodes {
         id
         name
-        taxonomyByTaxonomyId { 
+        taxonomyByTaxonomyId {
           id
           type
           name
@@ -24,7 +24,6 @@ const filterSuggestionsQuery = gql`
 `
 
 const buildOptions = async ({ cb, client, treeFilter }) => {
-  const treeFilterId = treeFilter.id ?? '99999999-9999-9999-9999-999999999999'
   let resultFilterSuggestionsQuery
   try {
     resultFilterSuggestionsQuery = await client.query({
@@ -39,7 +38,6 @@ const buildOptions = async ({ cb, client, treeFilter }) => {
   }
 
   const filterSuggestionsData = resultFilterSuggestionsQuery?.data
-  const filterSuggestionsError = resultFilterSuggestionsQuery?.error
 
   // TODO: on error surface to user
 
@@ -71,18 +69,6 @@ const buildOptions = async ({ cb, client, treeFilter }) => {
     ...s,
     type: 'pC',
   }))
-  const loadingOptions = [
-    {
-      title: 'Lade Daten',
-      options: [
-        {
-          val: 'none',
-          label: '',
-          type: 'art',
-        },
-      ],
-    },
-  ]
 
   const options = []
   if (suggestionsArt.length) {
