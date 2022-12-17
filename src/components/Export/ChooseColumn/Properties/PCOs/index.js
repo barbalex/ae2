@@ -42,7 +42,7 @@ const query = gql`
   query propsByTaxDataQueryForFilterRCOs($exportTaxonomies: [String!]) {
     pc_count: allPropertyCollections(
       filter: {
-        relationsByPropertyCollectionId: {
+        propertyCollectionObjectsByPropertyCollectionId: {
           some: {
             objectByObjectId: {
               taxonomyByTaxonomyId: { name: { in: $exportTaxonomies } }
@@ -53,7 +53,7 @@ const query = gql`
     ) {
       totalCount
     }
-    property_count: rcoPropertiesByTaxonomiesCountFunction(
+    property_count: pcoPropertiesByTaxonomiesCountFunction(
       exportTaxonomies: $exportTaxonomies
     )
   }
