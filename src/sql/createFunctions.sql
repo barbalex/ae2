@@ -322,9 +322,6 @@ CREATE TYPE ae.pco_properties_by_taxonomy AS (
   count bigint
 );
 
--- TODO: drop
-DROP FUNCTION ae.pco_properties_by_taxonomies_function;
-
 -- example query for prop_values_function:
 --SELECT distinct properties->'Artwert' AS value
 --FROM ae.property_collection_object
