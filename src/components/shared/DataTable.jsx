@@ -21,9 +21,9 @@ const DataTable = ({ data, order = 'ASC', orderBy = 'id', setOrder }) => {
       <Table
         sx={{ minWidth: 650, fontSize: '0.8rem !important' }}
         size="small"
-        aria-label="a dense table"
+        aria-label="Export Vorschau"
       >
-        <TableHead>
+        <TableHead sx={{ backgroundColor: '#f6f6f6' }}>
           <TableRow>
             {columnNames.map((name) => {
               if (name === 'id') {
