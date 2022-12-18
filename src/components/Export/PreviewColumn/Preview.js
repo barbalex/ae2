@@ -144,6 +144,16 @@ const Preview = () => {
   const [count, setCount] = useState(15)
   const [sortField, setSortField] = useState()
 
+  const sortFieldForQuery = useMemo(() => {
+    if (!sortField) return undefined
+    const sf = {
+      ...sortField,
+    }
+    delete sf.columnName
+    console.log('sortFieldForQuery:', { sf, sortField })
+    return sf
+  }, [sortField])
+
   const onGridSort = useCallback(
     (column, direction) => {
       if (direction === 'NONE') return setSortField(undefined)
@@ -179,7 +189,7 @@ const Preview = () => {
           pcname: rcoProperty.pcname,
           pname: rcoProperty.pname,
           relationtype: rcoProperty.relationtype,
-          direction,
+          direction: direction,
           columnName: removeBadChars(
             `${rcoProperty.pcname}__${rcoProperty.relationtype}__${rcoProperty.pname}`,
           ),
@@ -191,11 +201,18 @@ const Preview = () => {
       )
 
       if (sortField) {
-        delete sortField.columnName
         setSortField(sortField)
       }
     },
     [pcoProperties, rcoProperties, taxFields],
+  )
+
+  const setOrder = useCallback(
+    ({ by, direction }) => {
+      console.log('setOrder', { by, direction })
+      onGridSort(by, direction)
+    },
+    [onGridSort],
   )
 
   const {
@@ -235,7 +252,7 @@ const Preview = () => {
           count,
           objectIds: exportIds,
           rowPerRco: !rcoInOneRow,
-          sortField,
+          sortField: sortFieldForQuery,
         },
       })
       return data
@@ -287,7 +304,7 @@ const Preview = () => {
         count: 0,
         objectIds: exportIds,
         rowPerRco: !rcoInOneRow,
-        sortField,
+        sortField: sortFieldForQuery,
       },
     })
     const rows = data?.data?.exportAll?.exportDatum?.exportData
@@ -303,7 +320,7 @@ const Preview = () => {
     rcoFilters,
     rcoInOneRow,
     rcoProperties,
-    sortField,
+    sortFieldForQuery,
     taxFields,
     taxFilters,
     taxonomies,
@@ -311,7 +328,7 @@ const Preview = () => {
   ])
   const onClickCsv = useCallback(() => exportCsv(rows), [rows])
 
-  console.log('Preview, rows:', rows)
+  console.log('Preview', { rows, sortField })
 
   if (exportError) {
     return (
@@ -335,7 +352,12 @@ const Preview = () => {
               <CountInput count={count} setCount={setCount} />
               {' :'}
             </TotalDiv>
-            <DataTable data={rows} />
+            <DataTable
+              data={rows}
+              order={sortField?.direction ?? 'ASC'}
+              orderBy={sortField?.columnName ?? 'id'}
+              setOrder={setOrder}
+            />
             {!isSSR && (
               <React.Suspense fallback={<div />}>
                 <ReactDataGridLazy

@@ -5,13 +5,15 @@ import TableCell from '@mui/material/TableCell'
 import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
+import TableSortLabel from '@mui/material/TableSortLabel'
 import Paper from '@mui/material/Paper'
-import { css } from '@emotion/react'
+import Box from '@mui/material/Box'
+import { visuallyHidden } from '@mui/utils'
 
 // data is array of objects
 // keys are column names
 // values are column values
-const DataTable = ({ data }) => {
+const DataTable = ({ data, order = 'ASC', orderBy = 'id', setOrder }) => {
   const columnNames = Object.keys(data[0])
 
   return (
@@ -23,9 +25,42 @@ const DataTable = ({ data }) => {
       >
         <TableHead>
           <TableRow>
-            {columnNames.map((name) => (
-              <TableCell key={name}>{name}</TableCell>
-            ))}
+            {columnNames.map((name) => {
+              if (name === 'id') {
+                return (
+                  <TableCell key={name} sx={{ minWidth: 270 }}>
+                    {name}
+                  </TableCell>
+                )
+              }
+
+              return (
+                <TableCell
+                  key={name}
+                  sortDirection={orderBy === name ? order.toLowerCase() : false}
+                >
+                  <TableSortLabel
+                    active={orderBy === name}
+                    direction={orderBy === name ? order.toLowerCase() : 'asc'}
+                    onClick={() =>
+                      setOrder({
+                        by: name,
+                        direction: order === 'ASC' ? 'DESC' : 'ASC',
+                      })
+                    }
+                  >
+                    {name}
+                    {orderBy === name ? (
+                      <Box component="span" sx={visuallyHidden}>
+                        {order === 'DESC'
+                          ? 'sorted descending'
+                          : 'sorted ascending'}
+                      </Box>
+                    ) : null}
+                  </TableSortLabel>
+                </TableCell>
+              )
+            })}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -40,7 +75,7 @@ const DataTable = ({ data }) => {
                 <TableCell
                   component="th"
                   scope="row"
-                  sx={{ width: 270, fontSize: '0.8rem' }}
+                  sx={{ fontSize: '0.8rem' }}
                 >
                   {row.id}
                 </TableCell>
