@@ -19,9 +19,10 @@ const DataTable = ({ data, order = 'ASC', orderBy = 'id', setOrder }) => {
   return (
     <TableContainer component={Paper}>
       <Table
-        sx={{ minWidth: 650, fontSize: '0.8rem !important' }}
+        sx={{ minWidth: 650, fontSize: 'small !important' }}
         size="small"
         aria-label="Export Vorschau"
+        stickyHeader={true}
       >
         <TableHead sx={{ backgroundColor: '#f6f6f6' }}>
           <TableRow>

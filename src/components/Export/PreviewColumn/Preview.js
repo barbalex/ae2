@@ -14,28 +14,8 @@ import ErrorBoundary from '../../shared/ErrorBoundary'
 import CountInput from './CountInput'
 import DataTable from '../../shared/DataTable'
 
-// react-data-grid calls window!
-const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
-
 const Container = styled.div`
   padding-top: 5px;
-  .react-grid-Container {
-    font-size: small;
-  }
-  .react-grid-Header {
-  }
-  .react-grid-HeaderRow {
-    overflow: hidden;
-  }
-  .react-grid-HeaderCell:not(:first-of-type) {
-    border-left: #c7c7c7 solid 1px !important;
-  }
-  .react-grid-HeaderCell__draggable {
-    right: 16px !important;
-  }
-  .react-grid-Cell {
-    border: #ddd solid 1px !important;
-  }
 `
 const ErrorContainer = styled.div`
   padding: 9px;
@@ -44,17 +24,22 @@ const SpreadsheetContainer = styled.div`
   display: flex;
   flex-direction: column;
 `
+const TopButtonsContainer = styled.div`
+  padding: 10px 8px 2px 8px;
+  > button:not(:first-of-type) {
+    margin-left: 10px;
+  }
+`
 const ButtonsContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
-  padding: 0 8px;
+  padding: 10px 8px;
 `
 const TotalDiv = styled.div`
   font-size: small;
   padding-left: 9px;
   margin-top: 4px;
-  margin-bottom: 1px;
+  margin-bottom: 4px;
   user-select: none;
 `
 const StyledButton = styled(Button)`
@@ -118,7 +103,6 @@ const removeBadChars = (str) =>
 
 const Preview = () => {
   const client = useApolloClient()
-  const isSSR = typeof window === 'undefined'
   const store = useContext(storeContext)
   const {
     withSynonymData,
@@ -259,7 +243,7 @@ const Preview = () => {
     },
   })
 
-  const newCount = exportData?.data?.exportAll?.exportDatum?.count
+  const rowCount = exportData?.data?.exportAll?.exportDatum?.count
   const rows = useMemo(
     () =>
       exportData?.data?.exportAll?.exportDatum?.exportData
@@ -278,12 +262,6 @@ const Preview = () => {
   }, [])
 
   const fields = rows[0] ? Object.keys(rows[0]).map((k) => k) : []
-  const pvColumns = fields.map((k) => ({
-    key: k,
-    name: k,
-    resizable: true,
-    sortable: true,
-  }))
 
   const anzFelder = fields.length ?? 0
 
@@ -328,8 +306,6 @@ const Preview = () => {
   ])
   const onClickCsv = useCallback(() => exportCsv(rows), [rows])
 
-  console.log('Preview', { rows, sortField })
-
   if (exportError) {
     return (
       <ErrorContainer>
@@ -341,10 +317,20 @@ const Preview = () => {
   return (
     <ErrorBoundary>
       <Container>
-        {newCount > 0 && (
+        {rowCount > 0 && (
+          <TopButtonsContainer>
+            <StyledButton onClick={onClickXlsx} color="inherit">
+              .xlsx herunterladen
+            </StyledButton>
+            <StyledButton onClick={onClickCsv} color="inherit">
+              .csv herunterladen
+            </StyledButton>
+          </TopButtonsContainer>
+        )}
+        {rowCount > 0 && (
           <SpreadsheetContainer>
             <TotalDiv>
-              {`${newCount.toLocaleString(
+              {`${rowCount.toLocaleString(
                 'de-CH',
               )} Datensätze, ${anzFelder.toLocaleString('de-CH')} ${
                 anzFelder === 1 ? 'Feld' : 'Felder'
@@ -358,28 +344,16 @@ const Preview = () => {
               orderBy={sortField?.columnName ?? 'id'}
               setOrder={setOrder}
             />
-            {!isSSR && (
-              <React.Suspense fallback={<div />}>
-                <ReactDataGridLazy
-                  columns={pvColumns}
-                  onGridSort={onGridSort}
-                  rowGetter={(i) => rows[i]}
-                  rowsCount={rows.length}
-                  minHeight={500}
-                  minColumnWidth={120}
-                />
-              </React.Suspense>
-            )}
           </SpreadsheetContainer>
         )}
-        {newCount === 0 && (
+        {rowCount === 0 && (
           <SpreadsheetContainer>
-            <TotalDiv>{`${newCount.toLocaleString(
+            <TotalDiv>{`${rowCount.toLocaleString(
               'de-CH',
             )} Datensätze`}</TotalDiv>
           </SpreadsheetContainer>
         )}
-        {newCount > 0 && (
+        {rowCount > 0 && (
           <ButtonsContainer>
             <StyledButton onClick={onClickXlsx} color="inherit">
               .xlsx herunterladen
