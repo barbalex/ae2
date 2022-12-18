@@ -12,6 +12,7 @@ import exportCsv from '../../../modules/exportCsv'
 import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
 import CountInput from './CountInput'
+import DataTable from '../../shared/DataTable'
 
 // react-data-grid calls window!
 const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
@@ -310,6 +311,8 @@ const Preview = () => {
   ])
   const onClickCsv = useCallback(() => exportCsv(rows), [rows])
 
+  console.log('Preview, rows:', rows)
+
   if (exportError) {
     return (
       <ErrorContainer>
@@ -332,6 +335,7 @@ const Preview = () => {
               <CountInput count={count} setCount={setCount} />
               {' :'}
             </TotalDiv>
+            <DataTable data={rows} />
             {!isSSR && (
               <React.Suspense fallback={<div />}>
                 <ReactDataGridLazy
