@@ -134,7 +134,7 @@ const Preview = () => {
       ...sortField,
     }
     delete sf.columnName
-    console.log('sortFieldForQuery:', { sf, sortField })
+    // console.log('sortFieldForQuery:', { sf, sortField })
     return sf
   }, [sortField])
 
@@ -193,7 +193,7 @@ const Preview = () => {
 
   const setOrder = useCallback(
     ({ by, direction }) => {
-      console.log('setOrder', { by, direction })
+      // console.log('setOrder', { by, direction })
       onGridSort(by, direction)
     },
     [onGridSort],
