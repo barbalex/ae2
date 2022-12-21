@@ -138,7 +138,7 @@ const PCO = () => {
   const [pCO, propKeys, pCORaw] = useMemo(() => {
     let pCO = []
     // collect all keys
-    const propKeys = []
+    const propKeys = new Set()
     const pCORaw = (
       pcoData?.propertyCollectionById
         ?.propertyCollectionObjectsByPropertyCollectionId?.nodes ?? []
@@ -156,7 +156,7 @@ const PCO = () => {
             nP[key] = value
           }
           // collect all keys
-          propKeys.push(key)
+          propKeys.add(key)
         })
       }
       pCO.push(nP)
@@ -173,7 +173,7 @@ const PCO = () => {
     return [pCO, propKeys, pCORaw]
   }, [pcoData, sortDirection, sortField])
   // collect all keys and sort property keys by name
-  const keys = ['Objekt ID', 'Objekt Name', ...union(propKeys).sort()]
+  const keys = ['Objekt ID', 'Objekt Name', ...Array.from(propKeys).sort()]
   const pCOWriters = (
     pcoData?.propertyCollectionById?.organizationByOrganizationId
       ?.organizationUsersByOrganizationId?.nodes ?? []
@@ -219,11 +219,11 @@ const PCO = () => {
   return (
     <Container>
       {!showImportPco && (
-        <TotalDiv>{`${pCO.length.toLocaleString('de-CH')} Datensätze, ${(
-          propKeys.length - 2
-        ).toLocaleString('de-CH')} Feld${propKeys.length === 1 ? '' : 'er'}${
-          pCO.length > 0 ? ':' : ''
-        }`}</TotalDiv>
+        <TotalDiv>{`${pCO.length.toLocaleString(
+          'de-CH',
+        )} Datensätze, ${propKeys.size.toLocaleString('de-CH')} Feld${
+          propKeys.size === 1 ? '' : 'er'
+        }${pCO.length > 0 ? ':' : ''}`}</TotalDiv>
       )}
       {!importing && pCO.length > 0 && (
         <>

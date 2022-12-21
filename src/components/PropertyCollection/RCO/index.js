@@ -19,6 +19,7 @@ import treeQuery from '../../Tree/treeQuery'
 import treeQueryVariables from '../../Tree/treeQueryVariables'
 import storeContext from '../../../storeContext'
 import Spinner from '../../shared/Spinner'
+import DataTable from '../../shared/DataTable'
 
 // react-data-grid calls window!
 const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
@@ -145,10 +146,10 @@ const RCO = () => {
   const { width, height, ref: resizeRef } = useResizeObserver()
   console.log('RCO', { width, height })
 
-  const [rCO, allKeys, rCORaw] = useMemo(() => {
+  const [rCO, propKeys, rCORaw] = useMemo(() => {
     let rCO = []
     // collect all keys
-    const allKeys = []
+    const propKeys = []
     const rCORaw = (
       rcoData?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes ??
       []
@@ -169,13 +170,13 @@ const RCO = () => {
             nP[key] = value
           }
           // collect all keys
-          allKeys.push(key)
+          propKeys.push(key)
         })
       }
       rCO.push(nP)
     })
     rCO = orderBy(rCO, sortField, sortDirection)
-    return [rCO, allKeys, rCORaw]
+    return [rCO, propKeys, rCORaw]
   }, [rcoData, sortDirection, sortField])
   // collect all keys and sort property keys by name
   const keys = [
@@ -184,7 +185,7 @@ const RCO = () => {
     'Beziehung ID',
     'Beziehung Name',
     'Art der Beziehung',
-    ...union(allKeys).sort(),
+    ...union(propKeys).sort(),
   ]
   const columns = keys.map((k) => ({
     key: k,
@@ -239,7 +240,7 @@ const RCO = () => {
       {!showImportRco && (
         <TotalDiv>{`${rCO.length.toLocaleString('de-CH')} Datensätze, ${(
           columns.length - 5
-        ).toLocaleString('de-CH')} Feld${columns.length === 6 ? '' : 'er'}${
+        ).toLocaleString('de-CH')} Feld${propKeys.length === 1 ? '' : 'er'}${
           rCO.length > 0 ? ':' : ''
         }`}</TotalDiv>
       )}

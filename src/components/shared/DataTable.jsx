@@ -100,29 +100,31 @@ const DataTable = ({
             </StyledTableRow>
           </TableHead>
           <TableBody>
-            {data.map((row) => {
-              const keys = Object.keys(row).filter((k) => k !== idKey)
-
-              return (
-                <StyledTableRow
-                  key={row[idKey]}
-                  sx={{
-                    '&:last-child td, &:last-child th': { border: 0 },
-                  }}
-                >
-                  <TableCell
-                    component="th"
-                    scope="row"
-                    sx={{ fontSize: '0.8rem', paddingLeft: '6px !important' }}
-                  >
-                    {row[idKey]}
-                  </TableCell>
-                  {keys.map((key) => (
-                    <TableCell key={key}>{row[key]}</TableCell>
-                  ))}
-                </StyledTableRow>
-              )
-            })}
+            {data.map((row) => (
+              <StyledTableRow
+                key={row[idKey]}
+                sx={{
+                  '&:last-child td, &:last-child th': { border: 0 },
+                }}
+              >
+                {columnNames.map((key) => {
+                  if (key === idKey)
+                    return (
+                      <TableCell
+                        component="th"
+                        scope="row"
+                        sx={{
+                          fontSize: '0.8rem',
+                          paddingLeft: '6px !important',
+                        }}
+                      >
+                        {row[idKey]}
+                      </TableCell>
+                    )
+                  return <TableCell key={key}>{row[key]}</TableCell>
+                })}
+              </StyledTableRow>
+            ))}
           </TableBody>
         </Table>
       </SimpleBar>
