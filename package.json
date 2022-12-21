@@ -15,11 +15,11 @@
     "serve": "gatsby serve"
   },
   "dependencies": {
-    "@apollo/client": "3.7.2",
+    "@apollo/client": "3.7.3",
     "@emotion/react": "11.10.5",
     "@emotion/styled": "11.10.5",
     "@fontsource/roboto": "4.5.8",
-    "@mui/material": "5.11.0",
+    "@mui/material": "5.11.1",
     "@tanstack/react-query": "4.20.4",
     "autosuggest-highlight": "3.3.4",
     "date-fns": "2.29.3",
@@ -27,6 +27,7 @@
     "exceljs": "4.3.0",
     "file-saver": "2.0.5",
     "gatsby": "4.24.8",
+    "gatsby-plugin-emotion": "^8.3.0",
     "gatsby-plugin-image": "2.24.0",
     "gatsby-plugin-manifest": "4.24.0",
     "gatsby-plugin-offline": "5.24.0",
@@ -84,7 +85,7 @@
     "eslint-plugin-react": "7.x",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-webpack-plugin": "3.2.0",
-    "gatsby-cli": "5.2.0",
+    "gatsby-cli": "5.3.1",
     "vercel": "28.9.0"
   },
   "license": "ISC",

@@ -19,6 +19,7 @@ import treeQueryVariables from '../../Tree/treeQueryVariables'
 import deletePcoOfPcMutation from './deletePcoOfPcMutation'
 import storeContext from '../../../storeContext'
 import Spinner from '../../shared/Spinner'
+import DataTable from '../../shared/DataTable'
 
 // react-data-grid calls window!
 const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
@@ -230,7 +231,8 @@ const PCO = () => {
       )}
       {!importing && pCO.length > 0 && (
         <>
-          {width && height && !isSSR && (
+          <DataTable data={pCO} />
+          {/* {width && height && !isSSR && (
             <React.Suspense fallback={<div />}>
               <ReactDataGridLazy
                 onGridSort={onGridSort}
@@ -241,7 +243,7 @@ const PCO = () => {
                 minWidth={width}
               />
             </React.Suspense>
-          )}
+          )} */}
           <ButtonsContainer>
             <ExportButtons>
               <StyledButton
