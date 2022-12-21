@@ -8,7 +8,6 @@ import Button from '@mui/material/Button'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
-import useResizeObserver from 'use-resize-observer'
 
 import ImportPco from './Import'
 import booleanToJaNein from '../../../modules/booleanToJaNein'
@@ -20,9 +19,7 @@ import deletePcoOfPcMutation from './deletePcoOfPcMutation'
 import storeContext from '../../../storeContext'
 import Spinner from '../../shared/Spinner'
 import DataTable from '../../shared/DataTable'
-
-// react-data-grid calls window!
-const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
+import exists from '../../../modules/exists'
 
 const Container = styled.div`
   height: 100%;
@@ -111,7 +108,6 @@ const pcoQuery = gql`
 `
 
 const PCO = () => {
-  const isSSR = typeof window === 'undefined'
   const client = useApolloClient()
   const store = useContext(storeContext)
   const { login } = store
@@ -137,14 +133,12 @@ const PCO = () => {
   const [sortField, setSortField] = useState('Objekt Name')
   const [sortDirection, setSortDirection] = useState('asc')
   const [importing, setImport] = useState(false)
-
-  const { width, height, ref: resizeRef } = useResizeObserver()
   //console.log('PCO', { width, height })
 
-  const [pCO, allKeys, pCORaw] = useMemo(() => {
+  const [pCO, propKeys, pCORaw] = useMemo(() => {
     let pCO = []
     // collect all keys
-    const allKeys = []
+    const propKeys = []
     const pCORaw = (
       pcoData?.propertyCollectionById
         ?.propertyCollectionObjectsByPropertyCollectionId?.nodes ?? []
@@ -162,22 +156,24 @@ const PCO = () => {
             nP[key] = value
           }
           // collect all keys
-          allKeys.push(key)
+          propKeys.push(key)
         })
       }
       pCO.push(nP)
     })
+    // TODO: second pass to add empty values for keys that are not in pCO
+    pCO.forEach((p) => {
+      for (const key of propKeys) {
+        if (!exists(p[key])) {
+          p[key] = null
+        }
+      }
+    })
     pCO = orderBy(pCO, sortField, sortDirection)
-    return [pCO, allKeys, pCORaw]
+    return [pCO, propKeys, pCORaw]
   }, [pcoData, sortDirection, sortField])
   // collect all keys and sort property keys by name
-  const keys = ['Objekt ID', 'Objekt Name', ...union(allKeys).sort()]
-  const columns = keys.map((k) => ({
-    key: k,
-    name: k,
-    resizable: true,
-    sortable: true,
-  }))
+  const keys = ['Objekt ID', 'Objekt Name', ...union(propKeys).sort()]
   const pCOWriters = (
     pcoData?.propertyCollectionById?.organizationByOrganizationId
       ?.organizationUsersByOrganizationId?.nodes ?? []
@@ -191,7 +187,7 @@ const PCO = () => {
     setSortField(column)
     setSortDirection(direction.toLowerCase())
   }, [])
-  const rowGetter = useCallback((i) => pCO[i], [pCO])
+
   const onClickXlsx = useCallback(
     () =>
       exportXlsx({
@@ -221,29 +217,17 @@ const PCO = () => {
   }
 
   return (
-    <Container ref={resizeRef}>
+    <Container>
       {!showImportPco && (
         <TotalDiv>{`${pCO.length.toLocaleString('de-CH')} Datensätze, ${(
-          columns.length - 2
-        ).toLocaleString('de-CH')} Feld${columns.length === 3 ? '' : 'er'}${
+          propKeys.length - 2
+        ).toLocaleString('de-CH')} Feld${propKeys.length === 1 ? '' : 'er'}${
           pCO.length > 0 ? ':' : ''
         }`}</TotalDiv>
       )}
       {!importing && pCO.length > 0 && (
         <>
-          <DataTable data={pCO} />
-          {/* {width && height && !isSSR && (
-            <React.Suspense fallback={<div />}>
-              <ReactDataGridLazy
-                onGridSort={onGridSort}
-                columns={columns}
-                rowGetter={rowGetter}
-                rowsCount={pCO.length}
-                minHeight={height - 26 - 46}
-                minWidth={width}
-              />
-            </React.Suspense>
-          )} */}
+          <DataTable data={pCO} idKey="Objekt ID" keys={keys} />
           <ButtonsContainer>
             <ExportButtons>
               <StyledButton
