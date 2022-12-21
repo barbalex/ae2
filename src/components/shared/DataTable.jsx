@@ -40,7 +40,7 @@ const DataTable = ({ data, order = 'ASC', orderBy = 'id', setOrder }) => {
                   key={name}
                   sx={{
                     minWidth: 270,
-                    '&:first-child': { paddingLeft: '6px !important' },
+                    '&:first-of-type': { paddingLeft: '6px !important' },
                     backgroundColor: '#ffcc80 !important',
                   }}
                 >
@@ -54,7 +54,7 @@ const DataTable = ({ data, order = 'ASC', orderBy = 'id', setOrder }) => {
                 key={name}
                 sortDirection={orderBy === name ? order.toLowerCase() : false}
                 sx={{
-                  '&:first-child': { paddingLeft: '6px !important' },
+                  '&:first-of-type': { paddingLeft: '6px !important' },
                   backgroundColor: '#ffcc80 !important',
                 }}
               >
