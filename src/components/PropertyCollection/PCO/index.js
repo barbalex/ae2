@@ -20,6 +20,7 @@ import storeContext from '../../../storeContext'
 import Spinner from '../../shared/Spinner'
 import DataTable from '../../shared/DataTable'
 import exists from '../../../modules/exists'
+import CountInput from '../../Export/PreviewColumn/CountInput'
 
 const Container = styled.div`
   height: 100%;
@@ -54,6 +55,7 @@ const TotalDiv = styled.div`
   font-size: small;
   padding-left: 9px;
   margin-top: 8px;
+  user-select: none;
 `
 const ButtonsContainer = styled.div`
   display: flex;
@@ -69,12 +71,39 @@ const MutationButtons = styled.div`
 `
 const StyledButton = styled(Button)`
   margin: 5px !important;
+  ${(props) => props.loading && `font-style: italic;`}
+  ${(props) => props.loading && `animation: blinker 1s linear infinite;`}
+  ${(props) => props.loading && `animation: blinker 1s linear infinite;`}
+  @keyframes blinker {
+    50% {
+      opacity: 0;
+    }
+  }
+`
+export const StyledProgressText = styled.span`
+  margin-left: 10px;
+  font-style: italic;
+  animation: blinker 1s linear infinite;
+  white-space: nowrap;
+  @keyframes blinker {
+    50% {
+      opacity: 0;
+    }
+  }
 `
 
 const pcoQuery = gql`
   query pCOQuery($pCId: UUID!) {
     propertyCollectionById(id: $pCId) {
       id
+      vPropertyCollectionKeysByPropertyCollectionId(
+        filter: { propertyCollectionId: { equalTo: $pCId } }
+      ) {
+        totalCount
+        nodes {
+          keys
+        }
+      }
       organizationByOrganizationId {
         id
         name
@@ -106,6 +135,49 @@ const pcoQuery = gql`
     }
   }
 `
+const pcoPreviewQuery = gql`
+  query pCOPreviewQuery($pCId: UUID!, $first: Int!) {
+    propertyCollectionById(id: $pCId) {
+      id
+      vPropertyCollectionKeysByPropertyCollectionId(
+        filter: { propertyCollectionId: { equalTo: $pCId } }
+      ) {
+        totalCount
+        nodes {
+          keys
+        }
+      }
+      organizationByOrganizationId {
+        id
+        name
+        organizationUsersByOrganizationId {
+          nodes {
+            id
+            userId
+            role
+            userByUserId {
+              id
+              name
+              email
+            }
+          }
+        }
+      }
+      propertyCollectionObjectsByPropertyCollectionId(first: $first) {
+        totalCount
+        nodes {
+          id
+          objectId
+          objectByObjectId {
+            id
+            name
+          }
+          properties
+        }
+      }
+    }
+  }
+`
 
 const PCO = () => {
   const client = useApolloClient()
@@ -116,6 +188,14 @@ const PCO = () => {
     activeNodeArray.length > 0
       ? activeNodeArray[1]
       : '99999999-9999-9999-9999-999999999999'
+
+  const [count, setCount] = useState(15)
+
+  const [xlsxExportLoading, setXlsxExportLoading] = useState(false)
+  const [csvExportLoading, setCsvExportLoading] = useState(false)
+  const [importLoading, setImportLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+
   const { refetch: treeDataRefetch } = useQuery(treeQuery, {
     variables: treeQueryVariables(store),
   })
@@ -124,21 +204,25 @@ const PCO = () => {
     loading: pcoLoading,
     error: pcoError,
     refetch: pcoRefetch,
-  } = useQuery(pcoQuery, {
+  } = useQuery(pcoPreviewQuery, {
     variables: {
       pCId,
+      first: count,
     },
   })
 
   const [sortField, setSortField] = useState('Objekt Name')
   const [sortDirection, setSortDirection] = useState('asc')
   const [importing, setImport] = useState(false)
-  //console.log('PCO', { width, height })
 
-  const [pCO, propKeys, pCORaw] = useMemo(() => {
+  const propKeys = (
+    pcoData?.propertyCollectionById
+      ?.vPropertyCollectionKeysByPropertyCollectionId?.nodes ?? []
+  ).map((k) => k?.keys)
+
+  const [pCO, pCORaw] = useMemo(() => {
     let pCO = []
     // collect all keys
-    const propKeys = new Set()
     const pCORaw = (
       pcoData?.propertyCollectionById
         ?.propertyCollectionObjectsByPropertyCollectionId?.nodes ?? []
@@ -155,25 +239,27 @@ const PCO = () => {
           } else {
             nP[key] = value
           }
-          // collect all keys
-          propKeys.add(key)
         })
+      }
+      // add keys that may be missing
+      for (const key of propKeys) {
+        if (!exists(nP[key])) {
+          nP[key] = null
+        }
       }
       pCO.push(nP)
     })
-    // second pass to add empty values for keys that are not in pCO
-    pCO.forEach((p) => {
-      for (const key of propKeys) {
-        if (!exists(p[key])) {
-          p[key] = null
-        }
-      }
-    })
     pCO = orderBy(pCO, sortField, sortDirection)
-    return [pCO, propKeys, pCORaw]
-  }, [pcoData, sortDirection, sortField])
+    return [pCO, pCORaw]
+  }, [
+    pcoData?.propertyCollectionById
+      ?.propertyCollectionObjectsByPropertyCollectionId?.nodes,
+    propKeys,
+    sortDirection,
+    sortField,
+  ])
   // collect all keys and sort property keys by name
-  const keys = ['Objekt ID', 'Objekt Name', ...Array.from(propKeys).sort()]
+  const keys = ['Objekt ID', 'Objekt Name', ...propKeys.sort()]
   const pCOWriters = (
     pcoData?.propertyCollectionById?.organizationByOrganizationId
       ?.organizationUsersByOrganizationId?.nodes ?? []
@@ -183,20 +269,72 @@ const PCO = () => {
   const userIsWriter = !!username && writerNames.includes(username)
   const showImportPco = (pCO.length === 0 && userIsWriter) || importing
 
+  const totalCount =
+    pcoData?.propertyCollectionById
+      ?.propertyCollectionObjectsByPropertyCollectionId?.totalCount
+
+  // TODO: enable sorting
   const onGridSort = useCallback((column, direction) => {
     setSortField(column)
     setSortDirection(direction.toLowerCase())
   }, [])
 
-  const onClickXlsx = useCallback(
-    () =>
-      exportXlsx({
-        rows: pCO,
-        onSetMessage: console.log,
-      }),
-    [pCO],
-  )
-  const onClickCsv = useCallback(() => exportCsv(pCO), [pCO])
+  const fetchAllData = useCallback(async () => {
+    const { data, loading, error } = await client.query({
+      query: pcoQuery,
+      variables: {
+        pCId,
+      },
+    })
+    let pCO = []
+    // collect all keys
+    const pCORaw = (
+      data?.propertyCollectionById
+        ?.propertyCollectionObjectsByPropertyCollectionId?.nodes ?? []
+    ).map((p) => omit(p, ['__typename']))
+    pCORaw.forEach((p) => {
+      let nP = {}
+      nP['Objekt ID'] = p.objectId
+      nP['Objekt Name'] = p?.objectByObjectId?.name ?? null
+      if (p.properties) {
+        const props = JSON.parse(p.properties)
+        forOwn(props, (value, key) => {
+          if (typeof value === 'boolean') {
+            nP[key] = booleanToJaNein(value)
+          } else {
+            nP[key] = value
+          }
+        })
+      }
+      // add keys that may be missing
+      for (const key of propKeys) {
+        if (!exists(nP[key])) {
+          nP[key] = null
+        }
+      }
+      pCO.push(nP)
+    })
+    pCO = orderBy(pCO, sortField, sortDirection)
+    return { data: pCO, loading, error }
+  }, [client, pCId, propKeys, sortDirection, sortField])
+
+  const onClickXlsx = useCallback(async () => {
+    // download all data
+    setXlsxExportLoading(true)
+    const { data, error } = await fetchAllData()
+    exportXlsx({
+      rows: data,
+      onSetMessage: console.log,
+    })
+    setXlsxExportLoading(false)
+  }, [fetchAllData])
+  const onClickCsv = useCallback(async () => {
+    // TODO: download all data
+    setCsvExportLoading(true)
+    const { data, error } = await fetchAllData()
+    exportCsv(data)
+    setCsvExportLoading(false)
+  }, [fetchAllData])
   const onClickDelete = useCallback(async () => {
     await client.mutate({
       mutation: deletePcoOfPcMutation,
@@ -219,11 +357,15 @@ const PCO = () => {
   return (
     <Container>
       {!showImportPco && (
-        <TotalDiv>{`${pCO.length.toLocaleString(
-          'de-CH',
-        )} Datensätze, ${propKeys.size.toLocaleString('de-CH')} Feld${
-          propKeys.size === 1 ? '' : 'er'
-        }${pCO.length > 0 ? ':' : ''}`}</TotalDiv>
+        <TotalDiv>
+          {`${totalCount.toLocaleString(
+            'de-CH',
+          )} Datensätze, ${propKeys.length.toLocaleString('de-CH')} Feld${
+            propKeys.length === 1 ? '' : 'er'
+          }${pCO.length > 0 ? ':' : ''}, Erste `}
+          <CountInput count={count} setCount={setCount} />
+          {' :'}
+        </TotalDiv>
       )}
       {!importing && pCO.length > 0 && (
         <>
@@ -234,6 +376,7 @@ const PCO = () => {
                 onClick={onClickXlsx}
                 variant="outlined"
                 color="inherit"
+                loading={xlsxExportLoading}
               >
                 xlsx exportieren
               </StyledButton>
@@ -241,6 +384,7 @@ const PCO = () => {
                 onClick={onClickCsv}
                 variant="outlined"
                 color="inherit"
+                loading={csvExportLoading}
               >
                 csv exportieren
               </StyledButton>
@@ -251,6 +395,7 @@ const PCO = () => {
                   onClick={onClickImport}
                   variant="outlined"
                   color="inherit"
+                  loading={importLoading}
                 >
                   importieren
                 </StyledButton>
@@ -258,6 +403,7 @@ const PCO = () => {
                   onClick={onClickDelete}
                   variant="outlined"
                   color="inherit"
+                  loading={deleteLoading}
                 >
                   Daten löschen
                 </StyledButton>

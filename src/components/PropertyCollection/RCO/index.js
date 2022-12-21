@@ -8,7 +8,6 @@ import Button from '@mui/material/Button'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import { getSnapshot } from 'mobx-state-tree'
-import useResizeObserver from 'use-resize-observer'
 
 import ImportRco from './Import'
 import booleanToJaNein from '../../../modules/booleanToJaNein'
@@ -20,6 +19,8 @@ import treeQueryVariables from '../../Tree/treeQueryVariables'
 import storeContext from '../../../storeContext'
 import Spinner from '../../shared/Spinner'
 import DataTable from '../../shared/DataTable'
+import CountInput from '../../Export/PreviewColumn/CountInput'
+import exists from '../../../modules/exists'
 
 const Container = styled.div`
   height: 100%;
@@ -54,6 +55,7 @@ const TotalDiv = styled.div`
   font-size: small;
   padding-left: 9px;
   margin-top: 8px;
+  user-select: none;
 `
 const ButtonsContainer = styled.div`
   display: flex;
@@ -69,12 +71,27 @@ const MutationButtons = styled.div`
 `
 const StyledButton = styled(Button)`
   margin: 5px !important;
+  ${(props) => props.loading && `font-style: italic;`}
+  ${(props) => props.loading && `animation: blinker 1s linear infinite;`}
+  ${(props) => props.loading && `animation: blinker 1s linear infinite;`}
+  @keyframes blinker {
+    50% {
+      opacity: 0;
+    }
+  }
 `
 
 const rcoQuery = gql`
   query rCOQuery($pCId: UUID!) {
     propertyCollectionById(id: $pCId) {
       id
+      vRelationCollectionKeysByPropertyCollectionId(
+        filter: { propertyCollectionId: { equalTo: $pCId } }
+      ) {
+        nodes {
+          keys
+        }
+      }
       organizationByOrganizationId {
         id
         name
@@ -111,6 +128,53 @@ const rcoQuery = gql`
     }
   }
 `
+const rcoPreviewQuery = gql`
+  query rcoPreviewQuery($pCId: UUID!, $count: Int!) {
+    propertyCollectionById(id: $pCId) {
+      id
+      vRelationCollectionKeysByPropertyCollectionId(
+        filter: { propertyCollectionId: { equalTo: $pCId } }
+      ) {
+        nodes {
+          keys
+        }
+      }
+      organizationByOrganizationId {
+        id
+        name
+        organizationUsersByOrganizationId {
+          nodes {
+            id
+            userId
+            role
+            userByUserId {
+              id
+              name
+            }
+          }
+        }
+      }
+      relationsByPropertyCollectionId(first: $count) {
+        totalCount
+        nodes {
+          id
+          objectId
+          objectByObjectId {
+            id
+            name
+          }
+          objectIdRelation
+          objectByObjectIdRelation {
+            id
+            name
+          }
+          relationType
+          properties
+        }
+      }
+    }
+  }
+`
 
 const RCO = () => {
   const client = useApolloClient()
@@ -121,6 +185,9 @@ const RCO = () => {
     activeNodeArray.length > 0
       ? activeNodeArray[1]
       : '99999999-9999-9999-9999-999999999999'
+
+  const [count, setCount] = useState(15)
+
   const { refetch: treeDataRefetch } = useQuery(treeQuery, {
     variables: treeQueryVariables(store),
   })
@@ -129,9 +196,10 @@ const RCO = () => {
     loading: rcoLoading,
     error: rcoError,
     refetch: rcoRefetch,
-  } = useQuery(rcoQuery, {
+  } = useQuery(rcoPreviewQuery, {
     variables: {
       pCId,
+      count,
     },
   })
 
@@ -139,13 +207,18 @@ const RCO = () => {
   const [sortDirection, setSortDirection] = useState('asc')
   const [importing, setImport] = useState(false)
 
-  const { width, height, ref: resizeRef } = useResizeObserver()
-  console.log('RCO', { width, height })
+  const [xlsxExportLoading, setXlsxExportLoading] = useState(false)
+  const [csvExportLoading, setCsvExportLoading] = useState(false)
+  const [importLoading, setImportLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
-  const [rCO, propKeys, rCORaw] = useMemo(() => {
+  const propKeys = (
+    rcoData?.propertyCollectionById
+      ?.vRelationCollectionKeysByPropertyCollectionId?.nodes ?? []
+  ).map((k) => k?.keys)
+
+  const [rCO, rCORaw] = useMemo(() => {
     let rCO = []
-    // collect all keys
-    const propKeys = new Set()
     const rCORaw = (
       rcoData?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes ??
       []
@@ -165,15 +238,24 @@ const RCO = () => {
           } else {
             nP[key] = value
           }
-          // collect all keys
-          propKeys.add(key)
         })
+      }
+      // add keys that may be missing
+      for (const key of propKeys) {
+        if (!exists(nP[key])) {
+          nP[key] = null
+        }
       }
       rCO.push(nP)
     })
     rCO = orderBy(rCO, sortField, sortDirection)
-    return [rCO, propKeys, rCORaw]
-  }, [rcoData, sortDirection, sortField])
+    return [rCO, rCORaw]
+  }, [
+    propKeys,
+    rcoData?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes,
+    sortDirection,
+    sortField,
+  ])
   // collect all keys and sort property keys by name
   const keys = [
     'Objekt ID',
@@ -181,7 +263,7 @@ const RCO = () => {
     'Beziehung ID',
     'Beziehung Name',
     'Art der Beziehung',
-    ...Array.from(propKeys).sort(),
+    ...propKeys.sort(),
   ]
   const rCOWriters = (
     rcoData?.propertyCollectionById?.organizationByOrganizationId
@@ -192,19 +274,70 @@ const RCO = () => {
   const userIsWriter = !!username && writerNames.includes(username)
   const showImportRco = (rCO.length === 0 && userIsWriter) || importing
 
+  const totalCount =
+    rcoData?.propertyCollectionById?.relationsByPropertyCollectionId?.totalCount
+
+  // TODO: enable sorting
   const onGridSort = useCallback((column, direction) => {
     setSortField(column)
     setSortDirection(direction.toLowerCase())
   }, [])
-  const onClickXlsx = useCallback(
-    () =>
-      exportXlsx({
-        rows: rCO,
-        onSetMessage: console.log,
-      }),
-    [rCO],
-  )
-  const onClickCsv = useCallback(() => exportCsv(rCO), [rCO])
+
+  const fetchAllData = useCallback(async () => {
+    const { data, loading, error } = await client.query({
+      query: rcoQuery,
+      variables: {
+        pCId,
+      },
+    })
+    const rCORaw = (
+      data?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes ?? []
+    ).map((p) => omit(p, ['__typename']))
+    rCORaw.forEach((p) => {
+      let nP = {}
+      nP['Objekt ID'] = p.objectId
+      nP['Objekt Name'] = p?.objectByObjectId?.name ?? null
+      nP['Beziehung ID'] = p.objectIdRelation
+      nP['Beziehung Name'] = p?.objectByObjectIdRelation?.name ?? null
+      nP['Art der Beziehung'] = p.relationType
+      if (p.properties) {
+        const props = JSON.parse(p.properties)
+        forOwn(props, (value, key) => {
+          if (typeof value === 'boolean') {
+            nP[key] = booleanToJaNein(value)
+          } else {
+            nP[key] = value
+          }
+        })
+      }
+      // add keys that may be missing
+      for (const key of propKeys) {
+        if (!exists(nP[key])) {
+          nP[key] = null
+        }
+      }
+      rCO.push(nP)
+    })
+    return { data: orderBy(rCO, sortField, sortDirection), loading, error }
+  }, [client, pCId, propKeys, rCO, sortDirection, sortField])
+
+  const onClickXlsx = useCallback(async () => {
+    setXlsxExportLoading(true)
+    const { data, error } = await fetchAllData()
+    exportXlsx({
+      rows: data,
+      onSetMessage: console.log,
+    })
+    setXlsxExportLoading(false)
+  }, [fetchAllData])
+  const onClickCsv = useCallback(async () => {
+    // TODO: download all data
+    setCsvExportLoading(true)
+    const { data, error } = await fetchAllData()
+    exportCsv(data)
+    setCsvExportLoading(false)
+  }, [fetchAllData])
+
   const onClickDelete = useCallback(async () => {
     await client.mutate({
       mutation: deleteRcoOfPcMutation,
@@ -225,15 +358,19 @@ const RCO = () => {
   }
 
   return (
-    <Container ref={resizeRef}>
+    <Container>
       {!showImportRco && (
-        <TotalDiv>{`${rCO.length.toLocaleString(
-          'de-CH',
-        )} Datensätze, ${propKeys.size.toLocaleString('de-CH')} Feld${
-          propKeys.size === 1 ? '' : 'er'
-        }${rCO.length > 0 ? ':' : ''}`}</TotalDiv>
+        <TotalDiv>
+          {`${totalCount.toLocaleString(
+            'de-CH',
+          )} Datensätze, ${propKeys.length.toLocaleString('de-CH')} Feld${
+            propKeys.length === 1 ? '' : 'er'
+          }${rCO.length > 0 ? ':' : ''}, Erste `}
+          <CountInput count={count} setCount={setCount} />
+          {' :'}
+        </TotalDiv>
       )}
-      {!importing && rCO.length > 0 && width && height && (
+      {!importing && rCO.length > 0 && (
         <>
           <DataTable data={rCO} idKey="Objekt ID" keys={keys} />
           <ButtonsContainer>
@@ -242,6 +379,7 @@ const RCO = () => {
                 onClick={onClickXlsx}
                 variant="outlined"
                 color="inherit"
+                loading={xlsxExportLoading}
               >
                 xlsx exportieren
               </StyledButton>
@@ -249,6 +387,7 @@ const RCO = () => {
                 onClick={onClickCsv}
                 variant="outlined"
                 color="inherit"
+                loading={csvExportLoading}
               >
                 csv exportieren
               </StyledButton>
@@ -259,6 +398,7 @@ const RCO = () => {
                   onClick={onClickImport}
                   variant="outlined"
                   color="inherit"
+                  loading={importLoading}
                 >
                   importieren
                 </StyledButton>
@@ -266,6 +406,7 @@ const RCO = () => {
                   onClick={onClickDelete}
                   variant="outlined"
                   color="inherit"
+                  loading={deleteLoading}
                 >
                   Daten löschen
                 </StyledButton>

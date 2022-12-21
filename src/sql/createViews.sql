@@ -160,3 +160,23 @@ ORDER BY
   tax.name,
   ae.object.name;
 
+CREATE OR REPLACE VIEW ae.v_property_collection_keys AS SELECT DISTINCT
+	property_collection_id,
+  jsonb_object_keys(properties) AS keys
+FROM
+  ae.property_collection_object
+ORDER BY
+  keys;
+
+COMMENT ON VIEW ae.v_property_collection_keys IS '@foreignKey (property_collection_id) references ae.property_collection (id)';
+
+CREATE OR REPLACE VIEW ae.v_relation_collection_keys AS SELECT DISTINCT
+	property_collection_id,
+  jsonb_object_keys(properties) AS keys
+FROM
+  ae.relation
+ORDER BY
+  keys;
+
+COMMENT ON VIEW ae.v_relation_collection_keys IS '@foreignKey (property_collection_id) references ae.property_collection (id)';
+
