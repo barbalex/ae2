@@ -16,8 +16,16 @@ const StyledTableRow = styled(TableRow)`
 // data is array of objects
 // keys are column names
 // values are column values
-const DataTable = ({ data, order = 'ASC', orderBy = 'id', setOrder }) => {
+const DataTable = ({
+  data,
+  order = 'ASC',
+  orderBy = 'id',
+  setOrder,
+  idKey = 'id',
+}) => {
   const columnNames = Object.keys(data[0])
+
+  console.log('DataTable, columnNames:', columnNames)
 
   return (
     <Table
@@ -34,7 +42,7 @@ const DataTable = ({ data, order = 'ASC', orderBy = 'id', setOrder }) => {
       <TableHead>
         <StyledTableRow>
           {columnNames.map((name) => {
-            if (name === 'id') {
+            if (name === idKey) {
               return (
                 <TableCell
                   key={name}
@@ -84,11 +92,12 @@ const DataTable = ({ data, order = 'ASC', orderBy = 'id', setOrder }) => {
       </TableHead>
       <TableBody>
         {data.map((row) => {
-          const keys = Object.keys(row).filter((k) => k !== 'id')
+          const keys = Object.keys(row).filter((k) => k !== idKey)
+          console.log({ row })
 
           return (
             <StyledTableRow
-              key={row.id}
+              key={row[idKey]}
               sx={{
                 '&:last-child td, &:last-child th': { border: 0 },
               }}
@@ -98,7 +107,7 @@ const DataTable = ({ data, order = 'ASC', orderBy = 'id', setOrder }) => {
                 scope="row"
                 sx={{ fontSize: '0.8rem', paddingLeft: '6px !important' }}
               >
-                {row.id}
+                {row[idKey]}
               </TableCell>
               {keys.map((key) => (
                 <TableCell key={key}>{row[key]}</TableCell>
