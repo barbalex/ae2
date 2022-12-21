@@ -21,9 +21,6 @@ import storeContext from '../../../storeContext'
 import Spinner from '../../shared/Spinner'
 import DataTable from '../../shared/DataTable'
 
-// react-data-grid calls window!
-const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
-
 const Container = styled.div`
   height: 100%;
   display: flex;
@@ -116,7 +113,6 @@ const rcoQuery = gql`
 `
 
 const RCO = () => {
-  const isSSR = typeof window === 'undefined'
   const client = useApolloClient()
   const store = useContext(storeContext)
   const { login } = store
@@ -149,7 +145,7 @@ const RCO = () => {
   const [rCO, propKeys, rCORaw] = useMemo(() => {
     let rCO = []
     // collect all keys
-    const propKeys = []
+    const propKeys = new Set()
     const rCORaw = (
       rcoData?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes ??
       []
@@ -170,7 +166,7 @@ const RCO = () => {
             nP[key] = value
           }
           // collect all keys
-          propKeys.push(key)
+          propKeys.add(key)
         })
       }
       rCO.push(nP)
@@ -185,14 +181,8 @@ const RCO = () => {
     'Beziehung ID',
     'Beziehung Name',
     'Art der Beziehung',
-    ...union(propKeys).sort(),
+    ...Array.from(propKeys).sort(),
   ]
-  const columns = keys.map((k) => ({
-    key: k,
-    name: k,
-    resizable: true,
-    sortable: true,
-  }))
   const rCOWriters = (
     rcoData?.propertyCollectionById?.organizationByOrganizationId
       ?.organizationUsersByOrganizationId?.nodes ?? []
@@ -206,7 +196,6 @@ const RCO = () => {
     setSortField(column)
     setSortDirection(direction.toLowerCase())
   }, [])
-  const rowGetter = useCallback((i) => rCO[i], [rCO])
   const onClickXlsx = useCallback(
     () =>
       exportXlsx({
@@ -238,26 +227,15 @@ const RCO = () => {
   return (
     <Container ref={resizeRef}>
       {!showImportRco && (
-        <TotalDiv>{`${rCO.length.toLocaleString('de-CH')} Datensätze, ${(
-          columns.length - 5
-        ).toLocaleString('de-CH')} Feld${propKeys.length === 1 ? '' : 'er'}${
-          rCO.length > 0 ? ':' : ''
-        }`}</TotalDiv>
+        <TotalDiv>{`${rCO.length.toLocaleString(
+          'de-CH',
+        )} Datensätze, ${propKeys.size.toLocaleString('de-CH')} Feld${
+          propKeys.size === 1 ? '' : 'er'
+        }${rCO.length > 0 ? ':' : ''}`}</TotalDiv>
       )}
       {!importing && rCO.length > 0 && width && height && (
         <>
-          {!isSSR && (
-            <React.Suspense fallback={<div />}>
-              <ReactDataGridLazy
-                onGridSort={onGridSort}
-                columns={columns}
-                rowGetter={rowGetter}
-                rowsCount={rCO.length}
-                minHeight={height - 26 - 46}
-                minWidth={width}
-              />
-            </React.Suspense>
-          )}
+          <DataTable data={rCO} idKey="Objekt ID" keys={keys} />
           <ButtonsContainer>
             <ExportButtons>
               <StyledButton

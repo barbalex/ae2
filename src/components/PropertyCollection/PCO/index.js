@@ -161,7 +161,7 @@ const PCO = () => {
       }
       pCO.push(nP)
     })
-    // TODO: second pass to add empty values for keys that are not in pCO
+    // second pass to add empty values for keys that are not in pCO
     pCO.forEach((p) => {
       for (const key of propKeys) {
         if (!exists(p[key])) {
