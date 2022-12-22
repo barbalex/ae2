@@ -220,14 +220,11 @@ const PCO = () => {
       ?.vPropertyCollectionKeysByPropertyCollectionId?.nodes ?? []
   ).map((k) => k?.keys)
 
-  const [pCO, pCORaw] = useMemo(() => {
-    let pCO = []
-    // collect all keys
+  const pCO = useMemo(() => {
     const pCORaw = (
       pcoData?.propertyCollectionById
         ?.propertyCollectionObjectsByPropertyCollectionId?.nodes ?? []
-    ).map((p) => omit(p, ['__typename']))
-    pCORaw.forEach((p) => {
+    ).map((p) => {
       let nP = {}
       nP['Objekt ID'] = p.objectId
       nP['Objekt Name'] = p?.objectByObjectId?.name ?? null
@@ -247,10 +244,9 @@ const PCO = () => {
           nP[key] = null
         }
       }
-      pCO.push(nP)
+      return nP
     })
-    pCO = doOrderBy(pCO, orderBy, sortDirection)
-    return [pCO, pCORaw]
+    return doOrderBy(pCORaw, orderBy, sortDirection)
   }, [
     pcoData?.propertyCollectionById
       ?.propertyCollectionObjectsByPropertyCollectionId?.nodes,
@@ -317,7 +313,6 @@ const PCO = () => {
   }, [client, pCId, propKeys, sortDirection, orderBy])
 
   const onClickXlsx = useCallback(async () => {
-    // download all data
     setXlsxExportLoading(true)
     const { data, error } = await fetchAllData()
     exportXlsx({
@@ -327,7 +322,6 @@ const PCO = () => {
     setXlsxExportLoading(false)
   }, [fetchAllData])
   const onClickCsv = useCallback(async () => {
-    // TODO: download all data
     setCsvExportLoading(true)
     const { data, error } = await fetchAllData()
     exportCsv(data)
@@ -419,7 +413,7 @@ const PCO = () => {
           </ButtonsContainer>
         </>
       )}
-      {showImportPco && <ImportPco setImport={setImport} pCO={pCORaw} />}
+      {showImportPco && <ImportPco setImport={setImport} />}
     </Container>
   )
 }

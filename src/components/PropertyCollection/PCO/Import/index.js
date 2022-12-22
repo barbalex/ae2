@@ -201,7 +201,7 @@ const importPcoQuery = gql`
   }
 `
 
-const ImportPco = ({ setImport, pCO }) => {
+const ImportPco = ({ setImport }) => {
   const isSSR = typeof window === 'undefined'
   const client = useApolloClient()
   const store = useContext(storeContext)
@@ -450,8 +450,21 @@ const ImportPco = ({ setImport, pCO }) => {
       reader.readAsBinaryString(file)
     }
   }, [])
+
   const onClickImport = useCallback(async () => {
     setImporting(true)
+
+    const { data } = await client.query({
+      query: pcoQuery,
+      variables: {
+        pCId,
+      },
+    })
+    const pCO = (
+      data?.propertyCollectionById
+        ?.propertyCollectionObjectsByPropertyCollectionId?.nodes ?? []
+    ).map((p) => omit(p, ['__typename']))
+
     // need a list of all fields
     // loop all rows, build variables and create pco
     // eslint-disable-next-line no-unused-vars
@@ -501,7 +514,7 @@ const ImportPco = ({ setImport, pCO }) => {
     } catch (error) {
       console.log('Error refetching pco:', error)
     }
-  }, [client, importData, pCId, pCO, pcoRefetch, setImport])
+  }, [client, importData, pCId,  pcoRefetch, setImport])
   const rowGetter = useCallback((i) => importData[i], [importData])
 
   return (
