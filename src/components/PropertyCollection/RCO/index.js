@@ -274,9 +274,9 @@ const RCO = () => {
   const totalCount =
     rcoData?.propertyCollectionById?.relationsByPropertyCollectionId?.totalCount
 
-  // TODO: enable sorting
-  const onGridSort = useCallback((column, direction) => {
-    setOrderBy(column)
+  // enable sorting
+  const setOrder = useCallback(({ orderBy, direction }) => {
+    setOrderBy(orderBy)
     setSortDirection(direction.toLowerCase())
   }, [])
 
@@ -373,6 +373,9 @@ const RCO = () => {
             data={rCO}
             idKey="Objekt ID"
             keys={keys}
+            setOrder={setOrder}
+            orderBy={orderBy}
+            order={sortDirection}
             uniqueKeyCombo={['Objekt ID', 'Beziehung ID']}
           />
           <ButtonsContainer>

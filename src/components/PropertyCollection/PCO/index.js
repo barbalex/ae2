@@ -273,9 +273,8 @@ const PCO = () => {
     pcoData?.propertyCollectionById
       ?.propertyCollectionObjectsByPropertyCollectionId?.totalCount
 
-  // TODO: enable sorting
+  // enable sorting
   const setOrder = useCallback(({ orderBy, direction }) => {
-    console.log('PCO setOrder', { orderBy, direction })
     setOrderBy(orderBy)
     setSortDirection(direction.toLowerCase())
   }, [])
@@ -334,6 +333,7 @@ const PCO = () => {
     exportCsv(data)
     setCsvExportLoading(false)
   }, [fetchAllData])
+
   const onClickDelete = useCallback(async () => {
     await client.mutate({
       mutation: deletePcoOfPcMutation,
@@ -342,6 +342,7 @@ const PCO = () => {
     pcoRefetch()
     treeDataRefetch()
   }, [client, pCId, pcoRefetch, treeDataRefetch])
+
   const onClickImport = useCallback(() => {
     setImport(true)
   }, [])
