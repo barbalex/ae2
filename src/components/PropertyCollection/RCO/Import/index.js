@@ -1,16 +1,16 @@
-import React, { useState, useCallback, useContext, useMemo } from 'react'
+import React, {
+  useState,
+  useReducer,
+  useCallback,
+  useContext,
+  useMemo,
+} from 'react'
 import styled from '@emotion/styled'
 import omit from 'lodash/omit'
 import union from 'lodash/union'
 import flatten from 'lodash/flatten'
 import some from 'lodash/some'
 import uniq from 'lodash/uniq'
-import Icon from '@mui/material/Icon'
-import {
-  MdDone as DoneIcon,
-  MdError as ErrorIcon,
-  MdInfoOutline as InfoOutlineIcon,
-} from 'react-icons/md'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import Dropzone from 'react-dropzone'
@@ -128,6 +128,30 @@ const importRcoQuery = gql`
   }
 `
 
+const checkStateReducer = (a, state) => state
+
+const initialCheckState = {
+  existsNoDataWithoutKey: undefined,
+  idsExist: undefined,
+  idsAreUuids: undefined,
+  idsAreUnique: undefined,
+  objectIdsExist: undefined,
+  objectIdsAreUuid: undefined,
+  objectIdsAreRealNotTested: undefined,
+  objectRelationIdsExist: undefined,
+  objectRelationIdsAreUuid: undefined,
+  objectRelationIdsAreRealNotTested: undefined,
+  relationTypeExist: undefined,
+  pCOfOriginIdsExist: undefined,
+  pCOfOriginIdsAreUuid: undefined,
+  pCOfOriginIdsAreReal: undefined,
+  pCOfOriginIdsAreRealNotTested: undefined,
+  propertyKeysDontContainApostroph: undefined,
+  propertyKeysDontContainBackslash: undefined,
+  propertyValuesDontContainApostroph: undefined,
+  propertyValuesDontContainBackslash: undefined,
+}
+
 const ImportRco = ({ setImport }) => {
   const isSSR = typeof window === 'undefined'
   const client = useApolloClient()
@@ -169,54 +193,16 @@ const ImportRco = ({ setImport }) => {
     },
   })
 
-  const [existsNoDataWithoutKey, setExistsNoDataWithoutKey] =
-    useState(undefined)
-  const [idsAreUuids, setIdsAreUuid] = useState(undefined)
-  const [idsExist, setIdsExist] = useState(undefined)
-  const [idsAreUnique, setIdsAreUnique] = useState(undefined)
-  const [objectIdsExist, setObjectIdsExist] = useState(undefined)
-  const [objectRelationIdsExist, setObjectRelationIdsExist] =
-    useState(undefined)
-  const [relationTypeExist, setRelationTypeExist] = useState(undefined)
-  const [pCOfOriginIdsExist, setPCOfOriginIdsExist] = useState(undefined)
-  const [objectIdsAreRealNotTested, setObjectIdsAreRealNotTested] =
-    useState(undefined)
-  const [
-    objectRelationIdsAreRealNotTested,
-    setObjectRelationIdsAreRealNotTested, // eslint-disable-line no-unused-vars
-  ] = useState(undefined)
-  const [
-    pCOfOriginIdsAreRealNotTested,
-    setPCOfOriginIdsAreRealNotTested, // eslint-disable-line no-unused-vars
-  ] = useState(undefined)
-  const [objectIdsAreUuid, setObjectIdsAreUuid] = useState(undefined)
-  const [objectRelationIdsAreUuid, setObjectRelationIdsAreUuid] =
-    useState(undefined)
-  const [pCOfOriginIdsAreUuid, setPCOfOriginIdsAreUuid] = useState(undefined)
   const [importData, setImportData] = useState([])
   const [importing, setImporting] = useState(false)
-  const [
-    propertyKeysDontContainApostroph,
-    setPropertyKeysDontContainApostroph,
-  ] = useState(undefined)
-  const [
-    propertyKeysDontContainBackslash,
-    setPropertyKeysDontContainBackslash,
-  ] = useState(undefined)
-  const [
-    propertyValuesDontContainApostroph,
-    setPropertyValuesDontContainApostroph,
-  ] = useState(undefined)
-  const [
-    propertyValuesDontContainBackslash,
-    setPropertyValuesDontContainBackslash,
-  ] = useState(undefined)
-  const [existsPropertyKey, setExistsPropertyKey] = useState(undefined)
+
+  const [checkState, dispatch] = useReducer(
+    checkStateReducer,
+    initialCheckState,
+  )
 
   if (importRcoError && importRcoError.message) {
-    if (importRcoError?.message?.includes('request entity too large')) {
-      setObjectIdsAreRealNotTested(true)
-    }
+    console.log('importRcoError', importRcoError.message)
   }
 
   const objectIdsUnreal = useMemo(() => {
@@ -264,8 +250,10 @@ const ImportRco = ({ setImport }) => {
   const showImportButton = useMemo(
     () =>
       importData.length > 0 &&
-      existsNoDataWithoutKey &&
-      (idsExist ? idsAreUnique && idsAreUuids : true) &&
+      checkState.existsNoDataWithoutKey &&
+      (checkState.idsExist
+        ? checkState.idsAreUnique && checkState.idsAreUuids
+        : true) &&
       // turned off because of inexplicable problem
       // somehow graphql could exceed some limit
       // which made this value block importing
@@ -273,40 +261,41 @@ const ImportRco = ({ setImport }) => {
       /*(objectIdsExist
       ? objectIdsAreUuid && (objectIdsAreReal || objectIdsAreRealNotTested)
       : false) &&*/
-      (objectRelationIdsExist
-        ? objectRelationIdsAreUuid &&
-          (objectRelationIdsAreReal || objectRelationIdsAreRealNotTested)
+      (checkState.objectRelationIdsExist
+        ? checkState.objectRelationIdsAreUuid &&
+          (objectRelationIdsAreReal ||
+            checkState.objectRelationIdsAreRealNotTested)
         : false) &&
-      relationTypeExist &&
-      (pCOfOriginIdsExist
-        ? pCOfOriginIdsAreUuid &&
-          (pCOfOriginIdsAreReal || pCOfOriginIdsAreRealNotTested)
+      checkState.relationTypeExist &&
+      (checkState.pCOfOriginIdsExist
+        ? checkState.pCOfOriginIdsAreUuid &&
+          (pCOfOriginIdsAreReal || checkState.pCOfOriginIdsAreRealNotTested)
         : true) &&
-      existsPropertyKey &&
-      propertyKeysDontContainApostroph &&
-      propertyKeysDontContainBackslash &&
-      propertyValuesDontContainApostroph &&
-      propertyValuesDontContainBackslash,
+      checkState.existsPropertyKey &&
+      checkState.propertyKeysDontContainApostroph &&
+      checkState.propertyKeysDontContainBackslash &&
+      checkState.propertyValuesDontContainApostroph &&
+      checkState.propertyValuesDontContainBackslash,
     [
-      existsNoDataWithoutKey,
-      existsPropertyKey,
-      idsAreUnique,
-      idsAreUuids,
-      idsExist,
+      checkState.existsNoDataWithoutKey,
+      checkState.existsPropertyKey,
+      checkState.idsAreUnique,
+      checkState.idsAreUuids,
+      checkState.idsExist,
+      checkState.objectRelationIdsAreRealNotTested,
+      checkState.objectRelationIdsAreUuid,
+      checkState.objectRelationIdsExist,
+      checkState.pCOfOriginIdsAreRealNotTested,
+      checkState.pCOfOriginIdsAreUuid,
+      checkState.pCOfOriginIdsExist,
+      checkState.propertyKeysDontContainApostroph,
+      checkState.propertyKeysDontContainBackslash,
+      checkState.propertyValuesDontContainApostroph,
+      checkState.propertyValuesDontContainBackslash,
+      checkState.relationTypeExist,
       importData.length,
       objectRelationIdsAreReal,
-      objectRelationIdsAreRealNotTested,
-      objectRelationIdsAreUuid,
-      objectRelationIdsExist,
       pCOfOriginIdsAreReal,
-      pCOfOriginIdsAreRealNotTested,
-      pCOfOriginIdsAreUuid,
-      pCOfOriginIdsExist,
-      propertyKeysDontContainApostroph,
-      propertyKeysDontContainBackslash,
-      propertyValuesDontContainApostroph,
-      propertyValuesDontContainBackslash,
-      relationTypeExist,
     ],
   )
   const showPreview = importData.length > 0
@@ -326,117 +315,118 @@ const ImportRco = ({ setImport }) => {
     [importDataFields],
   )
 
-  const onDrop = useCallback((acceptedFiles) => {
-    const file = acceptedFiles[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = () => {
-        const fileAsBinaryString = reader.result
-        const workbook = read(fileAsBinaryString, {
-            type: 'binary',
-          }),
-          sheetName = workbook.SheetNames[0],
-          worksheet = workbook.Sheets[sheetName]
-        const data = utils
-          .sheet_to_json(worksheet)
-          .map((d) => omit(d, ['__rowNum__']))
-        // test the data
-        setImportData(data)
-        setExistsNoDataWithoutKey(data.filter((d) => !!d.__EMPTY).length === 0)
-        const ids = data.map((d) => d.id).filter((d) => d !== undefined)
-        const _idsExist = ids.length > 0
-        setIdsExist(_idsExist)
-        setIdsAreUuid(
-          _idsExist
+  const onDrop = useCallback(
+    (acceptedFiles) => {
+      const file = acceptedFiles[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const fileAsBinaryString = reader.result
+          const workbook = read(fileAsBinaryString, {
+              type: 'binary',
+            }),
+            sheetName = workbook.SheetNames[0],
+            worksheet = workbook.Sheets[sheetName]
+          const data = utils
+            .sheet_to_json(worksheet)
+            .map((d) => omit(d, ['__rowNum__']))
+          // test the data
+          setImportData(data)
+          checkState.existsNoDataWithoutKey =
+            data.filter((d) => !!d.__EMPTY).length === 0
+          const ids = data.map((d) => d.id).filter((d) => d !== undefined)
+          const _idsExist = ids.length > 0
+          checkState.idsExist = _idsExist
+          checkState.idsAreUuid = _idsExist
             ? !ids.map((d) => isUuid.anyNonNil(d)).includes(false)
-            : undefined,
-        )
-        setIdsAreUnique(_idsExist ? ids.length === uniq(ids).length : undefined)
-        const _objectIds = data
-          .map((d) => d.objectId)
-          .filter((d) => d !== undefined)
-        const _objectIdsExist = _objectIds.length === data.length
-        setObjectIdsExist(_objectIdsExist)
-        setObjectIdsAreUuid(
-          _objectIdsExist
+            : undefined
+          checkState.idsAreUnique = _idsExist
+            ? ids.length === uniq(ids).length
+            : undefined
+          const _objectIds = data
+            .map((d) => d.objectId)
+            .filter((d) => d !== undefined)
+          const _objectIdsExist = _objectIds.length === data.length
+          checkState.objectIdsExist = _objectIdsExist
+          checkState.objectIdsAreUuid = _objectIdsExist
             ? !_objectIds.map((d) => isUuid.anyNonNil(d)).includes(false)
-            : undefined,
-        )
-        setObjectIds(_objectIds)
+            : undefined
+          setObjectIds(_objectIds)
 
-        const _objectRelationIds = data
-          .map((d) => d.objectIdRelation)
-          .filter((d) => d !== undefined)
-        const _objectRelationIdsExist =
-          _objectRelationIds.length === data.length
-        setObjectRelationIdsExist(_objectRelationIdsExist)
-        setObjectRelationIdsAreUuid(
-          _objectRelationIdsExist
+          const _objectRelationIds = data
+            .map((d) => d.objectIdRelation)
+            .filter((d) => d !== undefined)
+          const _objectRelationIdsExist =
+            _objectRelationIds.length === data.length
+          checkState.objectRelationIdsExist = _objectRelationIdsExist
+          checkState.objectRelationIdsAreUuid = _objectRelationIdsExist
             ? !_objectRelationIds
                 .map((d) => isUuid.anyNonNil(d))
                 .includes(false)
-            : undefined,
-        )
-        setObjectRelationIds(_objectRelationIds)
+            : undefined
+          setObjectRelationIds(_objectRelationIds)
 
-        const _relationTypes = data
-          .map((d) => d.relationType)
-          .filter((d) => d !== undefined)
-        const _relationTypesExist = _relationTypes.length === data.length
-        setRelationTypeExist(_relationTypesExist)
+          const _relationTypes = data
+            .map((d) => d.relationType)
+            .filter((d) => d !== undefined)
+          const _relationTypesExist = _relationTypes.length === data.length
+          checkState.relationTypeExist = _relationTypesExist
 
-        const _pCOfOriginIds = data
-          .map((d) => d.propertyCollectionOfOrigin)
-          .filter((d) => d !== undefined)
-        const _pCOfOriginIdsExist = _pCOfOriginIds.length > 0
-        setPCOfOriginIdsExist(_pCOfOriginIdsExist)
-        setPCOfOriginIdsAreUuid(
-          _pCOfOriginIdsExist
+          const _pCOfOriginIds = data
+            .map((d) => d.propertyCollectionOfOrigin)
+            .filter((d) => d !== undefined)
+          const _pCOfOriginIdsExist = _pCOfOriginIds.length > 0
+          checkState.pCOfOriginIdsExist = _pCOfOriginIdsExist
+          checkState.pCOfOriginIdsAreUuid = _pCOfOriginIdsExist
             ? !_pCOfOriginIds.map((d) => isUuid.anyNonNil(d)).includes(false)
-            : undefined,
-        )
-        setPCOfOriginIds(_pCOfOriginIds)
+            : undefined
+          setPCOfOriginIds(_pCOfOriginIds)
 
-        const propertyKeys = union(
-          flatten(data.map((d) => Object.keys(omit(d, ['id', 'objectId'])))),
-        )
-        const _existsPropertyKey = propertyKeys.length > 0
-        setExistsPropertyKey(_existsPropertyKey)
-        setPropertyKeysDontContainApostroph(
-          _existsPropertyKey
+          const propertyKeys = union(
+            flatten(data.map((d) => Object.keys(omit(d, ['id', 'objectId'])))),
+          )
+          const _existsPropertyKey = propertyKeys.length > 0
+          checkState.existsPropertyKey = _existsPropertyKey
+          checkState.propertyKeysDontContainApostroph = _existsPropertyKey
             ? !some(propertyKeys, (k) => {
                 if (!k || !k.includes) return false
                 return k.includes('"')
               })
-            : undefined,
-        )
-        setPropertyKeysDontContainBackslash(
-          _existsPropertyKey
+            : undefined
+          checkState.propertyKeysDontContainBackslash = _existsPropertyKey
             ? !some(propertyKeys, (k) => {
                 if (!k || !k.includes) return false
                 return k.includes('\\')
               })
-            : undefined,
-        )
-        const propertyValues = union(flatten(data.map((d) => Object.values(d))))
-        setPropertyValuesDontContainApostroph(
-          !some(propertyValues, (k) => {
-            if (!k || !k.includes) return false
-            return k.includes('"')
-          }),
-        )
-        setPropertyValuesDontContainBackslash(
-          !some(propertyValues, (k) => {
-            if (!k || !k.includes) return false
-            return k.includes('\\')
-          }),
-        )
+            : undefined
+          const propertyValues = union(
+            flatten(data.map((d) => Object.values(d))),
+          )
+          checkState.propertyValuesDontContainApostroph = !some(
+            propertyValues,
+            (k) => {
+              if (!k || !k.includes) return false
+              return k.includes('"')
+            },
+          )
+          checkState.propertyValuesDontContainBackslash = !some(
+            propertyValues,
+            (k) => {
+              if (!k || !k.includes) return false
+              return k.includes('\\')
+            },
+          )
+
+          dispatch(checkState)
+        }
+        reader.onabort = () => console.log('file reading was aborted')
+        reader.onerror = () => console.log('file reading has failed')
+        reader.readAsBinaryString(file)
       }
-      reader.onabort = () => console.log('file reading was aborted')
-      reader.onerror = () => console.log('file reading has failed')
-      reader.readAsBinaryString(file)
-    }
-  }, [])
+    },
+    [checkState],
+  )
+
   const onClickImport = useCallback(async () => {
     setImporting(true)
     const { data } = await client.query({
@@ -502,31 +492,9 @@ const ImportRco = ({ setImport }) => {
     <SimpleBar style={{ maxHeight: '100%', height: '100%' }}>
       <Container>
         <Instructions
-          existsNoDataWithoutKey={existsNoDataWithoutKey}
-          idsExist={idsExist}
-          idsAreUuids={idsAreUuids}
-          idsAreUnique={idsAreUnique}
-          objectIdsExist={objectIdsExist}
-          objectIdsAreUuid={objectIdsAreUuid}
           objectIdsAreReal={objectIdsAreReal}
-          objectIdsAreRealNotTested={objectIdsAreRealNotTested}
-          objectRelationIdsExist={objectRelationIdsExist}
-          objectRelationIdsAreUuid={objectRelationIdsAreUuid}
           objectRelationIdsAreReal={objectRelationIdsAreReal}
-          objectRelationIdsAreRealNotTested={objectRelationIdsAreRealNotTested}
-          relationTypeExist={relationTypeExist}
-          pCOfOriginIdsExist={pCOfOriginIdsExist}
-          pCOfOriginIdsAreUuid={pCOfOriginIdsAreUuid}
-          pCOfOriginIdsAreReal={pCOfOriginIdsAreReal}
-          pCOfOriginIdsAreRealNotTested={pCOfOriginIdsAreRealNotTested}
-          propertyKeysDontContainApostroph={propertyKeysDontContainApostroph}
-          propertyKeysDontContainBackslash={propertyKeysDontContainBackslash}
-          propertyValuesDontContainApostroph={
-            propertyValuesDontContainApostroph
-          }
-          propertyValuesDontContainBackslash={
-            propertyValuesDontContainBackslash
-          }
+          {...checkState}
         />
         {!importing && (
           <DropzoneContainer>
