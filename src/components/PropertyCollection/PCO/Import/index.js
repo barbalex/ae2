@@ -170,7 +170,7 @@ const ImportPco = ({ setImport }) => {
   })
 
   const { isLoading, error, data } = useQuery({
-    queryKey: ['importPcoQuery', pCId],
+    queryKey: ['importPcoQuery', pCId,objectIds.length,pCOfOriginIds.length],
     queryFn: async () => {
       const { data } = await client.query({
         query: importPcoQuery,

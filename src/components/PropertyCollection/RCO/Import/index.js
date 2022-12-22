@@ -177,23 +177,32 @@ const ImportRco = ({ setImport }) => {
     variables: getTreeDataVariables(store),
   })
 
-  const {
-    data: importRcoData,
-    loading: importRcoLoading,
-    error: importRcoError,
-  } = useApolloQuery(importRcoQuery, {
-    variables: {
-      getObjectIds: objectIds.length > 0,
-      getObjectRelationIds: objectRelationIds.length > 0,
-      objectRelationIds:
-        objectRelationIds.length > 0
-          ? objectRelationIds
-          : ['99999999-9999-9999-9999-999999999999'],
-      getPCOfOriginIds: pCOfOriginIds.length > 0,
-      pCOfOriginIds:
-        pCOfOriginIds.length > 0
-          ? pCOfOriginIds
-          : ['99999999-9999-9999-9999-999999999999'],
+  const { isLoading, error, data } = useQuery({
+    queryKey: [
+      'importRcoQuery',
+      pCId,
+      objectIds.length,
+      objectRelationIds.length,
+      pCOfOriginIds.length,
+    ],
+    queryFn: async () => {
+      const { data } = await client.query({
+        query: importRcoQuery,
+        variables: {
+          getObjectIds: objectIds.length > 0,
+          getObjectRelationIds: objectRelationIds.length > 0,
+          objectRelationIds:
+            objectRelationIds.length > 0
+              ? objectRelationIds
+              : ['99999999-9999-9999-9999-999999999999'],
+          getPCOfOriginIds: pCOfOriginIds.length > 0,
+          pCOfOriginIds:
+            pCOfOriginIds.length > 0
+              ? pCOfOriginIds
+              : ['99999999-9999-9999-9999-999999999999'],
+        },
+      })
+      return data
     },
   })
 
@@ -205,50 +214,42 @@ const ImportRco = ({ setImport }) => {
     initialCheckState,
   )
 
-  if (importRcoError && importRcoError.message) {
-    console.log('importRcoError', importRcoError.message)
+  if (error && error.message) {
+    console.log('error', error.message)
   }
 
   const objectIdsUnreal = useMemo(() => {
-    const realIds = (importRcoData?.allObjects?.nodes ?? []).map((o) => o.id)
+    const realIds = (data?.allObjects?.nodes ?? []).map((o) => o.id)
     return objectIds.filter((i) => !realIds.includes(i))
-  }, [importRcoData, objectIds])
+  }, [data, objectIds])
   const objectIdsAreReal = useMemo(
     () =>
-      !importRcoLoading && objectIds.length > 0
+      !isLoading && objectIds.length > 0
         ? objectIdsUnreal.length === 0
         : undefined,
-    [importRcoLoading, objectIds.length, objectIdsUnreal.length],
+    [isLoading, objectIds.length, objectIdsUnreal.length],
   )
   const objectRelationIdsUnreal = useMemo(() => {
-    const realIds = (importRcoData?.allObjectRelations?.nodes ?? []).map(
-      (o) => o.id,
-    )
+    const realIds = (data?.allObjectRelations?.nodes ?? []).map((o) => o.id)
     return objectIds.filter((i) => !realIds.includes(i))
-  }, [importRcoData, objectIds])
+  }, [data, objectIds])
   const objectRelationIdsAreReal = useMemo(
     () =>
-      !importRcoLoading && objectRelationIds.length > 0
+      !isLoading && objectRelationIds.length > 0
         ? objectRelationIdsUnreal.length === 0
         : undefined,
-    [
-      importRcoLoading,
-      objectRelationIds.length,
-      objectRelationIdsUnreal.length,
-    ],
+    [isLoading, objectRelationIds.length, objectRelationIdsUnreal.length],
   )
   const pCOfOriginIdsUnreal = useMemo(() => {
-    const realIds = (importRcoData?.allPropertyCollections?.nodes ?? []).map(
-      (o) => o.id,
-    )
+    const realIds = (data?.allPropertyCollections?.nodes ?? []).map((o) => o.id)
     return pCOfOriginIds.filter((i) => !realIds.includes(i))
-  }, [importRcoData, pCOfOriginIds])
+  }, [data, pCOfOriginIds])
   const pCOfOriginIdsAreReal = useMemo(
     () =>
-      !importRcoLoading && pCOfOriginIds.length > 0
+      !isLoading && pCOfOriginIds.length > 0
         ? pCOfOriginIdsUnreal.length === 0
         : undefined,
-    [importRcoLoading, pCOfOriginIds.length, pCOfOriginIdsUnreal.length],
+    [isLoading, pCOfOriginIds.length, pCOfOriginIdsUnreal.length],
   )
 
   const showImportButton = useMemo(
@@ -597,7 +598,7 @@ const ImportRco = ({ setImport }) => {
             )}
           </>
         )}
-        <StyledSnackbar open={importRcoLoading} message="lade Daten..." />
+        <StyledSnackbar open={isLoading} message="lade Daten..." />
       </Container>
     </SimpleBar>
   )
