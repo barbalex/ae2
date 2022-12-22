@@ -4,7 +4,7 @@ import {
   ContextMenu,
   MenuItem,
   connectMenu,
-} from '../../../modules/react-contextmenu'
+} from '../../../modules/react-contextmenu' 
 
 const dataInsert = {
   action: 'insert',

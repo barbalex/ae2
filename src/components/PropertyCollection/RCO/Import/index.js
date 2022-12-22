@@ -1004,21 +1004,10 @@ const ImportRco = ({ setImport }) => {
           <StyledUl>
             <li>
               <LiContainer>
-                <div>Es gibt mindestens eine Eigenschaft</div>
-                {existsPropertyKey && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-                {existsPropertyKey === false && (
-                  <div>
-                    <InlineIcon>
-                      <StyledErrorIcon />
-                    </InlineIcon>
-                  </div>
-                )}
+                <div>
+                  Eigenschaften sind nicht zwingend. Die Beziehungs-Art sagt
+                  schon einiges aus
+                </div>
               </LiContainer>
             </li>
             <li>
