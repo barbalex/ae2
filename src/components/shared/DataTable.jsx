@@ -49,7 +49,7 @@ const DataTable = ({
 }) => {
   const columnNames = Object.keys(data[0])
 
-  console.log('DataTable, data: ', data)
+  // console.log('DataTable, data: ', data)
 
   return (
     <Container>
@@ -129,7 +129,11 @@ const DataTable = ({
           <TableBody>
             {data.sort(getComparator(order, orderBy)).map((row) => (
               <StyledTableRow
-                key={uniqueKeyCombo ? `${row[uniqueKeyCombo[0]]}/${row[uniqueKeyCombo[1]]}` :row[idKey]}
+                key={
+                  uniqueKeyCombo
+                    ? `${row[uniqueKeyCombo[0]]}/${row[uniqueKeyCombo[1]]}`
+                    : row[idKey]
+                }
                 sx={{
                   '&:last-child td, &:last-child th': { border: 0 },
                 }}
