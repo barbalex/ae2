@@ -211,8 +211,14 @@ const PCO = () => {
     },
   })
 
+  // enable sorting
   const [orderBy, setOrderBy] = useState('Objekt Name')
   const [sortDirection, setSortDirection] = useState('asc')
+  const setOrder = useCallback(({ orderBy, direction }) => {
+    setOrderBy(orderBy)
+    setSortDirection(direction.toLowerCase())
+  }, [])
+
   const [importing, setImport] = useState(false)
 
   const propKeys = (
@@ -269,11 +275,6 @@ const PCO = () => {
     pcoData?.propertyCollectionById
       ?.propertyCollectionObjectsByPropertyCollectionId?.totalCount
 
-  // enable sorting
-  const setOrder = useCallback(({ orderBy, direction }) => {
-    setOrderBy(orderBy)
-    setSortDirection(direction.toLowerCase())
-  }, [])
 
   const fetchAllData = useCallback(async () => {
     const { data, loading, error } = await client.query({
