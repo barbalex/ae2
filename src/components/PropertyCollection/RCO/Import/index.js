@@ -173,6 +173,10 @@ const ImportRco = ({ setImport }) => {
       first: 15,
     },
   })
+  const { refetch: treeDataRefetch } = useApolloQuery(treeQuery, {
+    variables: getTreeDataVariables(store),
+  })
+
   const {
     data: importRcoData,
     loading: importRcoLoading,
@@ -484,7 +488,16 @@ const ImportRco = ({ setImport }) => {
     }
     setImport(false)
     setImporting(false)
-    rcoRefetch()
+    try {
+      rcoRefetch()
+    } catch (error) {
+      console.log('Error refetching rco:', error)
+    }
+    try {
+      treeDataRefetch()
+    } catch (error) {
+      console.log('Error refetching tree:', error)
+    }
   }, [client, importData, pCId, rcoRefetch, setImport])
   const rowGetter = useCallback((i) => importData[i], [importData])
 
