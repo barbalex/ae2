@@ -45,6 +45,8 @@ const DataTable = ({
     console.log('no setOrder function provided')
   },
   idKey = 'id',
+  // uniqueKeyCombo is an array of keys to use to create a unique key
+  // needed for relations as only combination of objectId, objectIdRelation and pcId is unique
   uniqueKeyCombo,
 }) => {
   const columnNames = Object.keys(data[0])
