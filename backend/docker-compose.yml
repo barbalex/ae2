@@ -44,7 +44,7 @@ services:
         '--schema',
         'ae',
         '--append-plugins',
-        'postgraphile-plugin-connection-filter,@graphile-contrib/pg-order-by-related',
+        'postgraphile-plugin-connection-filter,@graphile-contrib/pg-order-by-related,postgraphile-upsert-plugin:PgMutationUpsertPlugin',
         '--jwt-token-identifier',
         'auth.jwt_token',
         '--default-role',
