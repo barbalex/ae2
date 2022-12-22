@@ -9,11 +9,15 @@ import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import Dropzone from 'react-dropzone'
 import { read, utils } from 'xlsx'
-import { useQuery, useApolloClient, gql } from '@apollo/client'
+import {
+  useQuery as useApolloQuery,
+  useApolloClient,
+  gql,
+} from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
 import { getSnapshot } from 'mobx-state-tree'
-// import { useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import upsertPCOMutation from './upsertPCOMutation'
 import storeContext from '../../../../storeContext'
@@ -132,25 +136,28 @@ const ImportPco = ({ setImport }) => {
     setSortDirection(direction.toLowerCase())
   }, [])
 
-  const { refetch: pcoRefetch } = useQuery(pcoPreviewQuery, {
+  const { refetch: pcoRefetch } = useApolloQuery(pcoPreviewQuery, {
     variables: {
       pCId,
       first: 15,
     },
   })
 
-  const {
-    data: importPcoData,
-    loading: importPcoLoading,
-    error: importPcoError,
-  } = useQuery(importPcoQuery, {
-    variables: {
-      getObjectIds: objectIds.length > 0,
-      getPCOfOriginIds: pCOfOriginIds.length > 0,
-      pCOfOriginIds:
-        pCOfOriginIds.length > 0
-          ? pCOfOriginIds
-          : ['99999999-9999-9999-9999-999999999999'],
+  const { isLoading, error, data } = useQuery({
+    queryKey: ['importPcoQuery', pCId],
+    queryFn: async () => {
+      const { data } = await client.query({
+        query: importPcoQuery,
+        variables: {
+          getObjectIds: objectIds.length > 0,
+          getPCOfOriginIds: pCOfOriginIds.length > 0,
+          pCOfOriginIds:
+            pCOfOriginIds.length > 0
+              ? pCOfOriginIds
+              : ['99999999-9999-9999-9999-999999999999'],
+        },
+      })
+      return data
     },
   })
 
@@ -191,32 +198,29 @@ const ImportPco = ({ setImport }) => {
   ] = useState(undefined)
   const [existsPropertyKey, setExistsPropertyKey] = useState(undefined)
 
-  if (importPcoError && importPcoError.message) {
-    if (importPcoError?.message?.includes('request entity too large')) {
+  if (error && error.message) {
+    if (error?.message?.includes('request entity too large')) {
       setObjectIdsAreRealNotTested(true)
     }
   }
   const objectIdsUnreal = useMemo(() => {
-    const realObjectIds = (importPcoData?.allObjects?.nodes ?? []).map(
-      (o) => o.id,
-    )
+    const realObjectIds = (data?.allObjects?.nodes ?? []).map((o) => o.id)
     return objectIds.filter((i) => !realObjectIds.includes(i))
-  }, [importPcoData, objectIds])
+  }, [data, objectIds])
   const objectIdsAreReal = useMemo(
     () =>
-      !importPcoLoading && objectIds.length > 0
+      !isLoading && objectIds.length > 0
         ? objectIdsUnreal.length === 0
         : undefined,
-    [importPcoLoading, objectIds.length, objectIdsUnreal.length],
+    [isLoading, objectIds.length, objectIdsUnreal.length],
   )
-  const pCOfOriginsCheckData =
-    importPcoData?.allPropertyCollections?.nodes ?? []
+  const pCOfOriginsCheckData = data?.allPropertyCollections?.nodes ?? []
   const pCOfOriginIdsAreReal = useMemo(
     () =>
-      !importPcoLoading && pCOfOriginIds.length > 0
+      !isLoading && pCOfOriginIds.length > 0
         ? pCOfOriginIds.length === pCOfOriginsCheckData.length
         : undefined,
-    [importPcoLoading, pCOfOriginIds.length, pCOfOriginsCheckData.length],
+    [isLoading, pCOfOriginIds.length, pCOfOriginsCheckData.length],
   )
   const showImportButton = useMemo(
     () =>
@@ -368,8 +372,8 @@ const ImportPco = ({ setImport }) => {
 
     // need a list of all fields
     // loop all rows, build variables and create pco
-    // eslint-disable-next-line no-unused-vars
     const posts = []
+    // eslint-disable-next-line no-unused-vars
     for (const [i, d] of importData.entries()) {
       const variables = {
         objectId: d.objectId || null,
@@ -519,7 +523,7 @@ const ImportPco = ({ setImport }) => {
             />
           </>
         )}
-        <StyledSnackbar open={importPcoLoading} message="lade Daten..." />
+        <StyledSnackbar open={isLoading} message="lade Daten..." />
       </Container>
     </SimpleBar>
   )
