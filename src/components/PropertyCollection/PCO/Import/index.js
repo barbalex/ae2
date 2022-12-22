@@ -23,9 +23,11 @@ import upsertPCOMutation from './upsertPCOMutation'
 import storeContext from '../../../../storeContext'
 import isUuid from '../../../../modules/isUuid'
 import { pcoPreviewQuery } from '..'
+import treeQuery from '../../../Tree/treeQuery'
 import DataTable from '../../../shared/DataTable'
 import CountInput from '../../../Export/PreviewColumn/CountInput'
 import Instructions from './Instructions'
+import getTreeDataVariables from '../../../Tree/treeQueryVariables'
 
 const Container = styled.div`
   height: 100%;
@@ -142,6 +144,9 @@ const ImportPco = ({ setImport }) => {
       first: 15,
     },
   })
+  const { refetch: treeDataRefetch } = useApolloQuery(treeQuery, {
+    variables: getTreeDataVariables(store),
+  })
 
   const { isLoading, error, data } = useQuery({
     queryKey: ['importPcoQuery', pCId],
@@ -207,6 +212,7 @@ const ImportPco = ({ setImport }) => {
     const realObjectIds = (data?.allObjects?.nodes ?? []).map((o) => o.id)
     return objectIds.filter((i) => !realObjectIds.includes(i))
   }, [data, objectIds])
+
   const objectIdsAreReal = useMemo(
     () =>
       !isLoading && objectIds.length > 0
@@ -304,7 +310,6 @@ const ImportPco = ({ setImport }) => {
           .map((d) => d.objectId)
           .filter((d) => d !== undefined)
 
-        //const _objectsIdsDoNotExist = data.filter()
         const _objectIdsExist = _objectIds.length === data.length
         setObjectIdsExist(_objectIdsExist)
         const _objectsIdsAreNotUuid = data.filter((d) => !isUuid(d.objectId))
@@ -374,7 +379,7 @@ const ImportPco = ({ setImport }) => {
     // loop all rows, build variables and create pco
     const posts = []
     // eslint-disable-next-line no-unused-vars
-    for (const [i, d] of importData.entries()) {
+    for (const d of importData) {
       const variables = {
         objectId: d.objectId || null,
         propertyCollectionId: pCId,
@@ -406,7 +411,21 @@ const ImportPco = ({ setImport }) => {
     } catch (error) {
       console.log('Error refetching pco:', error)
     }
-  }, [client, importData, pCId, pcoRefetch, setImport, incrementImported])
+    try {
+      console.log('refetching tree')
+      treeDataRefetch()
+    } catch (error) {
+      console.log('Error refetching tree:', error)
+    }
+  }, [
+    setImport,
+    pcoRefetch,
+    treeDataRefetch,
+    importData,
+    pCId,
+    client,
+    incrementImported,
+  ])
 
   // console.log('ImportPco', { importData, importDataFields })
 

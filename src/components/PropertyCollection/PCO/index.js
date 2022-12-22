@@ -71,9 +71,11 @@ const MutationButtons = styled.div`
 `
 const StyledButton = styled(Button)`
   margin: 5px !important;
-  ${(props) => props.loading && `font-style: italic;`}
-  ${(props) => props.loading && `animation: blinker 1s linear infinite;`}
-  ${(props) => props.loading && `animation: blinker 1s linear infinite;`}
+  ${(props) => props['data-loading'] && `font-style: italic;`}
+  ${(props) =>
+    props['data-loading'] && `animation: blinker 1s linear infinite;`}
+  ${(props) =>
+    props['data-loading'] && `animation: blinker 1s linear infinite;`}
   @keyframes blinker {
     50% {
       opacity: 0;
@@ -275,7 +277,6 @@ const PCO = () => {
     pcoData?.propertyCollectionById
       ?.propertyCollectionObjectsByPropertyCollectionId?.totalCount
 
-
   const fetchAllData = useCallback(async () => {
     const { data, loading, error } = await client.query({
       query: pcoQuery,
@@ -378,7 +379,7 @@ const PCO = () => {
                 onClick={onClickXlsx}
                 variant="outlined"
                 color="inherit"
-                loading={xlsxExportLoading}
+                data-loading={xlsxExportLoading}
               >
                 xlsx exportieren
               </StyledButton>
@@ -386,7 +387,7 @@ const PCO = () => {
                 onClick={onClickCsv}
                 variant="outlined"
                 color="inherit"
-                loading={csvExportLoading}
+                data-loading={csvExportLoading}
               >
                 csv exportieren
               </StyledButton>
@@ -397,7 +398,7 @@ const PCO = () => {
                   onClick={onClickImport}
                   variant="outlined"
                   color="inherit"
-                  loading={importLoading}
+                  data-loading={importLoading}
                 >
                   importieren
                 </StyledButton>
@@ -405,7 +406,7 @@ const PCO = () => {
                   onClick={onClickDelete}
                   variant="outlined"
                   color="inherit"
-                  loading={deleteLoading}
+                  data-loading={deleteLoading}
                 >
                   Daten löschen
                 </StyledButton>
