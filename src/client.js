@@ -53,7 +53,10 @@ const client = ({ idb, store }) => {
   // needed to set batchMax: 1 to make it fast
   // seems that some of the batched queries are WAY too slow and that slows the others down
   // "solved" by loading heavy query later
-  const batchHttpLink = new BatchHttpLink({ uri: graphQlUri(), batchMax: 5 })
+  const batchHttpLink = new BatchHttpLink({
+    uri: graphQlUri(),
+    // batchMax: 5
+  })
   const client = new ApolloClient({
     link: ApolloLink.from([authLink, batchHttpLink]),
     cache: new InMemoryCache(),
