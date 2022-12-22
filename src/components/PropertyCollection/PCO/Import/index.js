@@ -410,7 +410,6 @@ const ImportPco = ({ setImport }) => {
       console.log('Error refetching pco:', error)
     }
     try {
-      console.log('refetching tree')
       treeDataRefetch()
     } catch (error) {
       console.log('Error refetching tree:', error)
