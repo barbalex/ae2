@@ -470,8 +470,6 @@ const ImportRco = ({ setImport }) => {
       )
     }
     await Promise.all(posts)
-    setImport(false)
-    setImporting(false)
     try {
       rcoRefetch()
     } catch (error) {
@@ -482,6 +480,8 @@ const ImportRco = ({ setImport }) => {
     } catch (error) {
       console.log('Error refetching tree:', error)
     }
+    setImport(false)
+    setImporting(false)
   }, [
     client,
     importData,
@@ -584,7 +584,11 @@ const ImportRco = ({ setImport }) => {
               setOrder={setOrder}
               orderBy={orderBy}
               order={sortDirection}
-              uniqueKeyCombo={['objectId', 'objectIdRelation', 'propertyCollectionId']}
+              uniqueKeyCombo={[
+                'objectId',
+                'objectIdRelation',
+                'propertyCollectionId',
+              ]}
             />
           </>
         )}

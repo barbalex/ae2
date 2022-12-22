@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useContext, useMemo } from 'react'
 import styled from '@emotion/styled'
-import omit from 'lodash/omit'
 import forOwn from 'lodash/forOwn'
 import union from 'lodash/union'
 import doOrderBy from 'lodash/orderBy'
@@ -211,7 +210,6 @@ const RCO = () => {
 
   const [xlsxExportLoading, setXlsxExportLoading] = useState(false)
   const [csvExportLoading, setCsvExportLoading] = useState(false)
-  const [importLoading, setImportLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
   const propKeys = (
@@ -276,6 +274,8 @@ const RCO = () => {
   const totalCount =
     rcoData?.propertyCollectionById?.relationsByPropertyCollectionId?.totalCount
 
+  console.log('RCO', { rcoData, rCOWriters, userIsWriter, rCO, showImportRco })
+
   // enable sorting
   const setOrder = useCallback(({ orderBy, direction }) => {
     setOrderBy(orderBy)
@@ -338,10 +338,12 @@ const RCO = () => {
   }, [fetchAllData])
 
   const onClickDelete = useCallback(async () => {
+    setDeleteLoading(true)
     await client.mutate({
       mutation: deleteRcoOfPcMutation,
       variables: { pcId: pCId },
     })
+    setDeleteLoading(false)
     rcoRefetch()
     treeDataRefetch()
   }, [client, pCId, rcoRefetch, treeDataRefetch])
@@ -405,7 +407,6 @@ const RCO = () => {
                   onClick={onClickImport}
                   variant="outlined"
                   color="inherit"
-                  data-loading={importLoading}
                 >
                   importieren
                 </StyledButton>

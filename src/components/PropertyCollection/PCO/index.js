@@ -195,7 +195,6 @@ const PCO = () => {
 
   const [xlsxExportLoading, setXlsxExportLoading] = useState(false)
   const [csvExportLoading, setCsvExportLoading] = useState(false)
-  const [importLoading, setImportLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
   const { refetch: treeDataRefetch } = useQuery(treeQuery, {
@@ -331,10 +330,12 @@ const PCO = () => {
   }, [fetchAllData])
 
   const onClickDelete = useCallback(async () => {
+    setDeleteLoading(true)
     await client.mutate({
       mutation: deletePcoOfPcMutation,
       variables: { pcId: pCId },
     })
+    setDeleteLoading(false)
     pcoRefetch()
     treeDataRefetch()
   }, [client, pCId, pcoRefetch, treeDataRefetch])
@@ -398,7 +399,6 @@ const PCO = () => {
                   onClick={onClickImport}
                   variant="outlined"
                   color="inherit"
-                  data-loading={importLoading}
                 >
                   importieren
                 </StyledButton>
