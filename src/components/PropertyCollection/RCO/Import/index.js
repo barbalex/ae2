@@ -62,44 +62,6 @@ const Container = styled.div`
     border: #ddd solid 1px !important;
   }
 `
-const StyledUl = styled.ul`
-  ul {
-    margin-top: 0;
-  }
-  li {
-    margin-bottom: 0;
-  }
-  li:last-of-type {
-    margin-bottom: 5px;
-  }
-`
-const StyledH3 = styled.h3`
-  margin-left: 8px;
-  margin-bottom: 10px;
-`
-const FirstTitle = styled(StyledH3)`
-  padding-top: 10px;
-`
-const HowToImportContainer = styled.div`
-  column-width: 500px;
-  padding: 0 8px 0 8px;
-  > ul {
-    padding-left: 20px;
-  }
-`
-const StyledH4 = styled.h4`
-  margin: 0;
-`
-const LiContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  break-inside: avoid;
-`
-const EmSpan = styled.span`
-  background-color: #8d8c8c40;
-  padding: 1px 3px;
-  border-radius: 4px;
-`
 const DropzoneContainer = styled.div`
   padding: 10px 8px;
   div {
@@ -118,22 +80,6 @@ const DropzoneDiv = styled.div`
 const DropzoneDivActive = styled(DropzoneDiv)`
   background-color: rgba(255, 224, 178, 0.2);
 `
-const InlineIcon = styled(Icon)`
-  margin-left: 8px;
-`
-const InlineDiv = styled.div`
-  margin-left: 8px;
-  font-style: italic;
-`
-const StyledDoneIcon = styled(DoneIcon)`
-  color: green !important;
-`
-const StyledErrorIcon = styled(ErrorIcon)`
-  color: red !important;
-`
-const StyledInfoOutlineIcon = styled(InfoOutlineIcon)`
-  color: orange !important;
-`
 const StyledButton = styled(Button)`
   border: 1px solid !important;
   margin: 8px 8px 16px 8px !important;
@@ -146,10 +92,6 @@ const TotalDiv = styled.div`
   font-size: small;
   padding-left: 9px;
   margin-top: 8px;
-`
-const StyledP = styled.p`
-  margin-top: 15px;
-  margin-bottom: 5px;
 `
 const StyledSnackbar = styled(Snackbar)`
   div {
