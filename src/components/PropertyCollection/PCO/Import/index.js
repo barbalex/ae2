@@ -20,14 +20,13 @@ import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
 import { getSnapshot } from 'mobx-state-tree'
 
-import createPCOMutation from './createPCOMutation'
-import updatePCOMutation from './updatePCOMutation'
+import upsertPCOMutation from './upsertPCOMutation'
 import storeContext from '../../../../storeContext'
 import isUuid from '../../../../modules/isUuid'
-import { pcoPreviewQuery, pcoQuery } from '..'
-
-// react-data-grid calls window!
-const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
+import { pcoPreviewQuery } from '..'
+import DataTable from '../../../shared/DataTable'
+import CountInput from '../../../Export/PreviewColumn/CountInput'
+import Instructions from './Instructions'
 
 const Container = styled.div`
   height: 100%;
@@ -168,7 +167,6 @@ const importPcoQuery = gql`
 `
 
 const ImportPco = ({ setImport }) => {
-  const isSSR = typeof window === 'undefined'
   const client = useApolloClient()
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
@@ -180,6 +178,19 @@ const ImportPco = ({ setImport }) => {
   const [objectIds, setObjectIds] = useState([])
   const [pCOfOriginIds, setPCOfOriginIds] = useState([])
   const [imported, setImported] = useState(0)
+  const upImported = useCallback(
+    () => setImported(() => imported + 1),
+    [imported],
+  )
+
+  const [count, setCount] = useState(15)
+
+  const [orderBy, setOrderBy] = useState('objectId')
+  const [sortDirection, setSortDirection] = useState('asc')
+  const setOrder = useCallback(({ orderBy, direction }) => {
+    setOrderBy(orderBy)
+    setSortDirection(direction.toLowerCase())
+  }, [])
 
   const { refetch: pcoRefetch } = useQuery(pcoPreviewQuery, {
     variables: {
@@ -357,12 +368,6 @@ const ImportPco = ({ setImport }) => {
         setObjectIdsAreUuid(
           _objectIdsExist ? _objectsIdsAreNotUuid.length === 0 : undefined,
         )
-        //console.log({ _objectsIdsAreNotUuid })
-        /*setObjectIdsAreUuid(
-          _objectIdsExist
-            ? !_objectIds.some(d => !isUuid(d))
-            : undefined,
-        )*/
         setObjectIds(_objectIds)
 
         const _pCOfOriginIds = data
@@ -421,23 +426,11 @@ const ImportPco = ({ setImport }) => {
   const onClickImport = useCallback(async () => {
     setImporting(true)
 
-    const { data } = await client.query({
-      query: pcoQuery,
-      variables: {
-        pCId,
-      },
-    })
-    const pCO = (
-      data?.propertyCollectionById
-        ?.propertyCollectionObjectsByPropertyCollectionId?.nodes ?? []
-    ).map((p) => omit(p, ['__typename']))
-
     // need a list of all fields
     // loop all rows, build variables and create pco
     // eslint-disable-next-line no-unused-vars
+    const posts = []
     for (const [i, d] of importData.entries()) {
-      const pco = pCO.find((o) => o.objectId === d.objectId)
-      const id = pco && pco.id ? pco.id : undefined
       const variables = {
         objectId: d.objectId || null,
         propertyCollectionId: pCId,
@@ -451,29 +444,17 @@ const ImportPco = ({ setImport }) => {
           ]),
         ),
       }
-      // if id: update, else insert
-      if (id) {
-        try {
-          await client.mutate({
-            mutation: updatePCOMutation,
-            variables: { id, ...variables },
-          })
-        } catch (error) {
-          console.log(`Error importing ${JSON.stringify(d)}:`, error)
-        }
-      } else {
-        try {
-          await client.mutate({
-            mutation: createPCOMutation,
+
+      posts.push(
+        client
+          .mutate({
+            mutation: upsertPCOMutation,
             variables,
           })
-        } catch (error) {
-          console.log(`Error importing ${JSON.stringify(d)}:`, error)
-        }
-      }
-
-      setImported(i)
+          .then(() => upImported()),
+      )
     }
+    await Promise.all(posts)
     setImport(false)
     setImporting(false)
     try {
@@ -481,457 +462,36 @@ const ImportPco = ({ setImport }) => {
     } catch (error) {
       console.log('Error refetching pco:', error)
     }
-  }, [client, importData, pCId, pcoRefetch, setImport])
-  const rowGetter = useCallback((i) => importData[i], [importData])
+  }, [client, importData, pCId, pcoRefetch, setImport, upImported])
+
+  // console.log('ImportPco', { importData, importDataFields })
 
   return (
     <SimpleBar style={{ maxHeight: '100%', height: '100%' }}>
       <Container>
-        <FirstTitle>Anforderungen an zu importierende Eigenschaften</FirstTitle>
-        <HowToImportContainer>
-          <StyledH4>Autorenrechte</StyledH4>
-          <StyledUl>
-            <li>
-              <LiContainer>
-                <div>
-                  Die Autoren müssen mit der Veröffentlichung einverstanden sein
-                </div>
-              </LiContainer>
-            </li>
-            <li>
-              <LiContainer>
-                <div>Dafür verantwortlich ist, wer Daten importiert</div>
-              </LiContainer>
-            </li>
-          </StyledUl>
-          <StyledH4>Tabelle</StyledH4>
-          <StyledUl>
-            <li>
-              <LiContainer>
-                <div>Die erste Zeile enthält Feld-Namen (= Spalten-Titel)</div>
-              </LiContainer>
-            </li>
-            <li>
-              <LiContainer>
-                <div>
-                  Jeder Wert hat einen Feld-Namen.
-                  <br />
-                  Anders gesagt: Jede Zelle mit einem Wert hat einen
-                  Spalten-Titel
-                </div>
-                {existsNoDataWithoutKey && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-                {existsNoDataWithoutKey === false && (
-                  <div>
-                    <InlineIcon>
-                      <StyledErrorIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-              </LiContainer>
-            </li>
-          </StyledUl>
-          <StyledH4>Zuordnungs-Felder</StyledH4>
-          <StyledUl>
-            <li>
-              <LiContainer>
-                <div>
-                  Ein Feld namens <EmSpan>id</EmSpan> kann enthalten sein.
-                </div>
-                {idsExist && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-                {idsExist === false && (
-                  <div>
-                    <InlineDiv>(ist nicht)</InlineDiv>
-                  </div>
-                )}
-              </LiContainer>
-              <LiContainer>
-                <div>Wenn nicht, wird eine id erzeugt</div>
-                {idsExist === false && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-              </LiContainer>
-              <ul>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>id</EmSpan> muss gültige{' '}
-                      <a
-                        href="https://de.wikipedia.org/wiki/Universally_Unique_Identifier"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        UUID
-                      </a>{' '}
-                      sein
-                    </div>
-                    {idsAreUuids && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {idsAreUuids === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>id</EmSpan> muss eindeutig sein
-                    </div>
-                    {idsAreUnique && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {idsAreUnique === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <LiContainer>
-                <div>
-                  Ein Feld namens <EmSpan>objectId</EmSpan> muss enthalten sein
-                </div>
-                {objectIdsExist && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-                {objectIdsExist === false && (
-                  <div>
-                    <InlineIcon>
-                      <StyledErrorIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-              </LiContainer>
-              <ul>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>objectId</EmSpan> muss gültige{' '}
-                      <a
-                        href="https://de.wikipedia.org/wiki/Universally_Unique_Identifier"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        UUID
-                      </a>{' '}
-                      sein
-                    </div>
-                    {objectIdsAreUuid && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {objectIdsAreUuid === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>objectId</EmSpan> muss <EmSpan>id</EmSpan> eines
-                      Objekts aus arteigenschaften.ch sein
-                    </div>
-                    {objectIdsAreReal && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {objectIdsAreReal === false &&
-                      !objectIdsAreRealNotTested && (
-                        <div>
-                          <InlineIcon>
-                            <StyledErrorIcon />
-                          </InlineIcon>
-                        </div>
-                      )}
-                    {objectIdsAreRealNotTested && (
-                      <>
-                        <InlineIcon>
-                          <StyledInfoOutlineIcon />
-                        </InlineIcon>
-                        <InlineDiv>
-                          (nicht getestet, da sehr viele Daten. Datensätze,
-                          welche dieses Kriterium nicht erfüllen, werden nicht
-                          importiert)
-                        </InlineDiv>
-                      </>
-                    )}
-                  </LiContainer>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <LiContainer>
-                <div>
-                  Ein Feld namens <EmSpan>propertyCollectionOfOrigin</EmSpan>{' '}
-                  kann enthalten sein.
-                </div>
-                {pCOfOriginIdsExist && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-                {pCOfOriginIdsExist === false && (
-                  <div>
-                    <InlineDiv>(ist nicht)</InlineDiv>
-                  </div>
-                )}
-              </LiContainer>
-              <LiContainer>
-                <div>
-                  Zweck: In zusammenfassenden Eigenschaften-Sammlungen
-                  markieren, aus welcher Eigenschaften-Sammlung diese
-                  Eigenschaften stammen.{' '}
-                  <a
-                    href="http://localhost:8000/Dokumentation/Projektbeschreibung/#zusammenfassende-eigenschaften-sammlungen"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Mehr Infos
-                  </a>
-                </div>
-              </LiContainer>
-              <ul>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>propertyCollectionOfOrigin</EmSpan> muss gültige{' '}
-                      <a
-                        href="https://de.wikipedia.org/wiki/Universally_Unique_Identifier"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        UUID
-                      </a>{' '}
-                      sein
-                    </div>
-                    {pCOfOriginIdsAreUuid && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {pCOfOriginIdsAreUuid === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>propertyCollectionOfOrigin</EmSpan> muss{' '}
-                      <EmSpan>id</EmSpan> einer Eigenschaften-Sammlung aus
-                      arteigenschaften.ch sein
-                    </div>
-                    {pCOfOriginIdsAreReal && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {pCOfOriginIdsAreReal === false &&
-                      !pCOfOriginIdsAreRealNotTested && (
-                        <div>
-                          <InlineIcon>
-                            <StyledErrorIcon />
-                          </InlineIcon>
-                        </div>
-                      )}
-                    {pCOfOriginIdsAreRealNotTested && (
-                      <>
-                        <InlineIcon>
-                          <StyledInfoOutlineIcon />
-                        </InlineIcon>
-                        <InlineDiv>
-                          (nicht getestet, da sehr viele Daten. Datensätze,
-                          welche dieses Kriterium nicht erfüllen, werden nicht
-                          importiert)
-                        </InlineDiv>
-                      </>
-                    )}
-                  </LiContainer>
-                </li>
-              </ul>
-            </li>
-          </StyledUl>
-          <StyledP>
-            Alle weiteren Felder sind Eigenschaften des Objekts:
-          </StyledP>
-          <StyledH4>Eigenschaften</StyledH4>
-          <StyledUl>
-            <li>
-              <LiContainer>
-                <div>Es gibt mindestens eine Eigenschaft</div>
-                {existsPropertyKey && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-                {existsPropertyKey === false && (
-                  <div>
-                    <InlineIcon>
-                      <StyledErrorIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-              </LiContainer>
-            </li>
-            <li>
-              Feld-Namen dürfen die folgenden Zeichen nicht enthalten:
-              <ul>
-                <li>
-                  <LiContainer>
-                    <div>{'"'}</div>
-                    {propertyKeysDontContainApostroph && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {propertyKeysDontContainApostroph === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-                <li>
-                  <LiContainer>
-                    <div>\</div>
-                    {propertyKeysDontContainBackslash && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {propertyKeysDontContainBackslash === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-              </ul>
-            </li>
-            <li>
-              Feld-Werte dürfen die folgenden Zeichen nicht enthalten:
-              <ul>
-                <li>
-                  <LiContainer>
-                    <div>{'"'}</div>
-                    {propertyValuesDontContainApostroph && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {propertyValuesDontContainApostroph === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-                <li>
-                  <LiContainer>
-                    <div>\</div>
-                    {propertyValuesDontContainBackslash && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {propertyValuesDontContainBackslash === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-              </ul>
-            </li>
-          </StyledUl>
-          <StyledH3>Wirkung des Imports auf bereits vorhandene Daten</StyledH3>
-          <ul>
-            <li>
-              Enthält die Eigenschaften-Sammlung bereits einen Datensatz für ein
-              Objekt (Art oder Lebensraum), wird dieser mit dem importierten
-              Datensatz ersetzt.
-            </li>
-            <li>
-              Enthält die Eigenschaften-Sammlung für ein Objekt noch keinen
-              Datensatz, wird er neu importiert.
-            </li>
-          </ul>
-        </HowToImportContainer>
+        <Instructions
+          idsExist={idsExist}
+          objectIdsAreReal={objectIdsAreReal}
+          pCOfOriginIdsAreReal={pCOfOriginIdsAreReal}
+          existsPropertyKey={existsPropertyKey}
+          existsNoDataWithoutKey={existsNoDataWithoutKey}
+          idsAreUuids={idsAreUuids}
+          idsAreUnique={idsAreUnique}
+          objectIdsExist={objectIdsExist}
+          objectIdsAreUuid={objectIdsAreUuid}
+          objectIdsAreRealNotTested={objectIdsAreRealNotTested}
+          pCOfOriginIdsExist={pCOfOriginIdsExist}
+          pCOfOriginIdsAreUuid={pCOfOriginIdsAreUuid}
+          pCOfOriginIdsAreRealNotTested={pCOfOriginIdsAreRealNotTested}
+          propertyKeysDontContainApostroph={propertyKeysDontContainApostroph}
+          propertyKeysDontContainBackslash={propertyKeysDontContainBackslash}
+          propertyValuesDontContainApostroph={
+            propertyValuesDontContainApostroph
+          }
+          propertyValuesDontContainBackslash={
+            propertyValuesDontContainBackslash
+          }
+        />
         {!importing && (
           <DropzoneContainer>
             <Dropzone
@@ -998,26 +558,25 @@ const ImportPco = ({ setImport }) => {
         )}
         {showPreview && (
           <>
-            <TotalDiv>{`${importData.length.toLocaleString(
-              'de-CH',
-            )} Datensätze, ${propertyFields.length.toLocaleString(
-              'de-CH',
-            )} Feld${propertyFields.length === 1 ? '' : 'er'}${
-              importData.length > 0 ? ':' : ''
-            }`}</TotalDiv>
-            {!isSSR && (
-              <React.Suspense fallback={<div />}>
-                <ReactDataGridLazy
-                  columns={importDataFields.map((k) => ({
-                    key: k,
-                    name: k,
-                    resizable: true,
-                  }))}
-                  rowGetter={rowGetter}
-                  rowsCount={importData.length}
-                />
-              </React.Suspense>
-            )}
+            <TotalDiv>
+              {`${importData.length.toLocaleString(
+                'de-CH',
+              )} Datensätze, ${propertyFields.length.toLocaleString(
+                'de-CH',
+              )} Feld${propertyFields.length === 1 ? '' : 'er'}${
+                importData.length > 0 ? ':' : ''
+              }, Erste `}
+              <CountInput count={count} setCount={setCount} />
+              {' :'}
+            </TotalDiv>
+            <DataTable
+              data={importData.slice(0, count)}
+              idKey="objectId"
+              keys={importDataFields}
+              setOrder={setOrder}
+              orderBy={orderBy}
+              order={sortDirection}
+            />
           </>
         )}
         <StyledSnackbar open={importPcoLoading} message="lade Daten..." />
