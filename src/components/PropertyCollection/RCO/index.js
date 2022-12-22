@@ -81,7 +81,7 @@ const StyledButton = styled(Button)`
   }
 `
 
-const rcoQuery = gql`
+export const rcoQuery = gql`
   query rCOQuery($pCId: UUID!) {
     propertyCollectionById(id: $pCId) {
       id
@@ -128,7 +128,7 @@ const rcoQuery = gql`
     }
   }
 `
-const rcoPreviewQuery = gql`
+export const rcoPreviewQuery = gql`
   query rcoPreviewQuery($pCId: UUID!, $count: Int!) {
     propertyCollectionById(id: $pCId) {
       id

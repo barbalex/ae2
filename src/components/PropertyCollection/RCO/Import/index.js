@@ -24,6 +24,7 @@ import { getSnapshot } from 'mobx-state-tree'
 import createRCOMutation from './createRCOMutation'
 import updateRCOMutation from './updateRCOMutation'
 import storeContext from '../../../../storeContext'
+import { rcoQuery, rcoPreviewQuery } from '..'
 
 // react-data-grid calls window!
 const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
@@ -147,46 +148,6 @@ const StyledSnackbar = styled(Snackbar)`
   }
 `
 
-const rcoQuery = gql`
-  query rCOQuery($pCId: UUID!) {
-    propertyCollectionById(id: $pCId) {
-      id
-      organizationByOrganizationId {
-        id
-        name
-        organizationUsersByOrganizationId {
-          nodes {
-            id
-            userId
-            role
-            userByUserId {
-              id
-              name
-            }
-          }
-        }
-      }
-      relationsByPropertyCollectionId {
-        totalCount
-        nodes {
-          id
-          objectId
-          objectByObjectId {
-            id
-            name
-          }
-          objectIdRelation
-          objectByObjectIdRelation {
-            id
-            name
-          }
-          relationType
-          properties
-        }
-      }
-    }
-  }
-`
 const importRcoQuery = gql`
   query rCOQuery(
     $getObjectIds: Boolean!
@@ -230,9 +191,10 @@ const ImportRco = ({ setImport }) => {
   const [pCOfOriginIds, setPCOfOriginIds] = useState([])
   const [imported, setImported] = useState(0)
 
-  const { refetch: rcoRefetch } = useQuery(rcoQuery, {
+  const { refetch: rcoRefetch } = useQuery(rcoPreviewQuery, {
     variables: {
       pCId,
+      first: 15,
     },
   })
   const {

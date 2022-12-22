@@ -92,7 +92,7 @@ export const StyledProgressText = styled.span`
   }
 `
 
-const pcoQuery = gql`
+export const pcoQuery = gql`
   query pCOQuery($pCId: UUID!) {
     propertyCollectionById(id: $pCId) {
       id
@@ -135,7 +135,7 @@ const pcoQuery = gql`
     }
   }
 `
-const pcoPreviewQuery = gql`
+export const pcoPreviewQuery = gql`
   query pCOPreviewQuery($pCId: UUID!, $first: Int!) {
     propertyCollectionById(id: $pCId) {
       id

@@ -24,6 +24,7 @@ import createPCOMutation from './createPCOMutation'
 import updatePCOMutation from './updatePCOMutation'
 import storeContext from '../../../../storeContext'
 import isUuid from '../../../../modules/isUuid'
+import { pcoPreviewQuery, pcoQuery } from '..'
 
 // react-data-grid calls window!
 const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
@@ -146,41 +147,6 @@ const StyledSnackbar = styled(Snackbar)`
   }
 `
 
-const pcoQuery = gql`
-  query pCOQuery($pCId: UUID!) {
-    propertyCollectionById(id: $pCId) {
-      id
-      organizationByOrganizationId {
-        id
-        name
-        organizationUsersByOrganizationId {
-          nodes {
-            id
-            userId
-            role
-            userByUserId {
-              id
-              name
-              email
-            }
-          }
-        }
-      }
-      propertyCollectionObjectsByPropertyCollectionId {
-        totalCount
-        nodes {
-          id
-          objectId
-          objectByObjectId {
-            id
-            name
-          }
-          properties
-        }
-      }
-    }
-  }
-`
 const importPcoQuery = gql`
   query pCOQuery(
     $getObjectIds: Boolean!
@@ -215,9 +181,10 @@ const ImportPco = ({ setImport }) => {
   const [pCOfOriginIds, setPCOfOriginIds] = useState([])
   const [imported, setImported] = useState(0)
 
-  const { refetch: pcoRefetch } = useQuery(pcoQuery, {
+  const { refetch: pcoRefetch } = useQuery(pcoPreviewQuery, {
     variables: {
       pCId,
+      first: 15,
     },
   })
 
@@ -514,7 +481,7 @@ const ImportPco = ({ setImport }) => {
     } catch (error) {
       console.log('Error refetching pco:', error)
     }
-  }, [client, importData, pCId,  pcoRefetch, setImport])
+  }, [client, importData, pCId, pcoRefetch, setImport])
   const rowGetter = useCallback((i) => importData[i], [importData])
 
   return (
