@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import omit from 'lodash/omit'
 import forOwn from 'lodash/forOwn'
 import union from 'lodash/union'
-import orderBy from 'lodash/orderBy'
+import doOrderBy from 'lodash/orderBy'
 import Button from '@mui/material/Button'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -203,7 +203,7 @@ const RCO = () => {
     },
   })
 
-  const [sortField, setSortField] = useState('Objekt Name')
+  const [orderBy, setOrderBy] = useState('Objekt Name')
   const [sortDirection, setSortDirection] = useState('asc')
   const [importing, setImport] = useState(false)
 
@@ -217,13 +217,11 @@ const RCO = () => {
       ?.vRelationCollectionKeysByPropertyCollectionId?.nodes ?? []
   ).map((k) => k?.keys)
 
-  const [rCO, rCORaw] = useMemo(() => {
-    let rCO = []
-    const rCORaw = (
+  const rCO = useMemo(() => {
+    const rCOUnsorted = (
       rcoData?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes ??
       []
-    ).map((p) => omit(p, ['__typename']))
-    rCORaw.forEach((p) => {
+    ).map((p) => {
       let nP = {}
       nP['Objekt ID'] = p.objectId
       nP['Objekt Name'] = p?.objectByObjectId?.name ?? null
@@ -246,15 +244,14 @@ const RCO = () => {
           nP[key] = null
         }
       }
-      rCO.push(nP)
+      return nP
     })
-    rCO = orderBy(rCO, sortField, sortDirection)
-    return [rCO, rCORaw]
+    return doOrderBy(rCOUnsorted, orderBy, sortDirection)
   }, [
     propKeys,
     rcoData?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes,
     sortDirection,
-    sortField,
+    orderBy,
   ])
   // collect all keys and sort property keys by name
   const keys = [
@@ -279,10 +276,11 @@ const RCO = () => {
 
   // TODO: enable sorting
   const onGridSort = useCallback((column, direction) => {
-    setSortField(column)
+    setOrderBy(column)
     setSortDirection(direction.toLowerCase())
   }, [])
 
+  // TODO: key in data table should bu unique, thus: objectId + objectIdRelation
   const fetchAllData = useCallback(async () => {
     const { data, loading, error } = await client.query({
       query: rcoQuery,
@@ -292,8 +290,7 @@ const RCO = () => {
     })
     const rCORaw = (
       data?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes ?? []
-    ).map((p) => omit(p, ['__typename']))
-    rCORaw.forEach((p) => {
+    ).map((p) => {
       let nP = {}
       nP['Objekt ID'] = p.objectId
       nP['Objekt Name'] = p?.objectByObjectId?.name ?? null
@@ -316,10 +313,10 @@ const RCO = () => {
           nP[key] = null
         }
       }
-      rCO.push(nP)
+      return nP
     })
-    return { data: orderBy(rCO, sortField, sortDirection), loading, error }
-  }, [client, pCId, propKeys, rCO, sortDirection, sortField])
+    return { data: doOrderBy(rCORaw, orderBy, sortDirection), loading, error }
+  }, [client, pCId, propKeys, sortDirection, orderBy])
 
   const onClickXlsx = useCallback(async () => {
     setXlsxExportLoading(true)
@@ -372,7 +369,12 @@ const RCO = () => {
       )}
       {!importing && rCO.length > 0 && (
         <>
-          <DataTable data={rCO} idKey="Objekt ID" keys={keys} />
+          <DataTable
+            data={rCO}
+            idKey="Objekt ID"
+            keys={keys}
+            uniqueKeyCombo={['Objekt ID', 'Beziehung ID']}
+          />
           <ButtonsContainer>
             <ExportButtons>
               <StyledButton
@@ -415,7 +417,7 @@ const RCO = () => {
           </ButtonsContainer>
         </>
       )}
-      {showImportRco && <ImportRco setImport={setImport} pCO={rCORaw} />}
+      {showImportRco && <ImportRco setImport={setImport} />}
     </Container>
   )
 }

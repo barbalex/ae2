@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import omit from 'lodash/omit'
 import forOwn from 'lodash/forOwn'
 import union from 'lodash/union'
-import orderBy from 'lodash/orderBy'
+import doOrderBy from 'lodash/orderBy'
 import Button from '@mui/material/Button'
 import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
@@ -211,7 +211,7 @@ const PCO = () => {
     },
   })
 
-  const [sortField, setSortField] = useState('Objekt Name')
+  const [orderBy, setOrderBy] = useState('Objekt Name')
   const [sortDirection, setSortDirection] = useState('asc')
   const [importing, setImport] = useState(false)
 
@@ -249,14 +249,14 @@ const PCO = () => {
       }
       pCO.push(nP)
     })
-    pCO = orderBy(pCO, sortField, sortDirection)
+    pCO = doOrderBy(pCO, orderBy, sortDirection)
     return [pCO, pCORaw]
   }, [
     pcoData?.propertyCollectionById
       ?.propertyCollectionObjectsByPropertyCollectionId?.nodes,
     propKeys,
     sortDirection,
-    sortField,
+    orderBy,
   ])
   // collect all keys and sort property keys by name
   const keys = ['Objekt ID', 'Objekt Name', ...propKeys.sort()]
@@ -274,8 +274,9 @@ const PCO = () => {
       ?.propertyCollectionObjectsByPropertyCollectionId?.totalCount
 
   // TODO: enable sorting
-  const onGridSort = useCallback((column, direction) => {
-    setSortField(column)
+  const setOrder = useCallback(({ orderBy, direction }) => {
+    console.log('PCO setOrder', { orderBy, direction })
+    setOrderBy(orderBy)
     setSortDirection(direction.toLowerCase())
   }, [])
 
@@ -286,13 +287,11 @@ const PCO = () => {
         pCId,
       },
     })
-    let pCO = []
     // collect all keys
-    const pCORaw = (
+    const pCOUnsorted = (
       data?.propertyCollectionById
         ?.propertyCollectionObjectsByPropertyCollectionId?.nodes ?? []
-    ).map((p) => omit(p, ['__typename']))
-    pCORaw.forEach((p) => {
+    ).map((p) => {
       let nP = {}
       nP['Objekt ID'] = p.objectId
       nP['Objekt Name'] = p?.objectByObjectId?.name ?? null
@@ -312,11 +311,11 @@ const PCO = () => {
           nP[key] = null
         }
       }
-      pCO.push(nP)
+      return nP
     })
-    pCO = orderBy(pCO, sortField, sortDirection)
+    const pCO = doOrderBy(pCOUnsorted, orderBy, sortDirection)
     return { data: pCO, loading, error }
-  }, [client, pCId, propKeys, sortDirection, sortField])
+  }, [client, pCId, propKeys, sortDirection, orderBy])
 
   const onClickXlsx = useCallback(async () => {
     // download all data
@@ -369,7 +368,14 @@ const PCO = () => {
       )}
       {!importing && pCO.length > 0 && (
         <>
-          <DataTable data={pCO} idKey="Objekt ID" keys={keys} />
+          <DataTable
+            data={pCO}
+            idKey="Objekt ID"
+            keys={keys}
+            setOrder={setOrder}
+            orderBy={orderBy}
+            order={sortDirection}
+          />
           <ButtonsContainer>
             <ExportButtons>
               <StyledButton

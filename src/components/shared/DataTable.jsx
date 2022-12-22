@@ -18,6 +18,22 @@ const StyledTableRow = styled(TableRow)`
   padding: 0 5px;
 `
 
+function descendingComparator(a, b, orderBy) {
+  if (b[orderBy] < a[orderBy]) {
+    return -1
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1
+  }
+  return 0
+}
+
+function getComparator(order, orderBy) {
+  return order === 'desc'
+    ? (a, b) => descendingComparator(a, b, orderBy)
+    : (a, b) => -descendingComparator(a, b, orderBy)
+}
+
 // data is array of objects
 // keys are column names
 // values are column values
@@ -25,10 +41,15 @@ const DataTable = ({
   data,
   order = 'ASC',
   orderBy = 'id',
-  setOrder,
+  setOrder = () => {
+    console.log('no setOrder function provided')
+  },
   idKey = 'id',
+  uniqueKeyCombo,
 }) => {
   const columnNames = Object.keys(data[0])
+
+  console.log('DataTable, data: ', data)
 
   return (
     <Container>
@@ -47,10 +68,12 @@ const DataTable = ({
           <TableHead>
             <StyledTableRow>
               {columnNames.map((name) => {
+                const active = orderBy === name
+                // console.log('DataTable ', { name, orderBy, active })
                 if (name === idKey) {
                   return (
                     <TableCell
-                      key={name}
+                      key={`${name}/header`}
                       sx={{
                         minWidth: 270,
                         '&:first-of-type': { paddingLeft: '6px !important' },
@@ -64,10 +87,8 @@ const DataTable = ({
 
                 return (
                   <TableCell
-                    key={name}
-                    sortDirection={
-                      orderBy === name ? order.toLowerCase() : false
-                    }
+                    key={`${name}/header`}
+                    sortDirection={active ? order.toLowerCase() : false}
                     sx={{
                       '&:first-of-type': { paddingLeft: '6px !important' },
                       backgroundColor: '#ffcc80 !important',
@@ -76,14 +97,20 @@ const DataTable = ({
                     }}
                   >
                     <TableSortLabel
-                      active={orderBy === name}
-                      direction={orderBy === name ? order.toLowerCase() : 'asc'}
-                      onClick={() =>
+                      active={active}
+                      direction={active ? order.toLowerCase() : 'asc'}
+                      onClick={() => {
+                        // if this is the active sorted column, switch sort direction
+                        const direction = active
+                          ? order === 'asc'
+                            ? 'desc'
+                            : 'asc'
+                          : order
                         setOrder({
-                          by: name,
-                          direction: order === 'ASC' ? 'DESC' : 'ASC',
+                          orderBy: name,
+                          direction,
                         })
-                      }
+                      }}
                     >
                       {name}
                       {orderBy === name ? (
@@ -100,9 +127,9 @@ const DataTable = ({
             </StyledTableRow>
           </TableHead>
           <TableBody>
-            {data.map((row) => (
+            {data.sort(getComparator(order, orderBy)).map((row) => (
               <StyledTableRow
-                key={row[idKey]}
+                key={uniqueKeyCombo ? `${row[uniqueKeyCombo[0]]}/${row[uniqueKeyCombo[1]]}` :row[idKey]}
                 sx={{
                   '&:last-child td, &:last-child th': { border: 0 },
                 }}
@@ -111,6 +138,7 @@ const DataTable = ({
                   if (key === idKey)
                     return (
                       <TableCell
+                        key={`${row[idKey]}/${key}/cell`}
                         component="th"
                         scope="row"
                         sx={{
@@ -121,7 +149,11 @@ const DataTable = ({
                         {row[idKey]}
                       </TableCell>
                     )
-                  return <TableCell key={key}>{row[key]}</TableCell>
+                  return (
+                    <TableCell key={`${row[idKey]}/${key}/cell`}>
+                      {row[key]}
+                    </TableCell>
+                  )
                 })}
               </StyledTableRow>
             ))}

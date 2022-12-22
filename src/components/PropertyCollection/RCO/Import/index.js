@@ -22,7 +22,7 @@ import SimpleBar from 'simplebar-react'
 import { getSnapshot } from 'mobx-state-tree'
 
 import createRCOMutation from './createRCOMutation'
-import updateRCOMutation from './updateRCOMutation'
+import updateRCOMutation from './updateRCOMutation' 
 import storeContext from '../../../../storeContext'
 //import importWorker from './import.worker.js'
 
@@ -216,7 +216,7 @@ const importRcoQuery = gql`
   }
 `
 
-const ImportRco = ({ setImport, pCO }) => {
+const ImportRco = ({ setImport }) => {
   const isSSR = typeof window === 'undefined'
   const client = useApolloClient()
   const store = useContext(storeContext)
@@ -526,21 +526,16 @@ const ImportRco = ({ setImport, pCO }) => {
   }, [])
   const onClickImport = useCallback(async () => {
     setImporting(true)
-    /*
-    if (typeof window === 'undefined') return
-    const worker = new importWorker()
-    console.log('Import, worker:', worker)
-    worker
-      .importPco({
-        importData,
-        pCO,
+    const {data}=await client.query({
+      query: rcoQuery,
+      variables: {
         pCId,
-        client,
-      })
-      .then(val => {
-        console.log('return value from worker:', val)
-      })
-      */
+      },
+    })
+    const pCO = (
+      data?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes ??
+      []
+    ).map((p) => omit(p, ['__typename']))
     // need a list of all fields
     // loop all rows, build variables and create pco
     // eslint-disable-next-line no-unused-vars
@@ -588,7 +583,7 @@ const ImportRco = ({ setImport, pCO }) => {
     setImport(false)
     setImporting(false)
     rcoRefetch()
-  }, [client, importData, pCId, pCO, rcoRefetch, setImport])
+  }, [client, importData, pCId, rcoRefetch, setImport])
   const rowGetter = useCallback((i) => importData[i], [importData])
 
   return (
