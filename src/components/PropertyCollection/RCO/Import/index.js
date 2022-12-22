@@ -16,15 +16,20 @@ import Snackbar from '@mui/material/Snackbar'
 import Dropzone from 'react-dropzone'
 import { read, utils } from 'xlsx'
 import isUuid from 'is-uuid'
-import { useQuery, useApolloClient, gql } from '@apollo/client'
+import { useQuery as useApolloQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
 import { getSnapshot } from 'mobx-state-tree'
+import { useQuery } from '@tanstack/react-query'
 
 import createRCOMutation from './createRCOMutation'
 import updateRCOMutation from './updateRCOMutation'
 import storeContext from '../../../../storeContext'
 import { rcoQuery, rcoPreviewQuery } from '..'
+import treeQuery from '../../../Tree/treeQuery'
+import DataTable from '../../../shared/DataTable'
+import CountInput from '../../../Export/PreviewColumn/CountInput'
+import getTreeDataVariables from '../../../Tree/treeQueryVariables'
 
 // react-data-grid calls window!
 const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
@@ -191,7 +196,7 @@ const ImportRco = ({ setImport }) => {
   const [pCOfOriginIds, setPCOfOriginIds] = useState([])
   const [imported, setImported] = useState(0)
 
-  const { refetch: rcoRefetch } = useQuery(rcoPreviewQuery, {
+  const { refetch: rcoRefetch } = useApolloQuery(rcoPreviewQuery, {
     variables: {
       pCId,
       first: 15,
@@ -201,7 +206,7 @@ const ImportRco = ({ setImport }) => {
     data: importRcoData,
     loading: importRcoLoading,
     error: importRcoError,
-  } = useQuery(importRcoQuery, {
+  } = useApolloQuery(importRcoQuery, {
     variables: {
       getObjectIds: objectIds.length > 0,
       getObjectRelationIds: objectRelationIds.length > 0,
