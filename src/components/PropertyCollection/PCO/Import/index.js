@@ -5,12 +5,6 @@ import union from 'lodash/union'
 import flatten from 'lodash/flatten'
 import some from 'lodash/some'
 import uniq from 'lodash/uniq'
-import Icon from '@mui/material/Icon'
-import {
-  MdDone as DoneIcon,
-  MdError as ErrorIcon,
-  MdInfoOutline as InfoOutlineIcon,
-} from 'react-icons/md'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import Dropzone from 'react-dropzone'
@@ -19,6 +13,7 @@ import { useQuery, useApolloClient, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
 import { getSnapshot } from 'mobx-state-tree'
+// import { useQuery } from '@tanstack/react-query'
 
 import upsertPCOMutation from './upsertPCOMutation'
 import storeContext from '../../../../storeContext'
@@ -51,44 +46,6 @@ const Container = styled.div`
     border: #ddd solid 1px !important;
   }
 `
-const StyledUl = styled.ul`
-  ul {
-    margin-top: 0;
-  }
-  li {
-    margin-bottom: 0;
-  }
-  li:last-of-type {
-    margin-bottom: 5px;
-  }
-`
-const StyledH3 = styled.h3`
-  margin-left: 8px;
-  margin-bottom: 10px;
-`
-const FirstTitle = styled(StyledH3)`
-  padding-top: 10px;
-`
-const HowToImportContainer = styled.div`
-  column-width: 500px;
-  padding: 0 8px 0 8px;
-  ul {
-    padding-left: 20px;
-  }
-`
-const StyledH4 = styled.h4`
-  margin: 0;
-`
-const LiContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  break-inside: avoid;
-`
-const EmSpan = styled.span`
-  background-color: #8d8c8c40;
-  padding: 1px 3px;
-  border-radius: 4px;
-`
 const DropzoneContainer = styled.div`
   padding: 10px 8px;
   div {
@@ -107,22 +64,6 @@ const DropzoneDiv = styled.div`
 const DropzoneDivActive = styled(DropzoneDiv)`
   background-color: rgba(255, 224, 178, 0.2);
 `
-const InlineIcon = styled(Icon)`
-  margin-left: 8px;
-`
-const InlineDiv = styled.div`
-  margin-left: 8px;
-  font-style: italic;
-`
-const StyledDoneIcon = styled(DoneIcon)`
-  color: green !important;
-`
-const StyledErrorIcon = styled(ErrorIcon)`
-  color: red !important;
-`
-const StyledInfoOutlineIcon = styled(InfoOutlineIcon)`
-  color: orange !important;
-`
 const StyledButton = styled(Button)`
   border: 1px solid !important;
   margin: 8px 8px 16px 8px !important;
@@ -135,9 +76,6 @@ const TotalDiv = styled.div`
   font-size: small;
   padding-left: 9px;
   margin-top: 8px;
-`
-const StyledP = styled.p`
-  margin-top: -5px;
 `
 const StyledSnackbar = styled(Snackbar)`
   div {
@@ -178,10 +116,12 @@ const ImportPco = ({ setImport }) => {
   const [objectIds, setObjectIds] = useState([])
   const [pCOfOriginIds, setPCOfOriginIds] = useState([])
   const [imported, setImported] = useState(0)
-  const upImported = useCallback(
+  const incrementImported = useCallback(
     () => setImported(() => imported + 1),
     [imported],
   )
+
+  console.log('ImportPco rendering')
 
   const [count, setCount] = useState(15)
 
@@ -451,7 +391,7 @@ const ImportPco = ({ setImport }) => {
             mutation: upsertPCOMutation,
             variables,
           })
-          .then(() => upImported()),
+          .then(() => incrementImported()),
       )
     }
     await Promise.all(posts)
@@ -462,7 +402,7 @@ const ImportPco = ({ setImport }) => {
     } catch (error) {
       console.log('Error refetching pco:', error)
     }
-  }, [client, importData, pCId, pcoRefetch, setImport, upImported])
+  }, [client, importData, pCId, pcoRefetch, setImport, incrementImported])
 
   // console.log('ImportPco', { importData, importDataFields })
 
