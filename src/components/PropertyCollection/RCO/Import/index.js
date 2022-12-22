@@ -22,9 +22,8 @@ import SimpleBar from 'simplebar-react'
 import { getSnapshot } from 'mobx-state-tree'
 
 import createRCOMutation from './createRCOMutation'
-import updateRCOMutation from './updateRCOMutation' 
+import updateRCOMutation from './updateRCOMutation'
 import storeContext from '../../../../storeContext'
-//import importWorker from './import.worker.js'
 
 // react-data-grid calls window!
 const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
@@ -526,15 +525,14 @@ const ImportRco = ({ setImport }) => {
   }, [])
   const onClickImport = useCallback(async () => {
     setImporting(true)
-    const {data}=await client.query({
+    const { data } = await client.query({
       query: rcoQuery,
       variables: {
         pCId,
       },
     })
     const pCO = (
-      data?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes ??
-      []
+      data?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes ?? []
     ).map((p) => omit(p, ['__typename']))
     // need a list of all fields
     // loop all rows, build variables and create pco
