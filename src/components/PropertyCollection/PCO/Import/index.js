@@ -170,7 +170,7 @@ const ImportPco = ({ setImport }) => {
   })
 
   const { isLoading, error, data } = useQuery({
-    queryKey: ['importPcoQuery', pCId,objectIds.length,pCOfOriginIds.length],
+    queryKey: ['importPcoQuery', pCId, objectIds.length, pCOfOriginIds.length],
     queryFn: async () => {
       const { data } = await client.query({
         query: importPcoQuery,
@@ -373,9 +373,9 @@ const ImportPco = ({ setImport }) => {
   const onClickImport = useCallback(async () => {
     setImporting(true)
 
+    const posts = []
     // need a list of all fields
     // loop all rows, build variables and create pco
-    const posts = []
     // eslint-disable-next-line no-unused-vars
     for (const d of importData) {
       const variables = {

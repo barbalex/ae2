@@ -26,18 +26,14 @@ import SimpleBar from 'simplebar-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { useQuery } from '@tanstack/react-query'
 
-import createRCOMutation from './createRCOMutation'
-import updateRCOMutation from './updateRCOMutation'
+import upsertRCOMutation from './upsertRCOMutation'
 import storeContext from '../../../../storeContext'
-import { rcoQuery, rcoPreviewQuery } from '..'
+import { rcoPreviewQuery } from '..'
 import treeQuery from '../../../Tree/treeQuery'
 import DataTable from '../../../shared/DataTable'
 import CountInput from '../../../Export/PreviewColumn/CountInput'
 import getTreeDataVariables from '../../../Tree/treeQueryVariables'
 import Instructions from './Instructions'
-
-// react-data-grid calls window!
-const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
 
 const Container = styled.div`
   height: 100%;
@@ -153,7 +149,6 @@ const initialCheckState = {
 }
 
 const ImportRco = ({ setImport }) => {
-  const isSSR = typeof window === 'undefined'
   const client = useApolloClient()
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
@@ -165,7 +160,15 @@ const ImportRco = ({ setImport }) => {
   const [objectIds, setObjectIds] = useState([])
   const [objectRelationIds, setObjectRelationIds] = useState([])
   const [pCOfOriginIds, setPCOfOriginIds] = useState([])
-  const [imported, setImported] = useState(0)
+
+  const [count, setCount] = useState(15)
+
+  const [orderBy, setOrderBy] = useState('objectId')
+  const [sortDirection, setSortDirection] = useState('asc')
+  const setOrder = useCallback(({ orderBy, direction }) => {
+    setOrderBy(orderBy)
+    setSortDirection(direction.toLowerCase())
+  }, [])
 
   const { refetch: rcoRefetch } = useApolloQuery(rcoPreviewQuery, {
     variables: {
@@ -208,6 +211,11 @@ const ImportRco = ({ setImport }) => {
 
   const [importData, setImportData] = useState([])
   const [importing, setImporting] = useState(false)
+  const [imported, setImported] = useState(0)
+  const incrementImported = useCallback(
+    () => setImported(() => imported + 1),
+    [imported],
+  )
 
   const [checkState, dispatch] = useReducer(
     checkStateReducer,
@@ -434,21 +442,10 @@ const ImportRco = ({ setImport }) => {
 
   const onClickImport = useCallback(async () => {
     setImporting(true)
-    const { data } = await client.query({
-      query: rcoQuery,
-      variables: {
-        pCId,
-      },
-    })
-    const pCO = (
-      data?.propertyCollectionById?.relationsByPropertyCollectionId?.nodes ?? []
-    ).map((p) => omit(p, ['__typename']))
+    const posts = []
     // need a list of all fields
     // loop all rows, build variables and create pco
-    // eslint-disable-next-line no-unused-vars
-    for (const [i, d] of importData.entries()) {
-      const pco = pCO.find((o) => o.objectId === d.objectId)
-      const id = pco && pco.id ? pco.id : undefined
+    for (const d of importData) {
       const variables = {
         objectId: d.objectId || null,
         objectIdRelation: d.objectIdRelation || null,
@@ -466,27 +463,13 @@ const ImportRco = ({ setImport }) => {
           ]),
         ),
       }
-      if (id) {
-        try {
-          await client.mutate({
-            mutation: updateRCOMutation,
-            variables: { id, ...variables },
-          })
-        } catch (error) {
-          console.log(error)
-        }
-      } else {
-        try {
-          await client.mutate({
-            mutation: createRCOMutation,
-            variables,
-          })
-        } catch (error) {
-          console.log(error)
-        }
-      }
-      setImported(i)
+      posts.push(
+        client
+          .mutate({ mutation: upsertRCOMutation, variables })
+          .then(() => incrementImported()),
+      )
     }
+    await Promise.all(posts)
     setImport(false)
     setImporting(false)
     try {
@@ -499,8 +482,15 @@ const ImportRco = ({ setImport }) => {
     } catch (error) {
       console.log('Error refetching tree:', error)
     }
-  }, [client, importData, pCId, rcoRefetch, setImport])
-  const rowGetter = useCallback((i) => importData[i], [importData])
+  }, [
+    client,
+    importData,
+    incrementImported,
+    pCId,
+    rcoRefetch,
+    setImport,
+    treeDataRefetch,
+  ])
 
   return (
     <SimpleBar style={{ maxHeight: '100%', height: '100%' }}>
@@ -576,26 +566,26 @@ const ImportRco = ({ setImport }) => {
         )}
         {showPreview && (
           <>
-            <TotalDiv>{`${importData.length.toLocaleString(
-              'de-CH',
-            )} Datensätze, ${propertyFields.length.toLocaleString(
-              'de-CH',
-            )} Feld${propertyFields.length === 1 ? '' : 'er'}${
-              importData.length > 0 ? ':' : ''
-            }`}</TotalDiv>
-            {!isSSR && (
-              <React.Suspense fallback={<div />}>
-                <ReactDataGridLazy
-                  columns={importDataFields.map((k) => ({
-                    key: k,
-                    name: k,
-                    resizable: true,
-                  }))}
-                  rowGetter={rowGetter}
-                  rowsCount={importData.length}
-                />
-              </React.Suspense>
-            )}
+            <TotalDiv>
+              {`${importData.length.toLocaleString(
+                'de-CH',
+              )} Datensätze, ${propertyFields.length.toLocaleString(
+                'de-CH',
+              )} Feld${propertyFields.length === 1 ? '' : 'er'}${
+                importData.length > 0 ? ':' : ''
+              }, Erste `}
+              <CountInput count={count} setCount={setCount} />
+              {' :'}
+            </TotalDiv>
+            <DataTable
+              data={importData.slice(0, count)}
+              idKey="objectId"
+              keys={importDataFields}
+              setOrder={setOrder}
+              orderBy={orderBy}
+              order={sortDirection}
+              uniqueKeyCombo={['objectId', 'objectIdRelation', 'propertyCollectionId']}
+            />
           </>
         )}
         <StyledSnackbar open={isLoading} message="lade Daten..." />

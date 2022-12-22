@@ -131,7 +131,7 @@ const DataTable = ({
               <StyledTableRow
                 key={
                   uniqueKeyCombo
-                    ? `${row[uniqueKeyCombo[0]]}/${row[uniqueKeyCombo[1]]}`
+                    ? uniqueKeyCombo.map((key) => row[key]).join('/')
                     : row[idKey]
                 }
                 sx={{
