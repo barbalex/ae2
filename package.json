@@ -73,12 +73,11 @@
   "dependenciesComments": {
     "gatsby": "DO NOT UPGRADE TO v5 as react cant be upgraded to 18",
     "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why. react-reflex? react-vtree?",
-    "@babel/plugin-transform-block-scoping": "7.20.9 was installed because of trouble with babel, preventing the build. See https://github.com/babel/babel/issues/15302. Might not be needed any more once babel is upgraded beyond 7.20.7"
+    "@babel/plugin-transform-block-scoping": "7.20.9 was installed because of trouble with babel, preventing the build. See https://github.com/babel/babel/issues/15302. After installing could be removed as lockfile had been updated. See: https://github.com/babel/babel/issues/15302#issuecomment-1363873624"
   },
   "devDependencies": {
     "@babel/core": "7.20.7",
     "@babel/eslint-parser": "7.19.1",
-    "@babel/plugin-transform-block-scoping": "7.20.9",
     "@babel/preset-react": "7.18.6",
     "copyfiles": "2.4.1",
     "eslint": "8.30.0",
