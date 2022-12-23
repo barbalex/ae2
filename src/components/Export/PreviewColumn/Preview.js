@@ -238,6 +238,7 @@ const Preview = () => {
           rowPerRco: !rcoInOneRow,
           sortField: sortFieldForQuery,
         },
+        fetchPolicy: 'no-cache',
       })
       return data
     },
@@ -284,6 +285,7 @@ const Preview = () => {
         rowPerRco: !rcoInOneRow,
         sortField: sortFieldForQuery,
       },
+      fetchPolicy: 'no-cache',
     })
     const rows = data?.data?.exportAll?.exportDatum?.exportData
       ? JSON.parse(data?.data?.exportAll?.exportDatum?.exportData)

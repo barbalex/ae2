@@ -127,7 +127,19 @@ DECLARE
   return_data_json jsonb;
   orderby_sql_in_insert text;
   orderby_sql_in_select text;
+  rco_properties_non_beziehungspartner rco_property[] := (
+    SELECT
+      ARRAY (
+        SELECT
+          _row
+        FROM
+          unnest(rco_properties) AS _row (pname,
+            pcname,
+            relationtype)
+        WHERE
+          pname != 'Beziehungspartner'));
 BEGIN
+  -- RAISE EXCEPTION 'rco_properties_non_beziehungspartner: %, rco_properties: %:', rco_properties_non_beziehungspartner, rco_properties;
   -- create table
   DROP TABLE IF EXISTS _tmp;
   CREATE TEMPORARY TABLE _tmp (
@@ -323,8 +335,8 @@ BEGIN
     EXECUTE count_sql
     USING taxonomies, object_ids;
     -- if 1 rco_property was passed and row_per_rco = TRUE, need to join for count
-    IF cardinality(rco_properties) = 1 AND row_per_rco = TRUE THEN
-      rcoproperty := rco_properties[1];
+    IF cardinality(rco_properties_non_beziehungspartner) = 1 AND row_per_rco = TRUE THEN
+      rcoproperty := rco_properties_non_beziehungspartner[1];
       IF use_synonyms = TRUE THEN
         count_count_sql := format('
             WITH properties_per_object as (
@@ -410,9 +422,13 @@ BEGIN
     IF cardinality(rco_properties) > 0 THEN
       FOREACH rcoproperty IN ARRAY rco_properties LOOP
         -- field naming: pcname__relationtype__pname
-        IF rcoproperty.pname IS NULL THEN
-          -- if no property is given, use relationtype
-          fieldname := ae.remove_bad_chars (rcoproperty.pcname || '__' || rcoproperty.relationtype);
+        IF rcoproperty.pname = 'Beziehungspartner' AND cardinality(rco_properties_non_beziehungspartner) > 0 THEN
+          -- skip this column
+          CONTINUE;
+        ELSIF rcoproperty.pname = 'Beziehungspartner'
+            AND cardinality(rco_properties_non_beziehungspartner) = 0 THEN
+            -- need to add this column
+            fieldname := ae.remove_bad_chars (rcoproperty.pcname || '__' || rcoproperty.relationtype || '__beziehungspartner');
         ELSE
           fieldname := ae.remove_bad_chars (rcoproperty.pcname || '__' || rcoproperty.relationtype || '__' || rcoproperty.pname);
         END IF;
@@ -420,7 +436,7 @@ BEGIN
         -- join for synonyms if used
         -- deal with single/multiple rows if multiple relations exist
         -- only add rows if exactly one rco-property exists
-        IF row_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
+        IF row_per_rco = TRUE AND cardinality(rco_properties_non_beziehungspartner) = 1 THEN
           -- create multiple rows
           -- query object_id, property
           -- inner join _tmp with query on object_id
@@ -482,19 +498,19 @@ BEGIN
           END IF;
         ELSE
           IF use_synonyms = TRUE THEN
-            IF rcoproperty.pname IS NULL THEN
+            IF rcoproperty.pname = 'Beziehungspartner' AND cardinality(rco_properties_non_beziehungspartner) = 0 THEN
               sql2 := format('
             UPDATE _tmp SET %1$s = (
               SELECT distinct
-                string_agg(rel_object.name || '' ('' || rel_object.id || '')''))
+                string_agg(rel_object.name || '' ('' || rel_object.id || '')'', '' | '')
               FROM ae.rco_of_object rcoo
                 INNER JOIN ae.relation rco on rco.id = rcoo.rco_id
-                INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
+                INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %2$L
                 INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
               WHERE
                 rco.object_id = _tmp.id
-                AND rco.relation_type = %4$L 
-              GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+                AND rco.relation_type = %3$L 
+              GROUP BY rco.object_id)', fieldname, rcoproperty.pcname, rcoproperty.relationtype);
             ELSE
               sql2 := format('
             UPDATE _tmp SET %1$s = (
@@ -510,21 +526,21 @@ BEGIN
               GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
             END IF;
           ELSE
-            IF rcoproperty.pname IS NULL THEN
+            IF rcoproperty.pname = 'Beziehungspartner' AND cardinality(rco_properties_non_beziehungspartner) = 0 THEN
               sql2 := format(' UPDATE
               _tmp
             SET
               %1$s = (
                 SELECT distinct
-                  string_agg(rel_object.name || '' ('' || rel_object.id || '')'')
+                  string_agg(rel_object.name || '' ('' || rel_object.id || '')'', '' | '')
                 FROM ae.relation rco
                   INNER JOIN ae.property_collection pc ON pc.id = rco.property_collection_id
                   INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
                 WHERE
                   rco.object_id = _tmp.id
-                  AND rco.relation_type = %4$L 
-                  AND pc.name = %3$L 
-                GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+                  AND rco.relation_type = %3$L 
+                  AND pc.name = %2$L 
+                GROUP BY rco.object_id)', fieldname, rcoproperty.pcname, rcoproperty.relationtype);
             ELSE
               sql2 := format(' UPDATE
               _tmp
@@ -550,7 +566,7 @@ BEGIN
     --RAISE EXCEPTION 'rows_sql: %:', rows_sql;
     return_data.id := gen_random_uuid ()::uuid;
     return_data.count = row_count;
-    IF row_per_rco = TRUE AND cardinality(rco_properties) = 1 THEN
+    IF row_per_rco = TRUE AND cardinality(rco_properties_non_beziehungspartner) = 1 THEN
       EXECUTE return_query INTO return_data.export_data;
     ELSE
       -- need to sort again here
