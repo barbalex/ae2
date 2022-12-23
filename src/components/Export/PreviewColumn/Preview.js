@@ -63,7 +63,6 @@ const exportMutation = gql`
     $useSynonyms: Boolean!
     $count: Int!
     $objectIds: [UUID]!
-    $rowPerRco: Boolean!
     $sortField: SortFieldInput
   ) {
     exportAll(
@@ -78,7 +77,6 @@ const exportMutation = gql`
         useSynonyms: $useSynonyms
         count: $count
         objectIds: $objectIds
-        rowPerRco: $rowPerRco
         sortField: $sortField
       }
     ) {
@@ -112,7 +110,6 @@ const Preview = () => {
     rcoProperties: rcoPropertiesPassed,
     pcoProperties: pcoPropertiesPassed,
     taxProperties: taxPropertiesPassed,
-    rcoInOneRow,
   } = store.export
   // 2019 08 20: No idea why suddenly need to getSnapshot
   // because without changes are not detected????
@@ -215,7 +212,6 @@ const Preview = () => {
       rcoProperties,
       withSynonymData,
       exportIds,
-      rcoInOneRow,
       sortField,
       count,
     ],
@@ -235,7 +231,6 @@ const Preview = () => {
           useSynonyms: withSynonymData,
           count,
           objectIds: exportIds,
-          rowPerRco: !rcoInOneRow,
           sortField: sortFieldForQuery,
         },
         fetchPolicy: 'no-cache',
@@ -282,7 +277,6 @@ const Preview = () => {
         useSynonyms: withSynonymData,
         count: 0,
         objectIds: exportIds,
-        rowPerRco: !rcoInOneRow,
         sortField: sortFieldForQuery,
       },
       fetchPolicy: 'no-cache',
@@ -298,7 +292,6 @@ const Preview = () => {
     pcoFilters,
     pcoProperties,
     rcoFilters,
-    rcoInOneRow,
     rcoProperties,
     sortFieldForQuery,
     taxFields,

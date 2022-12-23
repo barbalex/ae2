@@ -42,6 +42,9 @@ const StyledButton = styled(Button)`
   margin-left: 0 !important;
   margin-top: 0 !important;
 `
+const HinweiseUl = styled.ul`
+  font-size: small;
+`
 
 const OptionsChoosen = () => {
   const store = useContext(storeContext)
@@ -49,7 +52,6 @@ const OptionsChoosen = () => {
     setType,
     type: exportType,
     setTaxonomies,
-    onlyRowsWithProperties,
     withSynonymData,
     setWithSynonymData,
     pcoFilters: pcoFiltersPassed,
@@ -64,7 +66,6 @@ const OptionsChoosen = () => {
     pcoProperties: pcoPropertiesPassed,
     resetTaxProperties,
     taxProperties: taxPropertiesPassed,
-    rcoInOneRow,
   } = store.export
   const pcoFilters = getSnapshot(pcoFiltersPassed)
   const rcoFilters = getSnapshot(rcoFiltersPassed)
@@ -151,12 +152,6 @@ const OptionsChoosen = () => {
             </ResetSpan>
           )}
         </li>
-        {rcoProperties.length > 0 && rcoInOneRow && (
-          <li>Eigenschaften von Beziehungen mit | getrennt in einer Zeile</li>
-        )}
-        {rcoProperties.length > 0 && !rcoInOneRow && (
-          <li>Für jede Beziehung wird eine Zeile erstellt</li>
-        )}
         <li>
           {`Filter:${
             [...taxFilters, ...pcoFilters, ...rcoFilters].length === 0
@@ -182,6 +177,32 @@ const OptionsChoosen = () => {
           </ul>
         </li>
       </ul>
+      <Title title="Hinweise">Hinweise</Title>
+      <HinweiseUl>
+        <li>
+          Spaltentitel werden aus den Namen der Taxonomie, Eigenschaften- oder
+          Beziehungssammlung und dem jeweiligen Feldnamen zusammengesetzt. Bei
+          Beziehungssammlungen muss auch noch der Typ der Beziehung
+          berücksichtigt werden.
+        </li>
+        <li>
+          Die Länge von Spaltentiteln ist auf 64 Zeichen begrenzt. Daher muss
+          die Anwendung zu lange Namen kürzen. Gekürzte Namen können schwer
+          verständlich sein.
+        </li>
+        <li>
+          In seltenen Fällen kann das sogar dazu führen, dass der Export
+          scheitert (wenn zwei gekürzte Namen identisch sind)
+        </li>
+        {rcoProperties.length > 0 && (
+          <li>
+            Eine Art oder ein Lebensraum kann Beziehungen zu <b>mehreren</b>{' '}
+            anderen Arten oder Lebensräumen haben. Beziehungspartner und
+            Eigenschaften mehrerer Beziehungen werden daher mit | getrennt in
+            einer Zelle gesammelt.
+          </li>
+        )}
+      </HinweiseUl>
       <StyledButton
         onClick={onClickResetAll}
         variant="outlined"

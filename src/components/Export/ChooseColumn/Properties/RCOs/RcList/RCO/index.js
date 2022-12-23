@@ -75,7 +75,6 @@ const query = gql`
 const RCO = ({ pcname, relationtype, count }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
-  console.log('RCO nodes:', { pcname, relationtype, count, exportTaxonomies })
 
   const { data, loading, error } = useQuery(query, {
     variables: {
@@ -96,7 +95,6 @@ const RCO = ({ pcname, relationtype, count }) => {
       jsontype: null,
     })
   }
-  console.log('RCO nodes:', nodes)
 
   const [expanded, setExpanded] = useState(false)
 

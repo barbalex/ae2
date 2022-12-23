@@ -10,7 +10,6 @@ import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 
 import RcList from './RcList'
-import ChooseNrOfRows from './ChooseNrOfRows'
 import storeContext from '../../../../../storeContext'
 import ErrorBoundary from '../../../../shared/ErrorBoundary'
 
@@ -86,7 +85,6 @@ const RCOs = ({ rcoExpanded, onToggleRco }) => {
             </CardActionIconButton>
           </StyledCardActions>
           <Collapse in={rcoExpanded} timeout="auto" unmountOnExit>
-            <ChooseNrOfRows />
             <RcList />
           </Collapse>
         </StyledCard>

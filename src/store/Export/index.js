@@ -1,5 +1,4 @@
 import { types } from 'mobx-state-tree'
-import uniq from 'lodash/uniq'
 
 import TaxProperty, { defaultValue as defaultTaxProperty } from './TaxProperty'
 import PcoProperty, { defaultValue as defaultPcoProperty } from './PcoProperty'
@@ -42,7 +41,6 @@ export default types
     withSynonymData: types.optional(types.boolean, true),
     tooManyProperties: types.optional(types.boolean, false), // TODO
     addFilterFields: types.optional(types.boolean, true),
-    rcoInOneRow: types.optional(types.boolean, true),
   })
   .actions((self) => ({
     setType(value) {
@@ -62,16 +60,6 @@ export default types
     },
     setAddFilterFields(value) {
       self.addFilterFields = value
-    },
-    setRcoInOneRow(value) {
-      const rcoPCTypes = uniq(
-        self.rcoProperties.map((e) => `${e.pcname}/${e.relationtype}`),
-      )
-      if (rcoPCTypes.length < 2) {
-        self.rcoInOneRow = value
-      } else {
-        self.rcoInOneRow = true
-      }
     },
     resetPcoFilters() {
       self.pcoFilters = []
@@ -234,13 +222,6 @@ export default types
             },
           ]
           self.rcoProperties = rcoProperties
-          // set self.rcoInOneRow if more than one type of rco is choosen
-          const rcoPCTypes = uniq(
-            rcoProperties.map((e) => `${e.pcname}/${e.relationtype}`),
-          )
-          if (rcoPCTypes.length > 1 && !self.rcoInOneRow) {
-            self.rcoInOneRow = true
-          }
         }
       }
     },
