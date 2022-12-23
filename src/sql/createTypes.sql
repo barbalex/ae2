@@ -41,6 +41,12 @@ CREATE TYPE rco_property AS (
     pcname text
 );
 
+CREATE TYPE rco_property_count AS (
+    pcname text,
+    relationtype text,
+    count integer
+);
+
 CREATE TYPE tax_field AS (
     pname text,
     taxname text
@@ -60,13 +66,28 @@ CREATE TYPE ae.export_data AS (
     export_data json -- this is a json array
 );
 
-drop type ae.pc_count cascade;
+DROP TYPE ae.pc_count CASCADE;
+
 CREATE TYPE ae.pc_count AS (
     name text,
     count integer
 );
 
-CREATE TYPE AE.property_and_type as (
+CREATE TYPE AE.property_and_type AS (
     property text,
     type text
 );
+
+CREATE TYPE rco_property_count AS (
+    pcname text,
+    relationtype text,
+    count integer
+);
+
+CREATE TYPE rco_per_rco_relation AS (
+    pcname text,
+    relationtype text,
+    property text,
+    jsontype text
+);
+

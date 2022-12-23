@@ -41,23 +41,11 @@ const Count = styled.span`
 `
 
 const query = gql`
-  query propsByTaxDataQueryForFilterRCOs($exportTaxonomies: [String!]) {
-    pc_count: allPropertyCollections(
-      filter: {
-        relationsByPropertyCollectionId: {
-          some: {
-            objectByObjectId: {
-              taxonomyByTaxonomyId: { name: { in: $exportTaxonomies } }
-            }
-          }
-        }
-      }
-    ) {
-      totalCount
+  query exportRcoCountQuery($exportTaxonomies: [String!]) {
+    exportRcoCount(exportTaxonomies: $exportTaxonomies) {
+      propertyCount
+      pcReltypeCount
     }
-    property_count: rcoPropertiesByTaxonomiesCountFunction(
-      exportTaxonomies: $exportTaxonomies
-    )
   }
 `
 
@@ -71,8 +59,8 @@ const RCOs = ({ rcoExpanded, onToggleRco }) => {
     },
   })
 
-  const pcCount = data?.pc_count?.totalCount ?? 0
-  const propertyCount = data?.property_count ?? 0
+  const pcCount = data?.exportRcoCount?.pcReltypeCount ?? 0
+  const propertyCount = data?.exportRcoCount?.propertyCount ?? 0
 
   if (error) return `Error fetching data: ${error.message}`
 
