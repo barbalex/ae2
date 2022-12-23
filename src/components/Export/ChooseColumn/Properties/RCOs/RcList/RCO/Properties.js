@@ -19,4 +19,4 @@ const RcoProperties = ({ properties, columns }) => {
   ))
 }
 
-export default RcoProperties
+export default RcoProperties 

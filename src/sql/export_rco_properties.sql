@@ -106,7 +106,7 @@ CREATE TYPE rco_property_count AS (
 );
 
 CREATE OR REPLACE FUNCTION ae.export_rco_list (export_taxonomies text[])
-  RETURNS rco_property_count
+  RETURNS SETOF rco_property_count
   AS $$
   WITH property_list AS (
     SELECT DISTINCT
@@ -220,7 +220,7 @@ CREATE TYPE rco_per_rco_relation AS (
 );
 
 CREATE OR REPLACE FUNCTION ae.export_rco_per_rco_relation (export_taxonomies text[], pcname text, relationtype text)
-  RETURNS rco_per_rco_relation
+  RETURNS SETOF rco_per_rco_relation
   AS $$
   WITH property_list_with_type AS (
     SELECT DISTINCT
