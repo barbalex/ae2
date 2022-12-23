@@ -433,7 +433,8 @@ CREATE TYPE ae.rco_properties_by_taxonomy AS (
   count bigint
 );
 
--- TODO: do not load this for all taxonomies, but only for the selected rc
+-- used in export filtering
+-- TODO: optimize this away, as in exporting properties
 CREATE OR REPLACE FUNCTION ae.rco_properties_by_taxonomies_function (taxonomy_names text[])
   RETURNS SETOF ae.rco_properties_by_taxonomy
   AS $$

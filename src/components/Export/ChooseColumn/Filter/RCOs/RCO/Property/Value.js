@@ -133,7 +133,6 @@ const IntegrationAutosuggest = ({
           propValue: val ?? '',
         },
       })
-      console.log('loadOptions', { data, error })
       const returnData = data?.propValuesFilteredFunction?.nodes?.map((n) => ({
         value: n.value,
         label: n.value,
