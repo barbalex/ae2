@@ -4,13 +4,10 @@ import Checkbox from '@mui/material/Checkbox'
 import styled from '@emotion/styled'
 import { observer } from 'mobx-react-lite'
 
-import storeContext from '../../../../../../../storeContext' 
+import storeContext from '../../../../../../../storeContext'
 
 const Container = styled.div`
   width: ${(props) => `${props['data-width']}%`};
-`
-const Count = styled.span`
-  font-size: xx-small;
 `
 const Label = styled(FormControlLabel)`
   height: 30px;
@@ -25,7 +22,6 @@ const RcoChooser = ({
   pcname,
   relationtype,
   pname,
-  count,
   columns,
   propertiesLength,
 }) => {
@@ -58,11 +54,7 @@ const RcoChooser = ({
         control={
           <Checkbox color="primary" checked={checked} onChange={onCheck} />
         }
-        label={
-          <div>
-            {pname} <Count title="Anzahl Objekte">{`(${count} Objekte)`}</Count>
-          </div>
-        }
+        label={<div>{pname}</div>}
       />
     </Container>
   )

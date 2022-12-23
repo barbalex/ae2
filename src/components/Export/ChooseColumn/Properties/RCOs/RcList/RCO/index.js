@@ -85,12 +85,24 @@ const RCO = ({ pcname, relationtype, count }) => {
     },
   })
 
-  const nodes = data?.exportRcoPerRcoRelation?.nodes ?? []
+  // spread to prevent node is not extensible error
+  const nodes = [...(data?.exportRcoPerRcoRelation?.nodes ?? [])]
+  // TODO: if no node without property exists, add one (for Beziehungspartner)
+  const nodesWithoutProperty = nodes.filter((n) => !n.property)
+  if (nodesWithoutProperty.length === 0) {
+    nodes.unshift({
+      pcname,
+      property: null,
+      jsontype: null,
+    })
+  }
   console.log('RCO nodes:', nodes)
 
   const [expanded, setExpanded] = useState(false)
 
   const onClickActions = useCallback(() => setExpanded(!expanded), [expanded])
+
+  const columns = nodes.map((n) => n.property ?? 'Beziehungspartner')
 
   if (error) return `Error fetching data: ${error.message}`
 
@@ -128,11 +140,7 @@ const RCO = ({ pcname, relationtype, count }) => {
               // <AllChooser properties={rcoPropertiesByPropertyCollection[pcname]} />
             )}
             <PropertiesContainer>
-              <div>Properties</div>
-              {/* <Properties
-                properties={rcoPropertiesByPropertyCollection[pcname]}
-                columns={columns}
-              /> */}
+              <Properties properties={nodes} columns={columns} />
             </PropertiesContainer>
           </>
         </StyledCollapse>

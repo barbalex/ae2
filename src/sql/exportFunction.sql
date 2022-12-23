@@ -410,7 +410,12 @@ BEGIN
     IF cardinality(rco_properties) > 0 THEN
       FOREACH rcoproperty IN ARRAY rco_properties LOOP
         -- field naming: pcname__relationtype__pname
-        fieldname := ae.remove_bad_chars (rcoproperty.pcname || '__' || rcoproperty.relationtype || '__' || rcoproperty.pname);
+        IF rcoproperty.pname IS NULL THEN
+          -- if no property is given, use relationtype
+          fieldname := ae.remove_bad_chars (rcoproperty.pcname || '__' || rcoproperty.relationtype);
+        ELSE
+          fieldname := ae.remove_bad_chars (rcoproperty.pcname || '__' || rcoproperty.relationtype || '__' || rcoproperty.pname);
+        END IF;
         EXECUTE format('ALTER TABLE _tmp ADD COLUMN %I text', fieldname);
         -- join for synonyms if used
         -- deal with single/multiple rows if multiple relations exist
@@ -475,12 +480,23 @@ BEGIN
               FROM
                 (%1$s) row', sql2);
           END IF;
-          -- IF count > 0 THEN
-          --   return_query := return_query || ' LIMIT ' || count;
-          -- END IF;
         ELSE
           IF use_synonyms = TRUE THEN
-            sql2 := format('
+            IF rcoproperty.pname IS NULL THEN
+              sql2 := format('
+            UPDATE _tmp SET %1$s = (
+              SELECT distinct
+                string_agg(rel_object.name || '' ('' || rel_object.id || '')''))
+              FROM ae.rco_of_object rcoo
+                INNER JOIN ae.relation rco on rco.id = rcoo.rco_id
+                INNER JOIN ae.property_collection pc on pc.id = rco.property_collection_id and pc.name = %3$L
+                INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
+              WHERE
+                rco.object_id = _tmp.id
+                AND rco.relation_type = %4$L 
+              GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+            ELSE
+              sql2 := format('
             UPDATE _tmp SET %1$s = (
               SELECT distinct
                 string_agg(rel_object.name || '' ('' || rel_object.id || ''): '' || (rco.properties ->> %2$L), '' | '' ORDER BY (rco.properties ->> %2$L))
@@ -492,8 +508,25 @@ BEGIN
                 rco.object_id = _tmp.id
                 AND rco.relation_type = %4$L 
               GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+            END IF;
           ELSE
-            sql2 := format(' UPDATE
+            IF rcoproperty.pname IS NULL THEN
+              sql2 := format(' UPDATE
+              _tmp
+            SET
+              %1$s = (
+                SELECT distinct
+                  string_agg(rel_object.name || '' ('' || rel_object.id || '')'')
+                FROM ae.relation rco
+                  INNER JOIN ae.property_collection pc ON pc.id = rco.property_collection_id
+                  INNER JOIN ae.object rel_object ON rel_object.id = rco.object_id_relation
+                WHERE
+                  rco.object_id = _tmp.id
+                  AND rco.relation_type = %4$L 
+                  AND pc.name = %3$L 
+                GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+            ELSE
+              sql2 := format(' UPDATE
               _tmp
             SET
               %1$s = (
@@ -507,6 +540,7 @@ BEGIN
                   AND rco.relation_type = %4$L 
                   AND pc.name = %3$L 
                 GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
+            END IF;
           END IF;
         END IF;
         EXECUTE sql2;
