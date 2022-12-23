@@ -86,21 +86,20 @@ const RCO = ({ pcname, relationtype, count }) => {
 
   // spread to prevent node is not extensible error
   const nodes = [...(data?.exportRcoPerRcoRelation?.nodes ?? [])]
-  // TODO: if no node without property exists, add one (for Beziehungspartner)
-  const nodesWithoutProperty = nodes.filter((n) => !n.property)
+  const nodesWithoutProperty = nodes.filter(
+    (n) => !(n.property === 'Beziehungspartner'),
+  )
   if (nodesWithoutProperty.length === 0) {
     nodes.unshift({
       pcname,
-      property: null,
-      jsontype: null,
+      property: 'Beziehungspartner',
+      jsontype: 'Boolean',
     })
   }
 
   const [expanded, setExpanded] = useState(false)
 
   const onClickActions = useCallback(() => setExpanded(!expanded), [expanded])
-
-  const columns = nodes.map((n) => n.property ?? 'Beziehungspartner')
 
   if (error) return `Error fetching data: ${error.message}`
 
@@ -133,18 +132,12 @@ const RCO = ({ pcname, relationtype, count }) => {
           </CardActionIconButton>
         </StyledCardActions>
         <StyledCollapse in={expanded} timeout="auto" unmountOnExit>
-          {/* TODO: create component that queries properties and their jsontypes */}
           <>
             {count > 1 && (
-              <div>AllChooser</div>
-              // <AllChooser properties={rcoPropertiesByPropertyCollection[pcname]} />
+              <AllChooser properties={nodes} relationtype={relationtype} />
             )}
             <PropertiesContainer>
-              <Properties
-                properties={nodes}
-                columns={columns}
-                relationtype={relationtype}
-              />
+              <Properties properties={nodes} relationtype={relationtype} />
             </PropertiesContainer>
           </>
         </StyledCollapse>

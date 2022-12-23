@@ -18,37 +18,36 @@ const Label = styled(FormControlLabel)`
   }
 `
 
-const AllRcoChooser = ({ properties }) => {
+const AllRcoChooser = ({ properties, relationtype }) => {
   const store = useContext(storeContext)
   const { rcoProperties, addRcoProperty, removeRcoProperty } = store.export
 
   const onCheck = useCallback(
     (event, isChecked) => {
       if (isChecked) {
-        return properties.forEach((p) => {
-          const pcname = p.propertyCollectionName
-          const relationtype = p.relationType
-          const pname = p.propertyName
-          addRcoProperty({ pcname, relationtype, pname })
-        })
+        return properties.forEach(({ pcname, property }) =>
+          addRcoProperty({ pcname, relationtype, pname: property }),
+        )
       }
-      properties.forEach((p) => {
-        const pcname = p.propertyCollectionName
-        const relationtype = p.relationType
-        const pname = p.propertyName
-        removeRcoProperty({ pcname, relationtype, pname })
+      removeRcoProperty({
+        pcname: properties[0].pcname,
+        relationtype,
+        pname: properties[0].property,
+      })
+      properties.forEach(({ pcname, property }) => {
+        removeRcoProperty({ pcname, relationtype, pname: property })
       })
     },
-    [addRcoProperty, properties, removeRcoProperty],
+    [addRcoProperty, properties, relationtype, removeRcoProperty],
   )
 
   const checkedArray = properties.map(
     (p) =>
       rcoProperties.filter(
         (x) =>
-          x.pcname === p.propertyCollectionName &&
-          x.relationtype === p.relationType &&
-          x.pname === p.propertyName,
+          x.pcname === p.pcname &&
+          x.relationtype === relationtype &&
+          x.pname === p.property,
       ).length > 0,
   )
   const checked = checkedArray.length > 0 && !checkedArray.includes(false)

@@ -23,18 +23,10 @@ const RcoChooser = ({
   pcname,
   relationtype,
   pname,
-  columns,
   propertiesLength,
 }) => {
   const store = useContext(storeContext)
   const { rcoProperties, addRcoProperty, removeRcoProperty } = store.export
-
-  console.log('RcoChooser: ', {
-    pcname,
-    relationtype,
-    pname,
-    rcoProperties: getSnapshot(rcoProperties),
-  })
 
   const onCheck = useCallback(
     (event, isChecked) => {
@@ -54,7 +46,7 @@ const RcoChooser = ({
         x.pname === pname,
     ).length > 0
 
-  const containerWidth = propertiesLength === 1 ? 100 : 100 / columns
+  const containerWidth = propertiesLength === 1 ? 100 : 100 / propertiesLength
 
   return (
     <Container data-width={containerWidth}>

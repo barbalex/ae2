@@ -48,7 +48,7 @@ const RCOs = () => {
 
   return nodes.map(({ pcname, relationtype, count }) => (
     <RCO
-      key={pcname}
+      key={`${pcname}/${relationtype}}`}
       pcname={pcname}
       relationtype={relationtype}
       count={count}
