@@ -140,7 +140,7 @@ const RCO = ({ pcname, relationtype, count }) => {
               // <AllChooser properties={rcoPropertiesByPropertyCollection[pcname]} />
             )}
             <PropertiesContainer>
-              <Properties properties={nodes} columns={columns} />
+              <Properties properties={nodes} columns={columns} relationtype={relationtype} />
             </PropertiesContainer>
           </>
         </StyledCollapse>

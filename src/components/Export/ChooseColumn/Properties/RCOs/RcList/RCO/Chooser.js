@@ -3,6 +3,7 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
 import styled from '@emotion/styled'
 import { observer } from 'mobx-react-lite'
+import { getSnapshot } from 'mobx-state-tree'
 
 import storeContext from '../../../../../../../storeContext'
 
@@ -27,6 +28,13 @@ const RcoChooser = ({
 }) => {
   const store = useContext(storeContext)
   const { rcoProperties, addRcoProperty, removeRcoProperty } = store.export
+
+  console.log('RcoChooser: ', {
+    pcname,
+    relationtype,
+    pname,
+    rcoProperties: getSnapshot(rcoProperties),
+  })
 
   const onCheck = useCallback(
     (event, isChecked) => {
