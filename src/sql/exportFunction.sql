@@ -138,6 +138,7 @@ DECLARE
             relationtype)
         WHERE
           pname != 'Beziehungspartner'));
+  rco_properties_beziehungspartner_of_this_pc_bp rco_property[];
 BEGIN
   -- RAISE EXCEPTION 'rco_properties_non_beziehungspartner: %, rco_properties: %:', rco_properties_non_beziehungspartner, rco_properties;
   -- create table
@@ -421,14 +422,23 @@ BEGIN
     -- add rco-property fields and insert values
     IF cardinality(rco_properties) > 0 THEN
       FOREACH rcoproperty IN ARRAY rco_properties LOOP
+        rco_properties_beziehungspartner_of_this_pc_bp := (
+          SELECT
+            ARRAY (
+              SELECT
+                _row
+              FROM
+                unnest(rco_properties) AS _row (pname,
+                  pcname,
+                  relationtype)
+              WHERE
+                pname != 'Beziehungspartner'
+                AND pcname = rcoproperty.pcname
+                AND relationtype = rcoproperty.relationtype));
         -- field naming: pcname__relationtype__pname
-        IF rcoproperty.pname = 'Beziehungspartner' AND cardinality(rco_properties_non_beziehungspartner) > 0 THEN
+        IF rcoproperty.pname = 'Beziehungspartner' AND cardinality(rco_properties_beziehungspartner_of_this_pc_bp) > 0 THEN
           -- skip this column
           CONTINUE;
-        ELSIF rcoproperty.pname = 'Beziehungspartner'
-            AND cardinality(rco_properties_non_beziehungspartner) = 0 THEN
-            -- need to add this column
-            fieldname := ae.remove_bad_chars (rcoproperty.pcname || '__' || rcoproperty.relationtype || '__beziehungspartner');
         ELSE
           fieldname := ae.remove_bad_chars (rcoproperty.pcname || '__' || rcoproperty.relationtype || '__' || rcoproperty.pname);
         END IF;
@@ -498,7 +508,7 @@ BEGIN
           END IF;
         ELSE
           IF use_synonyms = TRUE THEN
-            IF rcoproperty.pname = 'Beziehungspartner' AND cardinality(rco_properties_non_beziehungspartner) = 0 THEN
+            IF rcoproperty.pname = 'Beziehungspartner' AND cardinality(rco_properties_beziehungspartner_of_this_pc_bp) = 0 THEN
               sql2 := format('
             UPDATE _tmp SET %1$s = (
               SELECT distinct
@@ -526,7 +536,7 @@ BEGIN
               GROUP BY rco.object_id)', fieldname, rcoproperty.pname, rcoproperty.pcname, rcoproperty.relationtype);
             END IF;
           ELSE
-            IF rcoproperty.pname = 'Beziehungspartner' AND cardinality(rco_properties_non_beziehungspartner) = 0 THEN
+            IF rcoproperty.pname = 'Beziehungspartner' AND cardinality(rco_properties_beziehungspartner_of_this_pc_bp) = 0 THEN
               sql2 := format(' UPDATE
               _tmp
             SET
