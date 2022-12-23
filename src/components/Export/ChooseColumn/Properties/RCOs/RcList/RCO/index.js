@@ -103,14 +103,6 @@ const RCO = ({ pcname, relationtype, count }) => {
 
   if (error) return `Error fetching data: ${error.message}`
 
-  if (loading) {
-    return (
-      <SpinnerContainer>
-        <Spinner message="" />
-      </SpinnerContainer>
-    )
-  }
-
   return (
     <ErrorBoundary>
       <StyledCard>
@@ -132,14 +124,20 @@ const RCO = ({ pcname, relationtype, count }) => {
           </CardActionIconButton>
         </StyledCardActions>
         <StyledCollapse in={expanded} timeout="auto" unmountOnExit>
-          <>
-            {count > 1 && (
-              <AllChooser properties={nodes} relationtype={relationtype} />
-            )}
-            <PropertiesContainer>
-              <Properties properties={nodes} relationtype={relationtype} />
-            </PropertiesContainer>
-          </>
+          {loading ? (
+            <SpinnerContainer>
+              <Spinner message="" />
+            </SpinnerContainer>
+          ) : (
+            <>
+              {count > 1 && (
+                <AllChooser properties={nodes} relationtype={relationtype} />
+              )}
+              <PropertiesContainer>
+                <Properties properties={nodes} relationtype={relationtype} />
+              </PropertiesContainer>
+            </>
+          )}
         </StyledCollapse>
       </StyledCard>
     </ErrorBoundary>
