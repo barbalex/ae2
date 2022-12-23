@@ -86,10 +86,10 @@ const RCO = ({ pcname, relationtype, count }) => {
 
   // spread to prevent node is not extensible error
   const nodes = [...(data?.exportRcoPerRcoRelation?.nodes ?? [])]
-  const nodesWithoutProperty = nodes.filter(
-    (n) => !(n.property === 'Beziehungspartner'),
+  const bezPartnerNodes = nodes.filter(
+    (n) => n.property === 'Beziehungspartner',
   )
-  if (nodesWithoutProperty.length === 0) {
+  if (bezPartnerNodes.length === 0) {
     nodes.unshift({
       pcname,
       property: 'Beziehungspartner',
