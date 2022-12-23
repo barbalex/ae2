@@ -2,7 +2,6 @@ import React, { useContext } from 'react'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import styled from '@emotion/styled'
-import groupBy from 'lodash/groupBy'
 
 import RCO from './RCO'
 import storeContext from '../../../../../../storeContext'
@@ -13,17 +12,11 @@ const SpinnerContainer = styled.div`
 `
 
 const propsByTaxQuery = gql`
-  query propsByTaxDataQueryForPropertiesRCOs(
-    $queryExportTaxonomies: Boolean!
-    $exportTaxonomies: [String]
-  ) {
-    rcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
+  query exportRcoListQuery($exportTaxonomies: [String]) {
+    exportRcoList(exportTaxonomies: $exportTaxonomies) {
       nodes {
-        propertyCollectionName
-        relationType
-        propertyName
-        jsontype
+        pcname
+        relationtype
         count
       }
     }
@@ -41,16 +34,7 @@ const RCOs = () => {
     },
   })
 
-  const rcoProperties = data?.rcoPropertiesByTaxonomiesFunction?.nodes ?? []
-
-  const rcoPropertiesByPropertyCollection = groupBy(rcoProperties, (x) => {
-    if (x.propertyCollectionName.includes(x.relationType)) {
-      return x.propertyCollectionName
-    }
-    return `${x.propertyCollectionName}: ${x.relationType}`
-  })
-
-  const rcNames = Object.keys(rcoPropertiesByPropertyCollection)
+  const nodes = data?.exportRcoList?.nodes ?? []
 
   if (error) return `Error fetching data: ${error.message}`
 
@@ -62,7 +46,14 @@ const RCOs = () => {
     )
   }
 
-  return rcNames.map((pcName) => <RCO key={pcName} pc={pcName} />)
+  return nodes.map(({ pcname, relationtype, count }) => (
+    <RCO
+      key={`${pcname}/${relationtype}}`}
+      pcname={pcname}
+      relationtype={relationtype}
+      count={count}
+    />
+  ))
 }
 
 export default observer(RCOs)

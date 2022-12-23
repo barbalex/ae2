@@ -1,5 +1,5 @@
 {
-  "name": "artdaten",
+  "name": "arteigenschaften",
   "description": "Eigenschaften von Flora, Fauna, Moosen und Lebensräumen: Sichten, exportieren, importieren",
   "version": "1.8.9",
   "author": {
@@ -15,11 +15,11 @@
     "serve": "gatsby serve"
   },
   "dependencies": {
-    "@apollo/client": "3.7.2",
+    "@apollo/client": "3.7.3",
     "@emotion/react": "11.10.5",
     "@emotion/styled": "11.10.5",
     "@fontsource/roboto": "4.5.8",
-    "@mui/material": "5.11.0",
+    "@mui/material": "5.11.1",
     "@tanstack/react-query": "4.20.4",
     "autosuggest-highlight": "3.3.4",
     "date-fns": "2.29.3",
@@ -27,6 +27,7 @@
     "exceljs": "4.3.0",
     "file-saver": "2.0.5",
     "gatsby": "4.24.8",
+    "gatsby-plugin-emotion": "^8.3.0",
     "gatsby-plugin-image": "2.24.0",
     "gatsby-plugin-manifest": "4.24.0",
     "gatsby-plugin-offline": "5.24.0",
@@ -49,7 +50,6 @@
     "mobx-react-lite": "3.4.0",
     "mobx-state-tree": "5.1.7",
     "react": "17.0.2",
-    "react-data-grid": "6.1.0",
     "react-dom": "17.0.2",
     "react-dropzone": "14.2.3",
     "react-error-boundary": "3.1.4",
@@ -71,11 +71,12 @@
     "xlsx": "0.18.5"
   },
   "dependenciesComments": {
-    "gatsby": "DO NOT UPGRADE TO v5 due to postgraphile not working with graphql v16 but gatsby v5 requiring it: https://github.com/graphile/postgraphile/issues/1583. Also: as react cant be upgraded to 18, can't upgrade gatsby",
-    "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why. react-reflex? react-vtree? react-data-grid?"
+    "gatsby": "DO NOT UPGRADE TO v5 as react cant be upgraded to 18",
+    "react": "DO NOT UPGRADE TO 18. It kills the build. No idea why. react-reflex? react-vtree?",
+    "@babel/plugin-transform-block-scoping": "7.20.9 was installed because of trouble with babel, preventing the build. See https://github.com/babel/babel/issues/15302. After installing could be removed as lockfile had been updated. See: https://github.com/babel/babel/issues/15302#issuecomment-1363873624"
   },
   "devDependencies": {
-    "@babel/core": "7.20.5",
+    "@babel/core": "7.20.7",
     "@babel/eslint-parser": "7.19.1",
     "@babel/preset-react": "7.18.6",
     "copyfiles": "2.4.1",
@@ -84,8 +85,11 @@
     "eslint-plugin-react": "7.x",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-webpack-plugin": "3.2.0",
-    "gatsby-cli": "5.2.0",
-    "vercel": "28.9.0"
+    "gatsby-cli": "5.3.1",
+    "vercel": "28.10.1"
+  },
+  "overrides": {
+    "@babel/plugin-transform-block-scoping": "7.20.9"
   },
   "license": "ISC",
   "eslintConfig": {

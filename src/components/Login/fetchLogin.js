@@ -48,6 +48,7 @@ const fetchLogin = async ({
         username: name,
         pass,
       },
+      fetchPolicy: 'no-cache',
     })
   } catch (error) {
     const messages = error.graphQLErrors.map((x) => x.message)

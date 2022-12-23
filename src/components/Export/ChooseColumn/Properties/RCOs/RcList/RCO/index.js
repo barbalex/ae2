@@ -6,17 +6,14 @@ import IconButton from '@mui/material/IconButton'
 import Icon from '@mui/material/Icon'
 import { MdExpandMore as ExpandMoreIcon } from 'react-icons/md'
 import styled from '@emotion/styled'
-import groupBy from 'lodash/groupBy'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
-import { withResizeDetector } from 'react-resize-detector'
 
 import AllChooser from './AllChooser'
 import Properties from './Properties'
 import storeContext from '../../../../../../../storeContext'
 import ErrorBoundary from '../../../../../../shared/ErrorBoundary'
-import getConstants from '../../../../../../../modules/constants'
-const constants = getConstants()
+import Spinner from '../../../../../../shared/Spinner'
 
 const PropertiesContainer = styled.div`
   display: flex;
@@ -51,67 +48,69 @@ const Count = styled.span`
   font-size: x-small;
   padding-left: 5px;
 `
+const SpinnerContainer = styled.div`
+  padding-top: 15px;
+`
 
-const propsByTaxQuery = gql`
-  query propsByTaxDataQueryForPropertiesRCO(
-    $queryExportTaxonomies: Boolean!
-    $exportTaxonomies: [String]
+const query = gql`
+  query exportRcoPerRcoRelationQuery(
+    $exportTaxonomies: [String!]
+    $pcname: String!
+    $relationtype: String!
   ) {
-    rcoPropertiesByTaxonomiesFunction(taxonomyNames: $exportTaxonomies)
-      @include(if: $queryExportTaxonomies) {
+    exportRcoPerRcoRelation(
+      exportTaxonomies: $exportTaxonomies
+      pcname: $pcname
+      relationtype: $relationtype
+    ) {
       nodes {
-        propertyCollectionName
-        relationType
-        propertyName
+        pcname
+        property
         jsontype
-        count
       }
     }
   }
 `
 
-const RCO = ({ pc, width = 500 }) => {
+const RCO = ({ pcname, relationtype, count }) => {
   const store = useContext(storeContext)
   const exportTaxonomies = store.export.taxonomies.toJSON()
 
-  const { data: propsByTaxData, error: propsByTaxError } = useQuery(
-    propsByTaxQuery,
-    {
-      variables: {
-        exportTaxonomies,
-        queryExportTaxonomies: exportTaxonomies.length > 0,
-      },
+  const { data, loading, error } = useQuery(query, {
+    variables: {
+      exportTaxonomies,
+      pcname,
+      relationtype,
     },
+  })
+
+  // spread to prevent node is not extensible error
+  const nodes = [...(data?.exportRcoPerRcoRelation?.nodes ?? [])]
+  const bezPartnerNodes = nodes.filter(
+    (n) => n.property === 'Beziehungspartner',
   )
+  if (bezPartnerNodes.length === 0) {
+    nodes.unshift({
+      pcname,
+      property: 'Beziehungspartner',
+      jsontype: 'Boolean',
+    })
+  }
 
   const [expanded, setExpanded] = useState(false)
 
-  const rcoProperties =
-    propsByTaxData?.rcoPropertiesByTaxonomiesFunction?.nodes ?? []
-
-  const rcoPropertiesByPropertyCollection = groupBy(rcoProperties, (x) => {
-    if (x.propertyCollectionName.includes(x.relationType)) {
-      return x.propertyCollectionName
-    }
-    return `${x.propertyCollectionName}: ${x.relationType}`
-  })
-
   const onClickActions = useCallback(() => setExpanded(!expanded), [expanded])
 
-  const columns = Math.floor(width / constants.export.properties.columnWidth)
-
-  if (propsByTaxError) return `Error fetching data: ${propsByTaxError.message}`
+  if (error) return `Error fetching data: ${error.message}`
 
   return (
     <ErrorBoundary>
       <StyledCard>
         <StyledCardActions disableSpacing onClick={onClickActions}>
           <CardActionTitle>
-            {pc}
-            <Count>{`(${rcoPropertiesByPropertyCollection[pc].length} ${
-              rcoPropertiesByPropertyCollection[pc].length === 1
-                ? 'Feld'
-                : 'Felder'
+            {`${pcname}: ${relationtype}`}
+            <Count>{`(${count ?? 0} ${
+              count === 1 ? 'Feld' : 'Felder'
             })`}</Count>
           </CardActionTitle>
           <CardActionIconButton
@@ -125,21 +124,24 @@ const RCO = ({ pc, width = 500 }) => {
           </CardActionIconButton>
         </StyledCardActions>
         <StyledCollapse in={expanded} timeout="auto" unmountOnExit>
-          <>
-            {rcoPropertiesByPropertyCollection[pc].length > 1 && (
-              <AllChooser properties={rcoPropertiesByPropertyCollection[pc]} />
-            )}
-            <PropertiesContainer>
-              <Properties
-                properties={rcoPropertiesByPropertyCollection[pc]}
-                columns={columns}
-              />
-            </PropertiesContainer>
-          </>
+          {loading ? (
+            <SpinnerContainer>
+              <Spinner message="" />
+            </SpinnerContainer>
+          ) : (
+            <>
+              {count > 1 && (
+                <AllChooser properties={nodes} relationtype={relationtype} />
+              )}
+              <PropertiesContainer>
+                <Properties properties={nodes} relationtype={relationtype} />
+              </PropertiesContainer>
+            </>
+          )}
         </StyledCollapse>
       </StyledCard>
     </ErrorBoundary>
   )
 }
 
-export default withResizeDetector(observer(RCO))
+export default observer(RCO)

@@ -1,8 +1,7 @@
 import { gql } from '@apollo/client'
 
 export default gql`
-  mutation updateRCO(
-    $id: UUID!
+  mutation upsertRCO(
     $objectId: UUID!
     $objectIdRelation: UUID!
     $propertyCollectionId: UUID!
@@ -10,10 +9,14 @@ export default gql`
     $relationType: String!
     $properties: JSON
   ) {
-    updateRelationById(
+    upsertRelation(
+      where: {
+        objectId: $objectId
+        objectIdRelation: $objectIdRelation
+        propertyCollectionId: $propertyCollectionId
+      }
       input: {
-        id: $id
-        relationPatch: {
+        relation: {
           objectId: $objectId
           objectIdRelation: $objectIdRelation
           propertyCollectionId: $propertyCollectionId

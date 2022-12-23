@@ -205,10 +205,10 @@ const TreeComponent = () => {
     listRef?.current?.scrollToItem(index)
   }, [activeNodeArray, nodes])
 
-  const userId = data?.userByName?.id
+  const userId = data?.data?.userByName?.id
 
   const userRoles = (
-    data?.userByName?.organizationUsersByUserId?.nodes ?? []
+    data?.data?.userByName?.organizationUsersByUserId?.nodes ?? []
   ).map((r) => r?.role)
   const userIsTaxWriter =
     userRoles.includes('orgAdmin') || userRoles.includes('orgTaxonomyWriter')

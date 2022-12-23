@@ -1,17 +1,21 @@
 import { gql } from '@apollo/client'
 
 export default gql`
-  mutation updatePCO(
-    $id: UUID!
+  mutation upsertPCO(
+    $id: UUID
     $objectId: UUID
     $propertyCollectionId: UUID
     $propertyCollectionOfOrigin: UUID
     $properties: JSON
   ) {
-    updatePropertyCollectionObjectById(
+    upsertPropertyCollectionObject(
+      where: {
+        objectId: $objectId
+        propertyCollectionId: $propertyCollectionId
+      }
       input: {
-        id: $id
-        propertyCollectionObjectPatch: {
+        propertyCollectionObject: {
+          id: $id
           objectId: $objectId
           propertyCollectionId: $propertyCollectionId
           propertyCollectionOfOrigin: $propertyCollectionOfOrigin

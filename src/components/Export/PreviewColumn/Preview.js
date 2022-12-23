@@ -12,29 +12,10 @@ import exportCsv from '../../../modules/exportCsv'
 import storeContext from '../../../storeContext'
 import ErrorBoundary from '../../shared/ErrorBoundary'
 import CountInput from './CountInput'
-
-// react-data-grid calls window!
-const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
+import DataTable from '../../shared/DataTable'
 
 const Container = styled.div`
   padding-top: 5px;
-  .react-grid-Container {
-    font-size: small;
-  }
-  .react-grid-Header {
-  }
-  .react-grid-HeaderRow {
-    overflow: hidden;
-  }
-  .react-grid-HeaderCell:not(:first-of-type) {
-    border-left: #c7c7c7 solid 1px !important;
-  }
-  .react-grid-HeaderCell__draggable {
-    right: 16px !important;
-  }
-  .react-grid-Cell {
-    border: #ddd solid 1px !important;
-  }
 `
 const ErrorContainer = styled.div`
   padding: 9px;
@@ -43,17 +24,22 @@ const SpreadsheetContainer = styled.div`
   display: flex;
   flex-direction: column;
 `
+const TopButtonsContainer = styled.div`
+  padding: 10px 8px 2px 8px;
+  > button:not(:first-of-type) {
+    margin-left: 10px;
+  }
+`
 const ButtonsContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
-  padding: 0 8px;
+  padding: 10px 8px;
 `
 const TotalDiv = styled.div`
   font-size: small;
   padding-left: 9px;
   margin-top: 4px;
-  margin-bottom: 1px;
+  margin-bottom: 4px;
   user-select: none;
 `
 const StyledButton = styled(Button)`
@@ -77,7 +63,6 @@ const exportMutation = gql`
     $useSynonyms: Boolean!
     $count: Int!
     $objectIds: [UUID]!
-    $rowPerRco: Boolean!
     $sortField: SortFieldInput
   ) {
     exportAll(
@@ -92,7 +77,6 @@ const exportMutation = gql`
         useSynonyms: $useSynonyms
         count: $count
         objectIds: $objectIds
-        rowPerRco: $rowPerRco
         sortField: $sortField
       }
     ) {
@@ -117,7 +101,6 @@ const removeBadChars = (str) =>
 
 const Preview = () => {
   const client = useApolloClient()
-  const isSSR = typeof window === 'undefined'
   const store = useContext(storeContext)
   const {
     withSynonymData,
@@ -127,7 +110,6 @@ const Preview = () => {
     rcoProperties: rcoPropertiesPassed,
     pcoProperties: pcoPropertiesPassed,
     taxProperties: taxPropertiesPassed,
-    rcoInOneRow,
   } = store.export
   // 2019 08 20: No idea why suddenly need to getSnapshot
   // because without changes are not detected????
@@ -142,6 +124,16 @@ const Preview = () => {
 
   const [count, setCount] = useState(15)
   const [sortField, setSortField] = useState()
+
+  const sortFieldForQuery = useMemo(() => {
+    if (!sortField) return undefined
+    const sf = {
+      ...sortField,
+    }
+    delete sf.columnName
+    // console.log('sortFieldForQuery:', { sf, sortField })
+    return sf
+  }, [sortField])
 
   const onGridSort = useCallback(
     (column, direction) => {
@@ -178,7 +170,7 @@ const Preview = () => {
           pcname: rcoProperty.pcname,
           pname: rcoProperty.pname,
           relationtype: rcoProperty.relationtype,
-          direction,
+          direction: direction,
           columnName: removeBadChars(
             `${rcoProperty.pcname}__${rcoProperty.relationtype}__${rcoProperty.pname}`,
           ),
@@ -190,11 +182,18 @@ const Preview = () => {
       )
 
       if (sortField) {
-        delete sortField.columnName
         setSortField(sortField)
       }
     },
     [pcoProperties, rcoProperties, taxFields],
+  )
+
+  const setOrder = useCallback(
+    ({ by, direction }) => {
+      // console.log('setOrder', { by, direction })
+      onGridSort(by, direction)
+    },
+    [onGridSort],
   )
 
   const {
@@ -213,7 +212,6 @@ const Preview = () => {
       rcoProperties,
       withSynonymData,
       exportIds,
-      rcoInOneRow,
       sortField,
       count,
     ],
@@ -233,15 +231,15 @@ const Preview = () => {
           useSynonyms: withSynonymData,
           count,
           objectIds: exportIds,
-          rowPerRco: !rcoInOneRow,
-          sortField,
+          sortField: sortFieldForQuery,
         },
+        fetchPolicy: 'no-cache',
       })
       return data
     },
   })
 
-  const newCount = exportData?.data?.exportAll?.exportDatum?.count
+  const rowCount = exportData?.data?.exportAll?.exportDatum?.count
   const rows = useMemo(
     () =>
       exportData?.data?.exportAll?.exportDatum?.exportData
@@ -260,12 +258,6 @@ const Preview = () => {
   }, [])
 
   const fields = rows[0] ? Object.keys(rows[0]).map((k) => k) : []
-  const pvColumns = fields.map((k) => ({
-    key: k,
-    name: k,
-    resizable: true,
-    sortable: true,
-  }))
 
   const anzFelder = fields.length ?? 0
 
@@ -285,9 +277,9 @@ const Preview = () => {
         useSynonyms: withSynonymData,
         count: 0,
         objectIds: exportIds,
-        rowPerRco: !rcoInOneRow,
-        sortField,
+        sortField: sortFieldForQuery,
       },
+      fetchPolicy: 'no-cache',
     })
     const rows = data?.data?.exportAll?.exportDatum?.exportData
       ? JSON.parse(data?.data?.exportAll?.exportDatum?.exportData)
@@ -300,9 +292,8 @@ const Preview = () => {
     pcoFilters,
     pcoProperties,
     rcoFilters,
-    rcoInOneRow,
     rcoProperties,
-    sortField,
+    sortFieldForQuery,
     taxFields,
     taxFilters,
     taxonomies,
@@ -321,10 +312,20 @@ const Preview = () => {
   return (
     <ErrorBoundary>
       <Container>
-        {newCount > 0 && (
+        {rowCount > 0 && (
+          <TopButtonsContainer>
+            <StyledButton onClick={onClickXlsx} color="inherit">
+              .xlsx herunterladen
+            </StyledButton>
+            <StyledButton onClick={onClickCsv} color="inherit">
+              .csv herunterladen
+            </StyledButton>
+          </TopButtonsContainer>
+        )}
+        {rowCount > 0 && (
           <SpreadsheetContainer>
             <TotalDiv>
-              {`${newCount.toLocaleString(
+              {`${rowCount.toLocaleString(
                 'de-CH',
               )} Datensätze, ${anzFelder.toLocaleString('de-CH')} ${
                 anzFelder === 1 ? 'Feld' : 'Felder'
@@ -332,28 +333,22 @@ const Preview = () => {
               <CountInput count={count} setCount={setCount} />
               {' :'}
             </TotalDiv>
-            {!isSSR && (
-              <React.Suspense fallback={<div />}>
-                <ReactDataGridLazy
-                  columns={pvColumns}
-                  onGridSort={onGridSort}
-                  rowGetter={(i) => rows[i]}
-                  rowsCount={rows.length}
-                  minHeight={500}
-                  minColumnWidth={120}
-                />
-              </React.Suspense>
-            )}
+            <DataTable
+              data={rows}
+              order={sortField?.direction ?? 'ASC'}
+              orderBy={sortField?.columnName ?? 'id'}
+              setOrder={setOrder}
+            />
           </SpreadsheetContainer>
         )}
-        {newCount === 0 && (
+        {rowCount === 0 && (
           <SpreadsheetContainer>
-            <TotalDiv>{`${newCount.toLocaleString(
+            <TotalDiv>{`${rowCount.toLocaleString(
               'de-CH',
             )} Datensätze`}</TotalDiv>
           </SpreadsheetContainer>
         )}
-        {newCount > 0 && (
+        {rowCount > 0 && (
           <ButtonsContainer>
             <StyledButton onClick={onClickXlsx} color="inherit">
               .xlsx herunterladen

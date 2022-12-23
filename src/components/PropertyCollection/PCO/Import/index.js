@@ -1,32 +1,39 @@
-import React, { useState, useCallback, useContext, useMemo } from 'react'
+import React, {
+  useState,
+  useReducer,
+  useCallback,
+  useContext,
+  useMemo,
+} from 'react'
 import styled from '@emotion/styled'
 import omit from 'lodash/omit'
 import union from 'lodash/union'
 import flatten from 'lodash/flatten'
 import some from 'lodash/some'
 import uniq from 'lodash/uniq'
-import Icon from '@mui/material/Icon'
-import {
-  MdDone as DoneIcon,
-  MdError as ErrorIcon,
-  MdInfoOutline as InfoOutlineIcon,
-} from 'react-icons/md'
 import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import Dropzone from 'react-dropzone'
 import { read, utils } from 'xlsx'
-import { useQuery, useApolloClient, gql } from '@apollo/client'
+import {
+  useQuery as useApolloQuery,
+  useApolloClient,
+  gql,
+} from '@apollo/client'
 import { observer } from 'mobx-react-lite'
 import SimpleBar from 'simplebar-react'
 import { getSnapshot } from 'mobx-state-tree'
+import { useQuery } from '@tanstack/react-query'
 
-import createPCOMutation from './createPCOMutation'
-import updatePCOMutation from './updatePCOMutation'
+import upsertPCOMutation from './upsertPCOMutation'
 import storeContext from '../../../../storeContext'
 import isUuid from '../../../../modules/isUuid'
-
-// react-data-grid calls window!
-const ReactDataGridLazy = React.lazy(() => import('react-data-grid'))
+import { pcoPreviewQuery } from '..'
+import treeQuery from '../../../Tree/treeQuery'
+import DataTable from '../../../shared/DataTable'
+import CountInput from '../../../Export/PreviewColumn/CountInput'
+import Instructions from './Instructions'
+import getTreeDataVariables from '../../../Tree/treeQueryVariables'
 
 const Container = styled.div`
   height: 100%;
@@ -51,44 +58,6 @@ const Container = styled.div`
     border: #ddd solid 1px !important;
   }
 `
-const StyledUl = styled.ul`
-  ul {
-    margin-top: 0;
-  }
-  li {
-    margin-bottom: 0;
-  }
-  li:last-of-type {
-    margin-bottom: 5px;
-  }
-`
-const StyledH3 = styled.h3`
-  margin-left: 8px;
-  margin-bottom: 10px;
-`
-const FirstTitle = styled(StyledH3)`
-  padding-top: 10px;
-`
-const HowToImportContainer = styled.div`
-  column-width: 500px;
-  padding: 0 8px 0 8px;
-  ul {
-    padding-left: 20px;
-  }
-`
-const StyledH4 = styled.h4`
-  margin: 0;
-`
-const LiContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  break-inside: avoid;
-`
-const EmSpan = styled.span`
-  background-color: #8d8c8c40;
-  padding: 1px 3px;
-  border-radius: 4px;
-`
 const DropzoneContainer = styled.div`
   padding: 10px 8px;
   div {
@@ -107,22 +76,6 @@ const DropzoneDiv = styled.div`
 const DropzoneDivActive = styled(DropzoneDiv)`
   background-color: rgba(255, 224, 178, 0.2);
 `
-const InlineIcon = styled(Icon)`
-  margin-left: 8px;
-`
-const InlineDiv = styled.div`
-  margin-left: 8px;
-  font-style: italic;
-`
-const StyledDoneIcon = styled(DoneIcon)`
-  color: green !important;
-`
-const StyledErrorIcon = styled(ErrorIcon)`
-  color: red !important;
-`
-const StyledInfoOutlineIcon = styled(InfoOutlineIcon)`
-  color: orange !important;
-`
 const StyledButton = styled(Button)`
   border: 1px solid !important;
   margin: 8px 8px 16px 8px !important;
@@ -136,9 +89,6 @@ const TotalDiv = styled.div`
   padding-left: 9px;
   margin-top: 8px;
 `
-const StyledP = styled.p`
-  margin-top: -5px;
-`
 const StyledSnackbar = styled(Snackbar)`
   div {
     min-width: auto;
@@ -146,41 +96,6 @@ const StyledSnackbar = styled(Snackbar)`
   }
 `
 
-const pcoQuery = gql`
-  query pCOQuery($pCId: UUID!) {
-    propertyCollectionById(id: $pCId) {
-      id
-      organizationByOrganizationId {
-        id
-        name
-        organizationUsersByOrganizationId {
-          nodes {
-            id
-            userId
-            role
-            userByUserId {
-              id
-              name
-              email
-            }
-          }
-        }
-      }
-      propertyCollectionObjectsByPropertyCollectionId {
-        totalCount
-        nodes {
-          id
-          objectId
-          objectByObjectId {
-            id
-            name
-          }
-          properties
-        }
-      }
-    }
-  }
-`
 const importPcoQuery = gql`
   query pCOQuery(
     $getObjectIds: Boolean!
@@ -201,8 +116,27 @@ const importPcoQuery = gql`
   }
 `
 
-const ImportPco = ({ setImport, pCO }) => {
-  const isSSR = typeof window === 'undefined'
+const checkStateReducer = (a, state) => state
+
+const initialCheckState = {
+  existsNoDataWithoutKey: undefined,
+  idsAreUuids: undefined,
+  idsExist: undefined,
+  idsAreUnique: undefined,
+  objectIdsExist: undefined,
+  pCOfOriginIdsExist: undefined,
+  objectIdsAreRealNotTested: undefined,
+  pCOfOriginIdsAreRealNotTested: undefined,
+  objectIdsAreUuid: undefined,
+  pCOfOriginIdsAreUuid: undefined,
+  propertyKeysDontContainApostroph: undefined,
+  propertyKeysDontContainBackslash: undefined,
+  propertyValuesDontContainApostroph: undefined,
+  propertyValuesDontContainBackslash: undefined,
+  existsPropertyKey: undefined,
+}
+
+const ImportPco = ({ setImport }) => {
   const client = useApolloClient()
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
@@ -213,98 +147,89 @@ const ImportPco = ({ setImport, pCO }) => {
 
   const [objectIds, setObjectIds] = useState([])
   const [pCOfOriginIds, setPCOfOriginIds] = useState([])
-  const [imported, setImported] = useState(0)
 
-  const { refetch: pcoRefetch } = useQuery(pcoQuery, {
+  const [count, setCount] = useState(15)
+
+  // console.log('importPco render')
+
+  const [orderBy, setOrderBy] = useState('objectId')
+  const [sortDirection, setSortDirection] = useState('asc')
+  const setOrder = useCallback(({ orderBy, direction }) => {
+    setOrderBy(orderBy)
+    setSortDirection(direction.toLowerCase())
+  }, [])
+
+  const { refetch: pcoRefetch } = useApolloQuery(pcoPreviewQuery, {
     variables: {
       pCId,
+      first: 15,
+    },
+  })
+  const { refetch: treeDataRefetch } = useApolloQuery(treeQuery, {
+    variables: getTreeDataVariables(store),
+  })
+
+  const { isLoading, error, data } = useQuery({
+    queryKey: ['importPcoQuery', pCId, objectIds.length, pCOfOriginIds.length],
+    queryFn: async () => {
+      const { data } = await client.query({
+        query: importPcoQuery,
+        variables: {
+          getObjectIds: objectIds.length > 0,
+          getPCOfOriginIds: pCOfOriginIds.length > 0,
+          pCOfOriginIds:
+            pCOfOriginIds.length > 0
+              ? pCOfOriginIds
+              : ['99999999-9999-9999-9999-999999999999'],
+        },
+      })
+      return data
     },
   })
 
-  const {
-    data: importPcoData,
-    loading: importPcoLoading,
-    error: importPcoError,
-  } = useQuery(importPcoQuery, {
-    variables: {
-      getObjectIds: objectIds.length > 0,
-      getPCOfOriginIds: pCOfOriginIds.length > 0,
-      pCOfOriginIds:
-        pCOfOriginIds.length > 0
-          ? pCOfOriginIds
-          : ['99999999-9999-9999-9999-999999999999'],
-    },
-  })
-
-  const [existsNoDataWithoutKey, setExistsNoDataWithoutKey] =
-    useState(undefined)
-  const [idsAreUuids, setIdsAreUuid] = useState(undefined)
-  const [idsExist, setIdsExist] = useState(undefined)
-  const [idsAreUnique, setIdsAreUnique] = useState(undefined)
-  const [objectIdsExist, setObjectIdsExist] = useState(undefined)
-  const [pCOfOriginIdsExist, setPCOfOriginIdsExist] = useState(undefined)
-  const [objectIdsAreRealNotTested, setObjectIdsAreRealNotTested] =
-    useState(undefined)
-  const [
-    pCOfOriginIdsAreRealNotTested,
-    setPCOfOriginIdsAreRealNotTested, // eslint-disable-line no-unused-vars
-  ] = useState(undefined)
-  const [objectIdsAreUuid, setObjectIdsAreUuid] = useState(undefined)
-  // eslint-disable-next-line no-unused-vars
-  const [objectsIdsAreNotUuid, setObjectsIdsAreNotUuid] = useState(undefined)
-  const [pCOfOriginIdsAreUuid, setPCOfOriginIdsAreUuid] = useState(undefined)
   const [importData, setImportData] = useState([])
   const [importing, setImporting] = useState(false)
-  const [
-    propertyKeysDontContainApostroph,
-    setPropertyKeysDontContainApostroph,
-  ] = useState(undefined)
-  const [
-    propertyKeysDontContainBackslash,
-    setPropertyKeysDontContainBackslash,
-  ] = useState(undefined)
-  const [
-    propertyValuesDontContainApostroph,
-    setPropertyValuesDontContainApostroph,
-  ] = useState(undefined)
-  const [
-    propertyValuesDontContainBackslash,
-    setPropertyValuesDontContainBackslash,
-  ] = useState(undefined)
-  const [existsPropertyKey, setExistsPropertyKey] = useState(undefined)
+  const [imported, setImported] = useState(0)
+  const incrementImported = useCallback(
+    () => setImported(() => imported + 1),
+    [imported],
+  )
 
-  if (importPcoError && importPcoError.message) {
-    if (importPcoError?.message?.includes('request entity too large')) {
-      setObjectIdsAreRealNotTested(true)
-    }
+  const [checkState, dispatch] = useReducer(
+    checkStateReducer,
+    initialCheckState,
+  )
+
+  if (error && error.message) {
+    console.log('error', error.message)
   }
   const objectIdsUnreal = useMemo(() => {
-    const realObjectIds = (importPcoData?.allObjects?.nodes ?? []).map(
-      (o) => o.id,
-    )
+    const realObjectIds = (data?.allObjects?.nodes ?? []).map((o) => o.id)
     return objectIds.filter((i) => !realObjectIds.includes(i))
-  }, [importPcoData, objectIds])
+  }, [data, objectIds])
+
   const objectIdsAreReal = useMemo(
     () =>
-      !importPcoLoading && objectIds.length > 0
+      !isLoading && objectIds.length > 0
         ? objectIdsUnreal.length === 0
         : undefined,
-    [importPcoLoading, objectIds.length, objectIdsUnreal.length],
+    [isLoading, objectIds.length, objectIdsUnreal.length],
   )
-  const pCOfOriginsCheckData =
-    importPcoData?.allPropertyCollections?.nodes ?? []
+  const pCOfOriginsCheckData = data?.allPropertyCollections?.nodes ?? []
   const pCOfOriginIdsAreReal = useMemo(
     () =>
-      !importPcoLoading && pCOfOriginIds.length > 0
+      !isLoading && pCOfOriginIds.length > 0
         ? pCOfOriginIds.length === pCOfOriginsCheckData.length
         : undefined,
-    [importPcoLoading, pCOfOriginIds.length, pCOfOriginsCheckData.length],
+    [isLoading, pCOfOriginIds.length, pCOfOriginsCheckData.length],
   )
   const showImportButton = useMemo(
     () =>
       importData.length > 0 &&
-      existsNoDataWithoutKey &&
-      (idsExist ? idsAreUnique && idsAreUuids : true) &&
+      checkState.existsNoDataWithoutKey &&
+      (checkState.idsExist
+        ? checkState.idsAreUnique && checkState.idsAreUuids
+        : true) &&
       // turned off because of inexplicable problem
       // somehow graphql could exceed some limit
       // which made this value block importing
@@ -312,30 +237,30 @@ const ImportPco = ({ setImport, pCO }) => {
       /*(objectIdsExist
       ? objectIdsAreUuid && (objectIdsAreReal || objectIdsAreRealNotTested)
       : false) &&*/
-      (pCOfOriginIdsExist
-        ? pCOfOriginIdsAreUuid &&
-          (pCOfOriginIdsAreReal || pCOfOriginIdsAreRealNotTested)
+      (checkState.pCOfOriginIdsExist
+        ? checkState.pCOfOriginIdsAreUuid &&
+          (pCOfOriginIdsAreReal || checkState.pCOfOriginIdsAreRealNotTested)
         : true) &&
-      existsPropertyKey &&
-      propertyKeysDontContainApostroph &&
-      propertyKeysDontContainBackslash &&
-      propertyValuesDontContainApostroph &&
-      propertyValuesDontContainBackslash,
+      checkState.existsPropertyKey &&
+      checkState.propertyKeysDontContainApostroph &&
+      checkState.propertyKeysDontContainBackslash &&
+      checkState.propertyValuesDontContainApostroph &&
+      checkState.propertyValuesDontContainBackslash,
     [
-      existsNoDataWithoutKey,
-      existsPropertyKey,
-      idsAreUnique,
-      idsAreUuids,
-      idsExist,
+      checkState.existsNoDataWithoutKey,
+      checkState.existsPropertyKey,
+      checkState.idsAreUnique,
+      checkState.idsAreUuids,
+      checkState.idsExist,
+      checkState.pCOfOriginIdsAreRealNotTested,
+      checkState.pCOfOriginIdsAreUuid,
+      checkState.pCOfOriginIdsExist,
+      checkState.propertyKeysDontContainApostroph,
+      checkState.propertyKeysDontContainBackslash,
+      checkState.propertyValuesDontContainApostroph,
+      checkState.propertyValuesDontContainBackslash,
       importData.length,
       pCOfOriginIdsAreReal,
-      pCOfOriginIdsAreRealNotTested,
-      pCOfOriginIdsAreUuid,
-      pCOfOriginIdsExist,
-      propertyKeysDontContainApostroph,
-      propertyKeysDontContainBackslash,
-      propertyValuesDontContainApostroph,
-      propertyValuesDontContainBackslash,
     ],
   )
   const showPreview = importData.length > 0
@@ -359,6 +284,7 @@ const ImportPco = ({ setImport, pCO }) => {
     if (file) {
       const reader = new FileReader()
       reader.onload = async () => {
+        const checkState = { ...initialCheckState }
         const fileAsBinaryString = reader.result
         const workbook = read(fileAsBinaryString, {
           type: 'binary',
@@ -370,94 +296,88 @@ const ImportPco = ({ setImport, pCO }) => {
           .map((d) => omit(d, ['__rowNum__']))
         // test the data
         setImportData(data)
-        setExistsNoDataWithoutKey(data.filter((d) => !!d.__EMPTY).length === 0)
+        checkState.existsNoDataWithoutKey =
+          data.filter((d) => !!d.__EMPTY).length === 0
         const ids = data.map((d) => d.id).filter((d) => d !== undefined)
         const _idsExist = ids.length > 0
-        setIdsExist(_idsExist)
-        setIdsAreUuid(
-          _idsExist ? !ids.map((d) => isUuid(d)).includes(false) : undefined,
-        )
-        setIdsAreUnique(_idsExist ? ids.length === uniq(ids).length : undefined)
+        checkState.idsExist = _idsExist
+        checkState.idsAreUuid = _idsExist
+          ? !ids.map((d) => isUuid(d)).includes(false)
+          : undefined
+        checkState.idsAreUnique = _idsExist
+          ? ids.length === uniq(ids).length
+          : undefined
         const _objectIds = data
           .map((d) => d.objectId)
           .filter((d) => d !== undefined)
 
-        //const _objectsIdsDoNotExist = data.filter()
         const _objectIdsExist = _objectIds.length === data.length
-        setObjectIdsExist(_objectIdsExist)
+        checkState.objectIdsExist = _objectIdsExist
         const _objectsIdsAreNotUuid = data.filter((d) => !isUuid(d.objectId))
-        setObjectsIdsAreNotUuid(_objectsIdsAreNotUuid)
-        setObjectIdsAreUuid(
-          _objectIdsExist ? _objectsIdsAreNotUuid.length === 0 : undefined,
-        )
-        //console.log({ _objectsIdsAreNotUuid })
-        /*setObjectIdsAreUuid(
-          _objectIdsExist
-            ? !_objectIds.some(d => !isUuid(d))
-            : undefined,
-        )*/
+        checkState.objectIdsAreUuid = _objectIdsExist
+          ? _objectsIdsAreNotUuid.length === 0
+          : undefined
         setObjectIds(_objectIds)
 
         const _pCOfOriginIds = data
           .map((d) => d.propertyCollectionOfOrigin)
           .filter((d) => d !== undefined)
         const _pCOfOriginIdsExist = _pCOfOriginIds.length > 0
-        setPCOfOriginIdsExist(_pCOfOriginIdsExist)
-        setPCOfOriginIdsAreUuid(
-          _pCOfOriginIdsExist
-            ? !_pCOfOriginIds.map((d) => isUuid(d)).includes(false)
-            : undefined,
-        )
+        checkState.pCOfOriginIdsExist = _pCOfOriginIdsExist
+        checkState.pCOfOriginIdsAreUuid = _pCOfOriginIdsExist
+          ? !_pCOfOriginIds.map((d) => isUuid(d)).includes(false)
+          : undefined
         setPCOfOriginIds(_pCOfOriginIds)
 
         const propertyKeys = union(
           flatten(data.map((d) => Object.keys(omit(d, ['id', 'objectId'])))),
         )
         const _existsPropertyKey = propertyKeys.length > 0
-        setExistsPropertyKey(_existsPropertyKey)
-        setPropertyKeysDontContainApostroph(
-          _existsPropertyKey
-            ? !some(propertyKeys, (k) => {
-                if (!k || !k.includes) return false
-                return k.includes('"')
-              })
-            : undefined,
-        )
-        setPropertyKeysDontContainBackslash(
-          _existsPropertyKey
-            ? !some(propertyKeys, (k) => {
-                if (!k || !k.includes) return false
-                return k.includes('\\')
-              })
-            : undefined,
-        )
+        checkState.existsPropertyKey = _existsPropertyKey
+        checkState.propertyKeysDontContainApostroph = _existsPropertyKey
+          ? !some(propertyKeys, (k) => {
+              if (!k || !k.includes) return false
+              return k.includes('"')
+            })
+          : undefined
+        checkState.propertyKeysDontContainBackslash = _existsPropertyKey
+          ? !some(propertyKeys, (k) => {
+              if (!k || !k.includes) return false
+              return k.includes('\\')
+            })
+          : undefined
         const propertyValues = union(flatten(data.map((d) => Object.values(d))))
-        setPropertyValuesDontContainApostroph(
-          !some(propertyValues, (k) => {
+        checkState.propertyValuesDontContainApostroph = !some(
+          propertyValues,
+          (k) => {
             if (!k || !k.includes) return false
             return k.includes('"')
-          }),
+          },
         )
-        setPropertyValuesDontContainBackslash(
-          !some(propertyValues, (k) => {
+        checkState.propertyValuesDontContainBackslash = !some(
+          propertyValues,
+          (k) => {
             if (!k || !k.includes) return false
             return k.includes('\\')
-          }),
+          },
         )
+
+        dispatch(checkState)
       }
       reader.onabort = () => console.log('file reading was aborted')
       reader.onerror = () => console.log('file reading has failed')
       reader.readAsBinaryString(file)
     }
   }, [])
+
   const onClickImport = useCallback(async () => {
     setImporting(true)
+
+    const posts = []
     // need a list of all fields
     // loop all rows, build variables and create pco
     // eslint-disable-next-line no-unused-vars
-    for (const [i, d] of importData.entries()) {
-      const pco = pCO.find((o) => o.objectId === d.objectId)
-      const id = pco && pco.id ? pco.id : undefined
+    for (const d of importData) {
       const variables = {
         objectId: d.objectId || null,
         propertyCollectionId: pCId,
@@ -471,29 +391,17 @@ const ImportPco = ({ setImport, pCO }) => {
           ]),
         ),
       }
-      // if id: update, else insert
-      if (id) {
-        try {
-          await client.mutate({
-            mutation: updatePCOMutation,
-            variables: { id, ...variables },
-          })
-        } catch (error) {
-          console.log(`Error importing ${JSON.stringify(d)}:`, error)
-        }
-      } else {
-        try {
-          await client.mutate({
-            mutation: createPCOMutation,
+
+      posts.push(
+        client
+          .mutate({
+            mutation: upsertPCOMutation,
             variables,
           })
-        } catch (error) {
-          console.log(`Error importing ${JSON.stringify(d)}:`, error)
-        }
-      }
-
-      setImported(i)
+          .then(() => incrementImported()),
+      )
     }
+    await Promise.all(posts)
     setImport(false)
     setImporting(false)
     try {
@@ -501,457 +409,31 @@ const ImportPco = ({ setImport, pCO }) => {
     } catch (error) {
       console.log('Error refetching pco:', error)
     }
-  }, [client, importData, pCId, pCO, pcoRefetch, setImport])
-  const rowGetter = useCallback((i) => importData[i], [importData])
+    try {
+      treeDataRefetch()
+    } catch (error) {
+      console.log('Error refetching tree:', error)
+    }
+  }, [
+    setImport,
+    pcoRefetch,
+    treeDataRefetch,
+    importData,
+    pCId,
+    client,
+    incrementImported,
+  ])
+
+  // console.log('ImportPco', { importData, importDataFields })
 
   return (
     <SimpleBar style={{ maxHeight: '100%', height: '100%' }}>
       <Container>
-        <FirstTitle>Anforderungen an zu importierende Eigenschaften</FirstTitle>
-        <HowToImportContainer>
-          <StyledH4>Autorenrechte</StyledH4>
-          <StyledUl>
-            <li>
-              <LiContainer>
-                <div>
-                  Die Autoren müssen mit der Veröffentlichung einverstanden sein
-                </div>
-              </LiContainer>
-            </li>
-            <li>
-              <LiContainer>
-                <div>Dafür verantwortlich ist, wer Daten importiert</div>
-              </LiContainer>
-            </li>
-          </StyledUl>
-          <StyledH4>Tabelle</StyledH4>
-          <StyledUl>
-            <li>
-              <LiContainer>
-                <div>Die erste Zeile enthält Feld-Namen (= Spalten-Titel)</div>
-              </LiContainer>
-            </li>
-            <li>
-              <LiContainer>
-                <div>
-                  Jeder Wert hat einen Feld-Namen.
-                  <br />
-                  Anders gesagt: Jede Zelle mit einem Wert hat einen
-                  Spalten-Titel
-                </div>
-                {existsNoDataWithoutKey && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-                {existsNoDataWithoutKey === false && (
-                  <div>
-                    <InlineIcon>
-                      <StyledErrorIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-              </LiContainer>
-            </li>
-          </StyledUl>
-          <StyledH4>Zuordnungs-Felder</StyledH4>
-          <StyledUl>
-            <li>
-              <LiContainer>
-                <div>
-                  Ein Feld namens <EmSpan>id</EmSpan> kann enthalten sein.
-                </div>
-                {idsExist && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-                {idsExist === false && (
-                  <div>
-                    <InlineDiv>(ist nicht)</InlineDiv>
-                  </div>
-                )}
-              </LiContainer>
-              <LiContainer>
-                <div>Wenn nicht, wird eine id erzeugt</div>
-                {idsExist === false && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-              </LiContainer>
-              <ul>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>id</EmSpan> muss gültige{' '}
-                      <a
-                        href="https://de.wikipedia.org/wiki/Universally_Unique_Identifier"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        UUID
-                      </a>{' '}
-                      sein
-                    </div>
-                    {idsAreUuids && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {idsAreUuids === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>id</EmSpan> muss eindeutig sein
-                    </div>
-                    {idsAreUnique && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {idsAreUnique === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <LiContainer>
-                <div>
-                  Ein Feld namens <EmSpan>objectId</EmSpan> muss enthalten sein
-                </div>
-                {objectIdsExist && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-                {objectIdsExist === false && (
-                  <div>
-                    <InlineIcon>
-                      <StyledErrorIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-              </LiContainer>
-              <ul>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>objectId</EmSpan> muss gültige{' '}
-                      <a
-                        href="https://de.wikipedia.org/wiki/Universally_Unique_Identifier"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        UUID
-                      </a>{' '}
-                      sein
-                    </div>
-                    {objectIdsAreUuid && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {objectIdsAreUuid === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>objectId</EmSpan> muss <EmSpan>id</EmSpan> eines
-                      Objekts aus arteigenschaften.ch sein
-                    </div>
-                    {objectIdsAreReal && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {objectIdsAreReal === false &&
-                      !objectIdsAreRealNotTested && (
-                        <div>
-                          <InlineIcon>
-                            <StyledErrorIcon />
-                          </InlineIcon>
-                        </div>
-                      )}
-                    {objectIdsAreRealNotTested && (
-                      <>
-                        <InlineIcon>
-                          <StyledInfoOutlineIcon />
-                        </InlineIcon>
-                        <InlineDiv>
-                          (nicht getestet, da sehr viele Daten. Datensätze,
-                          welche dieses Kriterium nicht erfüllen, werden nicht
-                          importiert)
-                        </InlineDiv>
-                      </>
-                    )}
-                  </LiContainer>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <LiContainer>
-                <div>
-                  Ein Feld namens <EmSpan>propertyCollectionOfOrigin</EmSpan>{' '}
-                  kann enthalten sein.
-                </div>
-                {pCOfOriginIdsExist && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-                {pCOfOriginIdsExist === false && (
-                  <div>
-                    <InlineDiv>(ist nicht)</InlineDiv>
-                  </div>
-                )}
-              </LiContainer>
-              <LiContainer>
-                <div>
-                  Zweck: In zusammenfassenden Eigenschaften-Sammlungen
-                  markieren, aus welcher Eigenschaften-Sammlung diese
-                  Eigenschaften stammen.{' '}
-                  <a
-                    href="http://localhost:8000/Dokumentation/Projektbeschreibung/#zusammenfassende-eigenschaften-sammlungen"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Mehr Infos
-                  </a>
-                </div>
-              </LiContainer>
-              <ul>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>propertyCollectionOfOrigin</EmSpan> muss gültige{' '}
-                      <a
-                        href="https://de.wikipedia.org/wiki/Universally_Unique_Identifier"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        UUID
-                      </a>{' '}
-                      sein
-                    </div>
-                    {pCOfOriginIdsAreUuid && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {pCOfOriginIdsAreUuid === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-                <li>
-                  <LiContainer>
-                    <div>
-                      <EmSpan>propertyCollectionOfOrigin</EmSpan> muss{' '}
-                      <EmSpan>id</EmSpan> einer Eigenschaften-Sammlung aus
-                      arteigenschaften.ch sein
-                    </div>
-                    {pCOfOriginIdsAreReal && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {pCOfOriginIdsAreReal === false &&
-                      !pCOfOriginIdsAreRealNotTested && (
-                        <div>
-                          <InlineIcon>
-                            <StyledErrorIcon />
-                          </InlineIcon>
-                        </div>
-                      )}
-                    {pCOfOriginIdsAreRealNotTested && (
-                      <>
-                        <InlineIcon>
-                          <StyledInfoOutlineIcon />
-                        </InlineIcon>
-                        <InlineDiv>
-                          (nicht getestet, da sehr viele Daten. Datensätze,
-                          welche dieses Kriterium nicht erfüllen, werden nicht
-                          importiert)
-                        </InlineDiv>
-                      </>
-                    )}
-                  </LiContainer>
-                </li>
-              </ul>
-            </li>
-          </StyledUl>
-          <StyledP>
-            Alle weiteren Felder sind Eigenschaften des Objekts:
-          </StyledP>
-          <StyledH4>Eigenschaften</StyledH4>
-          <StyledUl>
-            <li>
-              <LiContainer>
-                <div>Es gibt mindestens eine Eigenschaft</div>
-                {existsPropertyKey && (
-                  <div>
-                    <InlineIcon>
-                      <StyledDoneIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-                {existsPropertyKey === false && (
-                  <div>
-                    <InlineIcon>
-                      <StyledErrorIcon />
-                    </InlineIcon>
-                  </div>
-                )}
-              </LiContainer>
-            </li>
-            <li>
-              Feld-Namen dürfen die folgenden Zeichen nicht enthalten:
-              <ul>
-                <li>
-                  <LiContainer>
-                    <div>{'"'}</div>
-                    {propertyKeysDontContainApostroph && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {propertyKeysDontContainApostroph === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-                <li>
-                  <LiContainer>
-                    <div>\</div>
-                    {propertyKeysDontContainBackslash && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {propertyKeysDontContainBackslash === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-              </ul>
-            </li>
-            <li>
-              Feld-Werte dürfen die folgenden Zeichen nicht enthalten:
-              <ul>
-                <li>
-                  <LiContainer>
-                    <div>{'"'}</div>
-                    {propertyValuesDontContainApostroph && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {propertyValuesDontContainApostroph === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-                <li>
-                  <LiContainer>
-                    <div>\</div>
-                    {propertyValuesDontContainBackslash && (
-                      <div>
-                        <InlineIcon>
-                          <StyledDoneIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                    {propertyValuesDontContainBackslash === false && (
-                      <div>
-                        <InlineIcon>
-                          <StyledErrorIcon />
-                        </InlineIcon>
-                      </div>
-                    )}
-                  </LiContainer>
-                </li>
-              </ul>
-            </li>
-          </StyledUl>
-          <StyledH3>Wirkung des Imports auf bereits vorhandene Daten</StyledH3>
-          <ul>
-            <li>
-              Enthält die Eigenschaften-Sammlung bereits einen Datensatz für ein
-              Objekt (Art oder Lebensraum), wird dieser mit dem importierten
-              Datensatz ersetzt.
-            </li>
-            <li>
-              Enthält die Eigenschaften-Sammlung für ein Objekt noch keinen
-              Datensatz, wird er neu importiert.
-            </li>
-          </ul>
-        </HowToImportContainer>
+        <Instructions
+          {...checkState}
+          objectIdsAreReal={objectIdsAreReal}
+          pCOfOriginIdsAreReal={pCOfOriginIdsAreReal}
+        />
         {!importing && (
           <DropzoneContainer>
             <Dropzone
@@ -1018,29 +500,28 @@ const ImportPco = ({ setImport, pCO }) => {
         )}
         {showPreview && (
           <>
-            <TotalDiv>{`${importData.length.toLocaleString(
-              'de-CH',
-            )} Datensätze, ${propertyFields.length.toLocaleString(
-              'de-CH',
-            )} Feld${propertyFields.length === 1 ? '' : 'er'}${
-              importData.length > 0 ? ':' : ''
-            }`}</TotalDiv>
-            {!isSSR && (
-              <React.Suspense fallback={<div />}>
-                <ReactDataGridLazy
-                  columns={importDataFields.map((k) => ({
-                    key: k,
-                    name: k,
-                    resizable: true,
-                  }))}
-                  rowGetter={rowGetter}
-                  rowsCount={importData.length}
-                />
-              </React.Suspense>
-            )}
+            <TotalDiv>
+              {`${importData.length.toLocaleString(
+                'de-CH',
+              )} Datensätze, ${propertyFields.length.toLocaleString(
+                'de-CH',
+              )} Feld${propertyFields.length === 1 ? '' : 'er'}${
+                importData.length > 0 ? ':' : ''
+              }, Erste `}
+              <CountInput count={count} setCount={setCount} />
+              {' :'}
+            </TotalDiv>
+            <DataTable
+              data={importData.slice(0, count)}
+              idKey="objectId"
+              keys={importDataFields}
+              setOrder={setOrder}
+              orderBy={orderBy}
+              order={sortDirection}
+            />
           </>
         )}
-        <StyledSnackbar open={importPcoLoading} message="lade Daten..." />
+        <StyledSnackbar open={isLoading} message="lade Daten..." />
       </Container>
     </SimpleBar>
   )

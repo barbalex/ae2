@@ -2,21 +2,17 @@ import React from 'react'
 
 import Chooser from './Chooser'
 
-const RcoProperties = ({ properties, columns }) => {
-  const propertiesLength = properties.length
-
-  return properties.map((p) => (
+const RcoProperties = ({ properties, relationtype }) =>
+  properties.map((p) => (
     <Chooser
-      key={`${p.propertyName}${p.jsontype}`}
-      pcname={p.propertyCollectionName}
-      relationtype={p.relationType}
-      pname={p.propertyName}
-      jsontype={p.jsontype}
+      key={`${p.property ?? 'Beziehungspartner'}${p.jsontype ?? 'Boolaen'}`}
+      pcname={p.pcname}
+      relationtype={relationtype}
+      pname={p.property ?? 'Beziehungspartner'}
+      jsontype={p.jsontype ?? 'Boolean'}
       count={p.count}
-      columns={columns}
-      propertiesLength={propertiesLength}
+      propertiesLength={properties.length}
     />
   ))
-}
 
 export default RcoProperties
