@@ -120,7 +120,9 @@ const RCO = ({ pcname, relationtype, count }) => {
         <StyledCardActions disableSpacing onClick={onClickActions}>
           <CardActionTitle>
             {`${pcname}: ${relationtype}`}
-            <Count>{`(${count} ${count === 1 ? 'Feld' : 'Felder'})`}</Count>
+            <Count>{`(${count ?? 0} ${
+              count === 1 ? 'Feld' : 'Felder'
+            })`}</Count>
           </CardActionTitle>
           <CardActionIconButton
             data-expanded={expanded}
@@ -140,7 +142,11 @@ const RCO = ({ pcname, relationtype, count }) => {
               // <AllChooser properties={rcoPropertiesByPropertyCollection[pcname]} />
             )}
             <PropertiesContainer>
-              <Properties properties={nodes} columns={columns} relationtype={relationtype} />
+              <Properties
+                properties={nodes}
+                columns={columns}
+                relationtype={relationtype}
+              />
             </PropertiesContainer>
           </>
         </StyledCollapse>
