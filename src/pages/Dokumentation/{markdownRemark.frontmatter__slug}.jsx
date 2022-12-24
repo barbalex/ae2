@@ -160,8 +160,7 @@ export const pageQuery = graphql`
       }
     }
     allMarkdownRemark(
-      # sort: { frontmatter: { sort1: ASC } }  TODO: migrate gatsby v5
-      sort: { order: ASC, fields: [frontmatter___sort1] }
+       sort: { frontmatter: { sort1: ASC } }  
     ) {
       edges {
         node {

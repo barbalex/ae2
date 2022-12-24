@@ -125,10 +125,7 @@ const Dokumentation = ({ data }) => {
 
 export const pageQuery = graphql`
   query {
-    allMarkdownRemark(
-      # sort: { frontmatter: { sort1: ASC } }  TODO: migrate gatsby v5
-      sort: { order: ASC, fields: [frontmatter___sort1] }
-    ) {
+    allMarkdownRemark(sort: { frontmatter: { sort1: ASC } }) {
       edges {
         node {
           id
