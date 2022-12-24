@@ -1,5 +1,5 @@
 ---
-path: "/Dokumentation/Neue-Art-erfassen"
+slug: "neue-art-erfassen"
 date: "2021-11-02"
 title: "Neue Art erfassen"
 sort1: 4

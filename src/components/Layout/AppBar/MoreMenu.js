@@ -50,7 +50,7 @@ const MoreMenu = () => {
     setAnchorEl(null)
   }, [])
   const onClickUeber = useCallback(() => {
-    navigate('/Dokumentation/Projektbeschreibung')
+    navigate('/Dokumentation/projektbeschreibung')
     setAnchorEl(null)
   }, [])
   const onClickStruktur = useCallback(() => {

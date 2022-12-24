@@ -1,5 +1,5 @@
 ---
-path: "/Dokumentation/Projektbeschreibung"
+slug: "projektbeschreibung"
 date: "2019-09-29"
 title: "Projektbeschreibung"
 sort1: 1

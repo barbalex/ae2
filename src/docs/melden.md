@@ -1,5 +1,5 @@
 ---
-path: "/Dokumentation/Fehler-melden"
+slug: "fehler-melden"
 date: "2019-09-29"
 title: "Fehler, Ideen, Vorschläge melden"
 sort1: 3

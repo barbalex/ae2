@@ -455,7 +455,7 @@ const ImportRcoInstructions = ({
               Zweck: In zusammenfassenden Eigenschaften-Sammlungen markieren,
               aus welcher Eigenschaften-Sammlung diese Beziehungen stammen.{' '}
               <a
-                href="http://localhost:8000/Dokumentation/Projektbeschreibung/#zusammenfassende-eigenschaften-sammlungen"
+                href="http://localhost:8000/Dokumentation/projektbeschreibung/#zusammenfassende-eigenschaften-sammlungen"
                 target="_blank"
                 rel="noopener noreferrer"
               >

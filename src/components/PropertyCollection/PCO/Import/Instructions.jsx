@@ -325,7 +325,7 @@ const ImportPcoInstructions = ({
               Zweck: In zusammenfassenden Eigenschaften-Sammlungen markieren,
               aus welcher Eigenschaften-Sammlung diese Eigenschaften stammen.{' '}
               <a
-                href="http://localhost:8000/Dokumentation/Projektbeschreibung/#zusammenfassende-eigenschaften-sammlungen"
+                href="http://localhost:8000/Dokumentation/projektbeschreibung/#zusammenfassende-eigenschaften-sammlungen"
                 target="_blank"
                 rel="noopener noreferrer"
               >

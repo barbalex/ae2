@@ -1,18 +1,15 @@
-import React, { useEffect, useCallback, useState, useContext } from 'react'
+import React, { useEffect, useCallback, useState } from 'react'
 import { graphql, navigate } from 'gatsby'
 import styled from '@emotion/styled'
 import Paper from '@mui/material/Paper'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import SimpleBar from 'simplebar-react'
-import { withResizeDetector } from 'react-resize-detector'
-import { observer } from 'mobx-react-lite'
 
-import Layout from '../components/Layout'
-import ErrorBoundary from '../components/shared/ErrorBoundary'
-import Sidebar from './Sidebar'
-import useLocation from '../modules/useLocation'
-import storeContext from '../storeContext'
+import Layout from '../../components/Layout'
+import ErrorBoundary from '../../components/shared/ErrorBoundary'
+import Sidebar from '../../templates/Sidebar'
+import useLocation from '../../modules/useLocation'
 
 const Container = styled.div`
   height: calc(100vh - 64px);
@@ -50,10 +47,7 @@ const Content = styled.div`
   height: 100%;
 `
 
-const DocTemplate = ({ data, height, width }) => {
-  const store = useContext(storeContext)
-  const { windowWidth } = store
-
+const DocTemplate = ({ data, height }) => {
   const { markdownRemark, allMarkdownRemark } = data
   const frontmatter = markdownRemark?.frontmatter
   const html = markdownRemark?.html ?? `<div>no data</div>`
@@ -66,18 +60,14 @@ const DocTemplate = ({ data, height, width }) => {
   const onChangeTab = useCallback(
     (event, value) => {
       setTab(value)
-      console.log('docTemplate, onChangeTab, value:', value)
       if (value === 0) {
         // eslint-disable-next-line no-unused-vars
         const [first, ...rest] = pathElements
-        console.log('docTemplate, onChangeTab:', { first, pathElements })
         navigate(`${first}/`)
       }
     },
     [pathElements],
   )
-
-  console.log('docTemplate', { width, windowWidth })
 
   const [stacked, setStacked] = useState(false)
   useEffect(() => {
@@ -90,7 +80,6 @@ const DocTemplate = ({ data, height, width }) => {
     setStacked(stacked)
   }, [])
   useEffect(() => {
-    console.log('docTemplate, useEffect2:', { pathElements, tab })
     pathElements.length > 1 && tab === 0 && setTab(1)
     pathElements.length === 1 && tab === 1 && setTab(0)
   }, [pathElements, tab])
@@ -161,26 +150,25 @@ const DocTemplate = ({ data, height, width }) => {
 }
 
 export const pageQuery = graphql`
-  query ($path: String!) {
-    markdownRemark(frontmatter: { path: { eq: $path } }) {
+  query ($id: String!) {
+    markdownRemark(id: { eq: $id }) {
       html
       frontmatter {
         date(formatString: "DD.MM.YYYY")
-        path
+        slug
         title
       }
     }
     allMarkdownRemark(
       # sort: { frontmatter: { sort1: ASC } }  TODO: migrate gatsby v5
       sort: { order: ASC, fields: [frontmatter___sort1] }
-      filter: { fileAbsolutePath: { regex: "/(/docs)/.*.md$/" } }
     ) {
       edges {
         node {
           id
           frontmatter {
             date(formatString: "DD.MM.YYYY")
-            path
+            slug
             title
             sort1
           }
@@ -190,4 +178,4 @@ export const pageQuery = graphql`
   }
 `
 
-export default withResizeDetector(observer(DocTemplate))
+export default DocTemplate

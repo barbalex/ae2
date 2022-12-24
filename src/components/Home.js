@@ -139,7 +139,7 @@ const Home = () => {
           </Card>
           <Card>
             <CardTitle>Mehr Info:</CardTitle>
-            <DokuLink to="/Dokumentation/Projektbeschreibung">
+            <DokuLink to="/Dokumentation/projektbeschreibung">
               in der Dokumentation
             </DokuLink>
           </Card>
