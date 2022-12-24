@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState,  } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { graphql } from 'gatsby'
 import styled from '@emotion/styled'
 import Paper from '@mui/material/Paper'
@@ -8,7 +8,7 @@ import Tab from '@mui/material/Tab'
 import Layout from '../../components/Layout'
 import ErrorBoundary from '../../components/shared/ErrorBoundary'
 import Sidebar from '../../templates/Sidebar'
-import useLocation from '../../modules/useLocation'
+import { useLocation } from '@reach/router'
 import Header from '../../components/Head'
 
 const Container = styled.div`
@@ -143,6 +143,6 @@ export const pageQuery = graphql`
   }
 `
 
-export default (Dokumentation)
+export default Dokumentation
 
 export const Head = () => <Header />

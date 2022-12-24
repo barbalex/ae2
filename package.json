@@ -49,8 +49,8 @@
     "mobx": "6.7.0",
     "mobx-react-lite": "3.4.0",
     "mobx-state-tree": "5.1.7",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "react-dropzone": "14.2.3",
     "react-error-boundary": "3.1.4",
     "react-highlight-words": "0.18.0",
@@ -67,7 +67,6 @@
     "typography": "0.16.21",
     "use-debounce": "9.0.2",
     "use-resize-observer": "9.1.0",
-    "use-subscription": "1.8.0",
     "xlsx": "0.18.5"
   },
   "dependenciesComments": {

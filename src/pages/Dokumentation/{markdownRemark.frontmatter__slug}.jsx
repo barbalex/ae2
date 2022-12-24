@@ -9,7 +9,7 @@ import SimpleBar from 'simplebar-react'
 import Layout from '../../components/Layout'
 import ErrorBoundary from '../../components/shared/ErrorBoundary'
 import Sidebar from '../../templates/Sidebar'
-import useLocation from '../../modules/useLocation'
+import { useLocation } from '@reach/router'
 
 const Container = styled.div`
   height: calc(100vh - 64px);
