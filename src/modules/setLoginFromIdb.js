@@ -4,7 +4,9 @@ const setLoginFromIdb = async ({ idb, store }) => {
   const username = users?.[0]?.username
   if (username && token) {
     store.login.setLogin({ username, token })
+    return store
   }
+  return store
 }
 
 export default setLoginFromIdb

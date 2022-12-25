@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { ApolloProvider } from '@apollo/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { navigate } from 'gatsby'
@@ -27,26 +27,32 @@ import { Provider as MobxProvider } from './storeContext'
 import Store from './store'
 
 const App = ({ element }) => {
+  const idb = initializeIdb()
+
+  const [store, setStore] = useState()
+  useEffect(() => {
+    const _store = Store({ navigate }).create()
+    setLoginFromIdb({ idb, store: _store }).then((store) => {
+      setStore(store)
+
+      // initiate activeNodeArray
+      const { setActiveNodeArray } = store
+      setActiveNodeArray(getActiveNodeArrayFromPathname())
+    })
+  }, [idb])
+
+  const myClient = client({ idb, store })
+
+  const queryClient = new QueryClient()
+
   const ieVersion = detectIE()
   if (!!ieVersion && ieVersion < 12 && typeof window !== 'undefined') {
     return window.alert(`Sorry: Internet Explorer wird nicht unterstützt.
     Wir empfehlen eine aktuelle Version von Chrome oder Firefox`)
   }
 
-  const idb = initializeIdb()
-
-  const store = Store({ navigate }).create()
-
-  typeof window !== 'undefined' && setLoginFromIdb({ idb, store })
-
-  const myClient = client({ idb, store })
-
-  const queryClient = new QueryClient()
-
-  const { setActiveNodeArray } = store
-
-  // initiate activeNodeArray
-  setActiveNodeArray(getActiveNodeArrayFromPathname())
+  // on first render returns null
+  if (!store) return null
 
   return (
     <IdbProvider value={idb}>
