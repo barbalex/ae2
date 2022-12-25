@@ -184,6 +184,8 @@ const TreeComponent = () => {
   //   variables,
   // })
 
+  useEffect(() => console.log('TreeComponent first render'), [])
+
   const { isLoading, error, data } = useQuery({
     queryKey: ['treeQuery', variables],
     queryFn: () =>
@@ -210,8 +212,9 @@ const TreeComponent = () => {
     }
     if (data?.data?.treeFunction?.nodes) {
       previousData.current = data?.data?.treeFunction?.nodes
+      return data?.data?.treeFunction?.nodes
     }
-    return data?.data?.treeFunction?.nodes ?? []
+    return []
   }, [data, isLoading])
 
   const listRef = useRef(null)
