@@ -177,13 +177,20 @@ const TreeComponent = () => {
 
   const client = useApolloClient()
 
+  console.log('TreeComponent', {
+    activeNodeArray,
+    username: login.username,
+    tokenExists: !!login.token,
+    variables,
+  })
+
   const { isLoading, error, data } = useQuery({
-    queryKey: ['treeQuery', activeNodeArray, login.username, !!login.token],
+    queryKey: ['treeQuery', Object.values(variables)],
     queryFn: async () =>
       await client.query({
         query: treeQuery,
         variables,
-        fetchPolicy: 'no-cache',
+        // fetchPolicy: 'no-cache',
       }),
   })
 
