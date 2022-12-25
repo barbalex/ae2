@@ -160,7 +160,7 @@ const StyledList = styled(List)`
 
 const TreeComponent = () => {
   const store = useContext(storeContext)
-  const { login } = store
+  // const { login } = store
   const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const {
@@ -177,12 +177,12 @@ const TreeComponent = () => {
 
   const client = useApolloClient()
 
-  console.log('TreeComponent', {
-    // activeNodeArray,
-    // username: login.username,
-    // tokenExists: !!login.token,
-    variables,
-  })
+  // console.log('TreeComponent', {
+  //   activeNodeArray,
+  //   username: login.username,
+  //   tokenExists: !!login.token,
+  //   variables,
+  // })
 
   const { isLoading, error, data } = useQuery({
     queryKey: ['treeQuery', variables],
@@ -200,12 +200,19 @@ const TreeComponent = () => {
 
   // if isLoading, return previous value to avoid flickering
   const nodes = useMemo(() => {
-    if (isLoading) return previousData.current ?? []
+    if (isLoading) {
+      console.log('Tree, memo', {
+        isLoading,
+        previousData: previousData.current,
+        data,
+      })
+      return previousData.current ?? []
+    }
     if (data?.data?.treeFunction?.nodes) {
       previousData.current = data?.data?.treeFunction?.nodes
     }
     return data?.data?.treeFunction?.nodes ?? []
-  }, [data?.data?.treeFunction?.nodes, isLoading])
+  }, [data, isLoading])
 
   const listRef = useRef(null)
 
