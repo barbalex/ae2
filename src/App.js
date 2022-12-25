@@ -44,7 +44,7 @@ const App = ({ element }) => {
   const ieVersion = detectIE()
   if (!!ieVersion && ieVersion < 12 && typeof window !== 'undefined') {
     return window.alert(`Sorry: Internet Explorer wird nicht unterstützt.
-    Wir empfehlen eine aktuelle Version von Chrome oder Firefox`)
+    Wir empfehlen eine aktuelle Version von Chrome, Edge oder Firefox`)
   }
 
   // on first render returns null
