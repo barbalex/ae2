@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react'
 import styled from '@emotion/styled'
-import Button from '@mui/material/Button'
-import Snackbar from '@mui/material/Snackbar'
 import debounce from 'lodash/debounce'
 import { observer } from 'mobx-react-lite'
 import { Router } from '@reach/router'
@@ -23,7 +21,7 @@ const Container = styled.div`
 
 const App = () => {
   const store = useContext(storeContext)
-  const { updateAvailable, setWindowWidth, setWindowHeight } = store
+  const { setWindowWidth, setWindowHeight } = store
 
   const [stacked, setStacked] = useState(false)
 
@@ -54,11 +52,6 @@ const App = () => {
     }
   }, [updateStacked])
 
-  const onClickReload = useCallback(
-    () => typeof window !== 'undefined' && window.location.reload(false),
-    [],
-  )
-
   return (
     <ErrorBoundary>
       <Container>
@@ -67,27 +60,9 @@ const App = () => {
             <Data stacked={stacked} path="/*" />
             <Export stacked={stacked} path="Export" />
             <Login path="/Login" />
-            {/* <GraphIql path="/graphiql" /> */} 
+            {/* <GraphIql path="/graphiql" /> */}
             <FourOhFour default />
           </Router>
-          <Snackbar
-            open={updateAvailable}
-            message={
-              <span id="message-id">
-                Für arteigenschaften.ch ist ein Update verfügbar
-              </span>
-            }
-            action={
-              <Button
-                key="undo"
-                color="primary"
-                size="small"
-                onClick={onClickReload}
-              >
-                neu laden
-              </Button>
-            }
-          />
         </Layout>
       </Container>
     </ErrorBoundary>
