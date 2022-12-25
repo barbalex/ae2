@@ -41,8 +41,6 @@ const App = ({ element }) => {
     })
   }, [idb])
 
-  const queryClient = new QueryClient()
-
   const ieVersion = detectIE()
   if (!!ieVersion && ieVersion < 12 && typeof window !== 'undefined') {
     return window.alert(`Sorry: Internet Explorer wird nicht unterstützt.
@@ -53,6 +51,8 @@ const App = ({ element }) => {
   if (!store) return null
 
   const myClient = client({ idb, store })
+
+  const queryClient = new QueryClient()
 
   return (
     <IdbProvider value={idb}>
