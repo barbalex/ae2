@@ -39,13 +39,19 @@ const App = ({ element }) => {
       const { setActiveNodeArray } = store
       setActiveNodeArray(getActiveNodeArrayFromPathname())
     })
-  }, [idb])
+    // need to disable hook-deps because of:
+    // 1. idb exists already on first render
+    // 2. idb makes component rerender indefinitely
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const ieVersion = detectIE()
   if (!!ieVersion && ieVersion < 12 && typeof window !== 'undefined') {
     return window.alert(`Sorry: Internet Explorer wird nicht unterstützt.
     Wir empfehlen eine aktuelle Version von Chrome, Edge, Firefox oder Safari`)
   }
+
+  console.log('App rendering', { store, idb })
 
   // on first render returns null
   if (!store) return null
