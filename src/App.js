@@ -41,8 +41,6 @@ const App = ({ element }) => {
     })
   }, [idb])
 
-  const myClient = client({ idb, store })
-
   const queryClient = new QueryClient()
 
   const ieVersion = detectIE()
@@ -53,6 +51,8 @@ const App = ({ element }) => {
 
   // on first render returns null
   if (!store) return null
+
+  const myClient = client({ idb, store })
 
   return (
     <IdbProvider value={idb}>
