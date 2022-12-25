@@ -114,6 +114,7 @@ const Row = ({ index = 0, style, data, userId }) => {
   const onClickNode = useCallback(async () => {
     // or if node is already active
     if (!isEqual(url, activeNodeArray)) {
+      console.log('Tree Row, navigating to:', `/${url.join('/')}`)
       navigate(`/${url.join('/')}`)
     }
   }, [activeNodeArray, url])

@@ -1,8 +1,13 @@
 const getActiveNodeArrayFromPathname = () => {
-  const pathName =
+  let pathName =
     typeof window !== 'undefined'
       ? window.location.pathname.replace('/', '')
       : ''
+  // need to remove trailing /
+  // would result in 0 added to activeNodeArray
+  if (pathName.endsWith('/')) {
+    pathName = pathName.slice(0, -1)
+  }
   let pathElements = pathName.split('/')
   if (pathElements[0] === '') {
     // get rid of empty element(s) at start
@@ -17,6 +22,7 @@ const getActiveNodeArrayFromPathname = () => {
       pathElements[index] = +e
     }
   })
+
   return pathElements
 }
 
