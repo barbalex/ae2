@@ -51,7 +51,6 @@ const App = ({ element }) => {
   if (!store) return null
 
   const myClient = client({ idb, store })
-
   const queryClient = new QueryClient()
 
   return (
