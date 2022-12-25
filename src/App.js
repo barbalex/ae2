@@ -31,14 +31,16 @@ const App = ({ element }) => {
 
   const [store, setStore] = useState()
   useEffect(() => {
-    const _store = Store({ navigate }).create()
-    setLoginFromIdb({ idb, store: _store }).then((store) => {
-      setStore(store)
+    const storeWithoutLogin = Store({ navigate }).create()
+    setLoginFromIdb({ idb, store: storeWithoutLogin }).then(
+      (storeWithLogin) => {
+        setStore(storeWithLogin)
 
-      // initiate activeNodeArray
-      const { setActiveNodeArray } = store
-      setActiveNodeArray(getActiveNodeArrayFromPathname())
-    })
+        // initiate activeNodeArray
+        const { setActiveNodeArray } = storeWithLogin
+        setActiveNodeArray(getActiveNodeArrayFromPathname())
+      },
+    )
     // need to disable hook-deps because of:
     // 1. idb exists already on first render
     // 2. idb makes component rerender indefinitely
@@ -50,8 +52,6 @@ const App = ({ element }) => {
     return window.alert(`Sorry: Internet Explorer wird nicht unterstützt.
     Wir empfehlen eine aktuelle Version von Chrome, Edge, Firefox oder Safari`)
   }
-
-  console.log('App rendering', { store, idb })
 
   // on first render returns null
   if (!store) return null
