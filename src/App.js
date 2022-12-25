@@ -25,7 +25,6 @@ import client from './client'
 import { Provider as IdbProvider } from './idbContext'
 import { Provider as MobxProvider } from './storeContext'
 import Store from './store'
-import setUserFromIdb from './modules/setUserFromIdb'
 
 const App = ({ element }) => {
   const ieVersion = detectIE()
@@ -37,15 +36,14 @@ const App = ({ element }) => {
   const idb = initializeIdb()
 
   const store = Store({ navigate }).create()
-  typeof window !== 'undefined' && setUserFromIdb({ idb, store })
+
+  typeof window !== 'undefined' && setLoginFromIdb({ idb, store })
 
   const myClient = client({ idb, store })
 
   const queryClient = new QueryClient()
 
   const { setActiveNodeArray } = store
-
-  typeof window !== 'undefined' && setLoginFromIdb({ idb, store })
 
   // initiate activeNodeArray
   setActiveNodeArray(getActiveNodeArrayFromPathname())
