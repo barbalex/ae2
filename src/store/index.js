@@ -12,7 +12,6 @@ const store = ({ navigate }) =>
       export: types.optional(Export, defaultExport),
       editingTaxonomies: types.optional(types.boolean, false),
       editingPCs: types.optional(types.boolean, false),
-      updateAvailable: types.optional(types.boolean, false),
       activeNodeArray: types.optional(
         types.array(types.union(types.string, types.number)),
         [],
@@ -47,9 +46,6 @@ const store = ({ navigate }) =>
       },
       setEditingPCs(value) {
         self.editingPCs = value
-      },
-      setUpdateAvailable(value) {
-        self.updateAvailable = value
       },
       setActiveNodeArray(value) {
         self.activeNodeArray = value
