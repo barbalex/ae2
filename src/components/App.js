@@ -57,7 +57,7 @@ const App = () => {
         <Layout>
           <Router>
             <Data stacked={stacked} path="/*" />
-            <Export stacked={stacked} path="Export" />
+            {/* <Export stacked={stacked} path="Export" /> */}
             <Login path="/Login" />
             <FourOhFour default />
           </Router>

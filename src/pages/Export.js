@@ -1,9 +1,16 @@
-import React from 'react'
+import React, { useContext } from 'react'
 
-import Router from '../components/Router'
 import Header from '../components/Head'
+import storeContext from '../storeContext'
+import ExportStacked from '../components/Export/ExportStacked'
+import ExportFlexed from '../components/Export/ExportFlexed'
 
-const Export = ({ location }) => <Router location={location} />
+const Export = () => {
+  const store = useContext(storeContext)
+  const { stacked } = store
+
+  return stacked ? <ExportStacked /> : <ExportFlexed />
+}
 
 export default Export
 
