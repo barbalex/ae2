@@ -177,20 +177,21 @@ const TreeComponent = () => {
 
   const client = useApolloClient()
 
-  // console.log('TreeComponent', {
-  //   activeNodeArray,
-  //   username: login.username,
-  //   tokenExists: !!login.token,
-  //   variables,
-  // })
+  console.log('TreeComponent', {
+    // activeNodeArray,
+    // username: login.username,
+    // tokenExists: !!login.token,
+    variables,
+  })
 
   const { isLoading, error, data } = useQuery({
-    queryKey: ['treeQuery', Object.values(variables)],
+    queryKey: ['treeQuery', variables],
     queryFn: () =>
       client.query({
         query: treeQuery,
         variables,
         // seems that react-query cache is not working
+        // no idea why
         // fetchPolicy: 'no-cache',
       }),
   })
