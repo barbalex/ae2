@@ -190,6 +190,7 @@ const TreeComponent = () => {
       await client.query({
         query: treeQuery,
         variables,
+        // seems that react-query cache is not working
         // fetchPolicy: 'no-cache',
       }),
   })
