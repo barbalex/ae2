@@ -1,4 +1,4 @@
-import { useEffect, useContext } from 'react'
+import { useEffect, useContext, useMemo } from 'react'
 import { useQuery, gql } from '@apollo/client'
 import isUuid from 'is-uuid'
 import { navigate } from 'gatsby'
@@ -50,11 +50,15 @@ const objectQuery = gql`
 
 const IdParameter = () => {
   const store = useContext(storeContext)
-  // set activeNodeArray when pathname changes
+
   const { setActiveNodeArray } = store
+  const pathname = useMemo(
+    () => (typeof window !== 'undefined' ? window.location.pathname : []),
+    [],
+  )
   useEffect(() => {
     setActiveNodeArray(getActiveNodeArrayFromPathname())
-  }, [window.location.pathname, setActiveNodeArray])
+  }, [pathname, setActiveNodeArray])
   /**
    * check if old url was passed that contains objectId-Param
    * for instance:
