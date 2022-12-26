@@ -5,7 +5,6 @@ import Paper from '@mui/material/Paper'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 
-import Layout from '../../components/Layout'
 import ErrorBoundary from '../../components/shared/ErrorBoundary'
 import Sidebar from '../../templates/Sidebar'
 import { useLocation } from '@reach/router'
@@ -73,7 +72,6 @@ const Dokumentation = ({ data }) => {
   if (stacked) {
     return (
       <ErrorBoundary>
-        <Layout>
           <StyledPaper>
             <Tabs
               variant="fullWidth"
@@ -100,14 +98,12 @@ const Dokumentation = ({ data }) => {
               </Doku>
             )}
           </Content>
-        </Layout>
       </ErrorBoundary>
     )
   }
 
   return (
     <ErrorBoundary>
-      <Layout>
         <Container>
           <Sidebar
             title="Dokumentation"
@@ -118,7 +114,6 @@ const Dokumentation = ({ data }) => {
             <p>Hoffentlich nützliche Infos für Sie</p>
           </Doku>
         </Container>
-      </Layout>
     </ErrorBoundary>
   )
 }

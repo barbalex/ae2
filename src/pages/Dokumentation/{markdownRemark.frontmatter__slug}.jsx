@@ -6,7 +6,6 @@ import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import SimpleBar from 'simplebar-react'
 
-import Layout from '../../components/Layout'
 import ErrorBoundary from '../../components/shared/ErrorBoundary'
 import Sidebar from '../../templates/Sidebar'
 import { useLocation } from '@reach/router'
@@ -87,64 +86,58 @@ const DocTemplate = ({ data, height }) => {
   if (stacked) {
     return (
       <ErrorBoundary>
-        <Layout>
-          <StyledPaper>
-            <Tabs
-              variant="fullWidth"
-              value={tab}
-              onChange={onChangeTab}
-              indicatorColor="primary"
+        <StyledPaper>
+          <Tabs
+            variant="fullWidth"
+            value={tab}
+            onChange={onChangeTab}
+            indicatorColor="primary"
+          >
+            <Tab label="Navigation" />
+            <Tab label="Formular" />
+          </Tabs>
+        </StyledPaper>
+        <Content>
+          {tab === 0 && (
+            <Sidebar
+              title="Dokumentation"
+              titleLink="/Dokumentation/"
+              edges={edges}
+              stacked={true}
+            />
+          )}
+          {tab === 1 && (
+            <SimpleBar
+              style={{ maxHeight: height, height: '100%', width: '100%' }}
             >
-              <Tab label="Navigation" />
-              <Tab label="Formular" />
-            </Tabs>
-          </StyledPaper>
-          <Content>
-            {tab === 0 && (
-              <Sidebar
-                title="Dokumentation"
-                titleLink="/Dokumentation/"
-                edges={edges}
-                stacked={true}
-              />
-            )}
-            {tab === 1 && (
-              <SimpleBar
-                style={{ maxHeight: height, height: '100%', width: '100%' }}
-              >
-                <Doku>
-                  <h1>{frontmatter?.title ?? 'no title'}</h1>
-                  <DokuDate>{frontmatter.date ?? 'no date'}</DokuDate>
-                  <div dangerouslySetInnerHTML={{ __html: html }} />
-                </Doku>
-              </SimpleBar>
-            )}
-          </Content>
-        </Layout>
+              <Doku>
+                <h1>{frontmatter?.title ?? 'no title'}</h1>
+                <DokuDate>{frontmatter.date ?? 'no date'}</DokuDate>
+                <div dangerouslySetInnerHTML={{ __html: html }} />
+              </Doku>
+            </SimpleBar>
+          )}
+        </Content>
       </ErrorBoundary>
     )
   }
 
   return (
     <ErrorBoundary>
-      <Layout>
-        <Container>
-          <Sidebar
-            title="Dokumentation"
-            titleLink="/Dokumentation/"
-            edges={edges}
-          />
-          <SimpleBar
-            style={{ maxHeight: height, height: '100%', width: '100%' }}
-          >
-            <Doku>
-              <h1>{frontmatter?.title ?? 'no title'}</h1>
-              <DokuDate>{frontmatter.date ?? 'no date'}</DokuDate>
-              <div dangerouslySetInnerHTML={{ __html: html }} />
-            </Doku>
-          </SimpleBar>
-        </Container>
-      </Layout>
+      <Container>
+        <Sidebar
+          title="Dokumentation"
+          titleLink="/Dokumentation/"
+          edges={edges}
+        />
+        <SimpleBar style={{ maxHeight: height, height: '100%', width: '100%' }}>
+          <Doku>
+            <h1>{frontmatter?.title ?? 'no title'}</h1>
+            <DokuDate>{frontmatter.date ?? 'no date'}</DokuDate>
+            <div dangerouslySetInnerHTML={{ __html: html }} />
+          </Doku>
+        </SimpleBar>
+      </Container>
     </ErrorBoundary>
   )
 }
@@ -159,9 +152,7 @@ export const pageQuery = graphql`
         title
       }
     }
-    allMarkdownRemark(
-       sort: { frontmatter: { sort1: ASC } }  
-    ) {
+    allMarkdownRemark(sort: { frontmatter: { sort1: ASC } }) {
       edges {
         node {
           id

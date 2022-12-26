@@ -6,8 +6,12 @@
 import React from 'react'
 
 import App from './src/App'
+import Layout from './src/components/Layout'
 
 export const wrapRootElement = ({ element }) => <App element={element} />
+
+// https://www.gatsbyjs.com/docs/reference/config-files/gatsby-browser/#wrapPageElement
+export const wrapPageElement = ({ element }) => <Layout>{element}</Layout>
 
 // https://github.com/gatsbyjs/gatsby/issues/9087#issuecomment-459105021
 export const onServiceWorkerUpdateReady = () => {
