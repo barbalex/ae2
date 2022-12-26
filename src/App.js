@@ -26,6 +26,7 @@ import { Provider as IdbProvider } from './idbContext'
 import { Provider as MobxProvider } from './storeContext'
 import Store from './store'
 import Stacker from './components/Stacker'
+import Layout from './components/Layout'
 
 const App = ({ element }) => {
   const idb = initializeIdb()
@@ -66,7 +67,9 @@ const App = ({ element }) => {
         <ApolloProvider client={myClient}>
           <QueryClientProvider client={queryClient}>
             <StyledEngineProvider injectFirst>
-              <ThemeProvider theme={theme}>{element}</ThemeProvider>
+              <ThemeProvider theme={theme}>
+                <Layout>{element}</Layout>
+              </ThemeProvider>
               <Stacker />
             </StyledEngineProvider>
           </QueryClientProvider>
