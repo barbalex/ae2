@@ -160,8 +160,8 @@ const StyledList = styled(List)`
 
 const TreeComponent = () => {
   const store = useContext(storeContext)
-  // const { login } = store
-  const activeNodeArray = getSnapshot(store.activeNodeArray)
+  const { activeNodeArray: activeNodeArrayProxy } = store
+  const activeNodeArray = getSnapshot(activeNodeArrayProxy)
 
   const {
     height = 250,
@@ -177,12 +177,12 @@ const TreeComponent = () => {
 
   const client = useApolloClient()
 
-  // console.log('TreeComponent', {
-  //   activeNodeArray,
-  //   username: login.username,
-  //   tokenExists: !!login.token,
-  //   variables,
-  // })
+  // TODO: not registering changes?
+  // or is only url changed but not activeNodeArray?
+  console.log('TreeComponent', {
+    activeNodeArray,
+    variables,
+  })
 
   useEffect(() => console.log('TreeComponent first render'), [])
 
