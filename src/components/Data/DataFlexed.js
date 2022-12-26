@@ -1,9 +1,9 @@
 import React from 'react'
 import { ReflexContainer, ReflexSplitter, ReflexElement } from 'react-reflex'
 import styled from '@emotion/styled'
+import { Outlet } from 'react-router'
 
 import Tree from '../Tree'
-import DataType from '../DataType'
 import ErrorBoundary from '../shared/ErrorBoundary'
 
 const DataElement = styled(ReflexElement)`
@@ -13,15 +13,15 @@ const DataElement = styled(ReflexElement)`
 // TODO: render outlet instead of DataType?
 const DataFlexed = () => (
   <ErrorBoundary>
-    <ReflexContainer orientation="vertical">
-      <ReflexElement flex={0.35} className="tree-reflex-element">
-        <Tree />
-      </ReflexElement>
-      <ReflexSplitter key="treeSplitter" />
-      <DataElement>
-        <DataType />
-      </DataElement>
-    </ReflexContainer>
+      <ReflexContainer orientation="vertical">
+        <ReflexElement flex={0.35} className="tree-reflex-element">
+          <Tree />
+        </ReflexElement>
+        <ReflexSplitter key="treeSplitter" />
+        <DataElement>
+            <Outlet/>
+        </DataElement>
+      </ReflexContainer>
   </ErrorBoundary>
 )
 

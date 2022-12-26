@@ -59,6 +59,7 @@
     "react-reflex": "4.0.9",
     "react-resize-detector": "7.1.2",
     "react-router": "^6.6.1",
+    "react-router-dom": "^6.6.1",
     "react-select": "5.7.0",
     "react-typography": "0.16.23",
     "react-virtualized-auto-sizer": "1.0.7",

@@ -4,9 +4,9 @@ import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import styled from '@emotion/styled'
 import { observer } from 'mobx-react-lite'
+import { Outlet } from 'react-router'
 
 import Tree from '../Tree'
-import DataType from '../DataType'
 import storeContext from '../../storeContext'
 
 const StyledPaper = styled(Paper)`
@@ -19,7 +19,7 @@ const Content = styled.div`
 
 const DataStacked = () => {
   const store = useContext(storeContext)
-  const { windowWidth, windowHeight } = store
+  const { windowHeight } = store
 
   const [tab, setTab] = useState(0)
   const onChangeTab = useCallback((event, value) => setTab(value), [])
@@ -40,9 +40,7 @@ const DataStacked = () => {
       </StyledPaper>
       <Content data-height={windowHeight - 103}>
         {tab === 0 && <Tree />}
-        {tab === 1 && (
-          <DataType stacked={true} dimensions={{ width: windowWidth }} />
-        )}
+        {tab === 1 && <Outlet />}
       </Content>
     </>
   )
