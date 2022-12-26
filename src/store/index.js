@@ -6,7 +6,7 @@ import TreeFilter, { defaultValue as defaultTreeFilter } from './TreeFilter'
 import Login, { defaultValue as defaultLogin } from './Login'
 import getActiveNodeArrayFromPathname from '../modules/getActiveNodeArrayFromPathname'
 
-const store = ({ navigate }) =>
+const store = () =>
   types
     .model({
       export: types.optional(Export, defaultExport),
@@ -51,10 +51,10 @@ const store = ({ navigate }) =>
       setEditingPCs(value) {
         self.editingPCs = value
       },
-      setActiveNodeArray(value) {
+      setActiveNodeArray(value, navigate) {
         self.activeNodeArray = value
         const activeNodeArrayFromUrl = getActiveNodeArrayFromPathname()
-        if (!isEqual(activeNodeArrayFromUrl, value)) {
+        if (!isEqual(activeNodeArrayFromUrl, value) && navigate) {
           navigate(`/${value.join('/')}`)
         }
       },
