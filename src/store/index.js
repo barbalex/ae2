@@ -51,10 +51,11 @@ const store = () =>
       setEditingPCs(value) {
         self.editingPCs = value
       },
-      setActiveNodeArray(value, navigate) {
+      setActiveNodeArray(value, navigateReactRouter, navigate) {
         self.activeNodeArray = value
         const activeNodeArrayFromUrl = getActiveNodeArrayFromPathname()
-        if (!isEqual(activeNodeArrayFromUrl, value) && navigate) {
+        if (!isEqual(activeNodeArrayFromUrl, value) && navigateReactRouter) {
+          navigateReactRouter(`/${value.join('/')}`)
           navigate(`/${value.join('/')}`)
         }
       },

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { ApolloProvider } from '@apollo/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { navigate } from 'gatsby'
 // importing isomorphic-fetch is essential
 // otherwise apollo errors during the build
 // see: https://github.com/gatsbyjs/gatsby/issues/11225#issuecomment-457211628
 import 'isomorphic-fetch'
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles'
+import { BrowserRouter } from 'react-router-dom'
 
 import 'simplebar/dist/simplebar.min.css'
 
@@ -27,13 +27,14 @@ import { Provider as MobxProvider } from './storeContext'
 import Store from './store'
 import Stacker from './components/Stacker'
 import IdParameter from './components/IdParameter'
+import ActiveNodeArraySetter from './components/ActiveNodeArraySetter'
 
 const App = ({ element }) => {
   const idb = initializeIdb()
 
   const [store, setStore] = useState()
   useEffect(() => {
-    const storeWithoutLogin = Store({ navigate }).create()
+    const storeWithoutLogin = Store().create()
     setLoginFromIdb({ idb, store: storeWithoutLogin }).then(
       (storeWithLogin) => {
         setStore(storeWithLogin)
@@ -62,19 +63,22 @@ const App = ({ element }) => {
   const queryClient = new QueryClient()
 
   return (
-    <IdbProvider value={idb}>
-      <MobxProvider value={store}>
-        <ApolloProvider client={myClient}>
-          <QueryClientProvider client={queryClient}>
-            <StyledEngineProvider injectFirst>
-              <ThemeProvider theme={theme}>{element}</ThemeProvider>
-              <Stacker />
-              <IdParameter />
-            </StyledEngineProvider>
-          </QueryClientProvider>
-        </ApolloProvider>
-      </MobxProvider>
-    </IdbProvider>
+    <BrowserRouter>
+      <IdbProvider value={idb}>
+        <MobxProvider value={store}>
+          <ApolloProvider client={myClient}>
+            <QueryClientProvider client={queryClient}>
+              <StyledEngineProvider injectFirst>
+                <ActiveNodeArraySetter />
+                <IdParameter />
+                <ThemeProvider theme={theme}>{element}</ThemeProvider>
+                <Stacker />
+              </StyledEngineProvider>
+            </QueryClientProvider>
+          </ApolloProvider>
+        </MobxProvider>
+      </IdbProvider>
+    </BrowserRouter>
   )
 }
 

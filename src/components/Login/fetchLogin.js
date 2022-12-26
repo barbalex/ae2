@@ -1,5 +1,3 @@
-import { navigate } from 'gatsby'
-
 import jwtDecode from 'jwt-decode'
 
 import loginDbMutation from './loginDbMutation'
@@ -19,6 +17,7 @@ const fetchLogin = async ({
   store,
   nameInput,
   passwordInput,
+  navigate,
 }) => {
   const { historyAfterLogin, setHistoryAfterLogin, login } = store
   const { setLogin } = login

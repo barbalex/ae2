@@ -4,6 +4,7 @@ import FormControl from '@mui/material/FormControl'
 import styled from '@emotion/styled'
 import format from 'date-fns/format'
 import { useApolloClient } from '@apollo/client'
+import { useNavigate } from 'react-router-dom'
 
 import onBlurDo from './onBlur'
 import ErrorBoundary from '../shared/ErrorBoundary'
@@ -29,6 +30,7 @@ const Property = ({
   disabled,
 }) => {
   const client = useApolloClient()
+  const navigate = useNavigate()
 
   const [value, setValue] = useState(pC[field] || '')
   const [error, setError] = useState(null)
@@ -44,9 +46,9 @@ const Property = ({
         pC,
         value: event.target.value,
         prevValue: pC[field],
-        setError,
+        setError,navigate
       }),
-    [client, field, pC],
+    [client, field, navigate, pC],
   )
 
   return (

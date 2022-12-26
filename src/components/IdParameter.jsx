@@ -1,13 +1,10 @@
-import { useEffect, useContext, useMemo } from 'react'
 import { useQuery, gql } from '@apollo/client'
 import isUuid from 'is-uuid'
-import { navigate } from 'gatsby'
 import { observer } from 'mobx-react-lite'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 
 import getUrlForObject from '../modules/getUrlForObject'
 import getUrlParamByName from '../modules/getUrlParamByName'
-import storeContext from '../storeContext'
-import getActiveNodeArrayFromPathname from '../modules/getActiveNodeArrayFromPathname'
 
 const objectQuery = gql`
   query ObjectQuery($id: UUID!, $hasObjectId: Boolean!) {
@@ -49,16 +46,8 @@ const objectQuery = gql`
 `
 
 const IdParameter = () => {
-  const store = useContext(storeContext)
-
-  const { setActiveNodeArray } = store
-  const pathname = useMemo(
-    () => (typeof window !== 'undefined' ? window.location.pathname : []),
-    [],
-  )
-  useEffect(() => {
-    setActiveNodeArray(getActiveNodeArrayFromPathname())
-  }, [pathname, setActiveNodeArray])
+  const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
   /**
    * check if old url was passed that contains objectId-Param
    * for instance:
@@ -69,16 +58,18 @@ const IdParameter = () => {
     idParam && isUuid.anyNonNil(idParam) ? idParam.toLowerCase() : null
 
   const hasObjectId = !!objectId
-  const { loading, error, data } = useQuery(objectQuery, {
+  const { error, data } = useQuery(objectQuery, {
     variables: { id: objectId, hasObjectId },
   })
 
   if (hasObjectId) {
-    if (loading) return 'Loading...'
-    if (error) return `Fehler: ${error.message}`
+    if (error) return null
     // if idParam was passed, open object
     const url = getUrlForObject(data.objectById)
     navigate(`/${url.join('/')}`)
+    // remove id param from url
+    searchParams.delete('id')
+    setSearchParams(searchParams)
   }
   return null
 }

@@ -5,7 +5,7 @@ import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 import { MdMoreVert as MoreVertIcon } from 'react-icons/md'
 import styled from '@emotion/styled'
-import { navigate } from 'gatsby'
+import { useNavigate } from 'react-router-dom'
 
 import relations from '../../../modules/relations.png'
 
@@ -41,6 +41,7 @@ const paperProps = {
 }
 
 const MoreMenu = () => {
+  const navigate = useNavigate()
   const [anchorEl, setAnchorEl] = useState(null)
 
   const onClickButton = useCallback((event) => {
@@ -52,7 +53,7 @@ const MoreMenu = () => {
   const onClickUeber = useCallback(() => {
     navigate('/Dokumentation/projektbeschreibung')
     setAnchorEl(null)
-  }, [])
+  }, [navigate])
   const onClickStruktur = useCallback(() => {
     setAnchorEl(null)
     if (typeof window !== 'undefined') {
@@ -114,11 +115,6 @@ const MoreMenu = () => {
         <MenuItem key="melden" onClick={onClickMelden}>
           Fehler oder Wünsche melden
         </MenuItem>
-        {/* <TwoLineMenuItem key="graphiql" onClick={onClickGqlQuery}>
-          GrahpQL-Abfragetool
-          <br />
-          inkl. Schnittstellen-Dokumentation
-        </TwoLineMenuItem> */}
         <MenuItem onClick={onClickUptime}>
           {`Verfügbarkeit der Server von ${hostname}`}
         </MenuItem>

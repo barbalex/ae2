@@ -1,8 +1,14 @@
-import { navigate } from 'gatsby'
-
 import updatePCMutation from './updatePCMutation'
 
-const onBlur = async ({ client, field, pC, value, prevValue, setError }) => {
+const onBlur = async ({
+  client,
+  field,
+  pC,
+  value,
+  prevValue,
+  setError,
+  navigate,
+}) => {
   //setError(null)
   if (value !== prevValue) {
     const variables = {

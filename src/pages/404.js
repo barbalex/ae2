@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react'
 import Typography from '@mui/material/Typography'
-import { navigate } from 'gatsby'
 import styled from '@emotion/styled'
 import Button from '@mui/material/Button'
+import { useNavigate } from 'react-router-dom'
 
 import Layout from '../components/Layout'
 import Header from '../components/Head'
@@ -38,7 +38,8 @@ const StyledButton = styled(Button)`
 `
 
 const FourOFour = () => {
-  const onClickBack = useCallback(() => navigate('/'), [])
+  const navigate = useNavigate()
+  const onClickBack = useCallback(() => navigate('/'), [navigate])
 
   return (
     <ErrorBoundary>

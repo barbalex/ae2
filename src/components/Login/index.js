@@ -15,6 +15,7 @@ import {
 import styled from '@emotion/styled'
 import { useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
+import { useNavigate } from 'react-router-dom'
 
 import fetchLoginModule from './fetchLogin'
 import idbContext from '../../idbContext'
@@ -42,6 +43,8 @@ const Login = () => {
   const { login } = store
   const { token, setLogin } = login
 
+  const navigate = useNavigate()
+
   const [name, changeName] = useState('')
   const [pass, changePass] = useState('')
   const [showPass, changeShowPass] = useState(false)
@@ -53,7 +56,7 @@ const Login = () => {
   const passwordInput = useRef(null)
 
   const fetchLogin = useCallback(
-    (namePassed, passPassed) =>
+    (namePassed, passPassed, navigate) =>
       fetchLoginModule({
         client,
         changeNameErrorText,
@@ -69,6 +72,7 @@ const Login = () => {
         store,
         nameInput,
         passwordInput,
+        navigate
       }),
     [client, name, pass, idb, store],
   )
@@ -87,10 +91,10 @@ const Login = () => {
       if (!name) {
         changeNameErrorText('Geben Sie den Ihnen zugeteilten Benutzernamen ein')
       } else if (pass) {
-        fetchLogin(name, pass)
+        fetchLogin(name, pass, navigate)
       }
     },
-    [fetchLogin, pass],
+    [fetchLogin, navigate, pass],
   )
   const onBlurPassword = useCallback(
     (e) => {
@@ -100,10 +104,10 @@ const Login = () => {
       if (!pass) {
         changePassErrorText('Bitte Passwort eingeben')
       } else if (name) {
-        fetchLogin(name, pass)
+        fetchLogin(name, pass, navigate)
       }
     },
-    [fetchLogin, name],
+    [fetchLogin, name, navigate],
   )
   const onKeyPressName = useCallback(
     (e) => e.key === 'Enter' && onBlurName(e),

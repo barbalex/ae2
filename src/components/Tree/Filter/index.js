@@ -5,8 +5,8 @@ import Highlighter from 'react-highlight-words'
 import Select from 'react-select/async'
 import { useQuery, gql, useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
-import { navigate } from 'gatsby'
 import { useDebouncedCallback } from 'use-debounce'
+import { useNavigate } from 'react-router-dom'
 
 import getUrlForObject from '../../../modules/getUrlForObject'
 import storeContext from '../../../storeContext'
@@ -94,6 +94,8 @@ const TreeFilter = () => {
   const { treeFilter } = store
   const { setTreeFilter } = treeFilter
 
+  const navigate = useNavigate()
+
   const treeFilterId = treeFilter.id ?? '99999999-9999-9999-9999-999999999999'
   const { data: objectUrlData } = useQuery(objectUrlQuery, {
     variables: {
@@ -131,7 +133,7 @@ const TreeFilter = () => {
         }
       }
     },
-    [setTreeFilter],
+    [navigate, setTreeFilter],
   )
 
   useEffect(() => {

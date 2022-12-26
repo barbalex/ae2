@@ -1,14 +1,14 @@
 import React, { useEffect, useCallback, useState } from 'react'
-import { graphql, navigate } from 'gatsby'
+import { graphql } from 'gatsby'
 import styled from '@emotion/styled'
 import Paper from '@mui/material/Paper'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import SimpleBar from 'simplebar-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import ErrorBoundary from '../../components/shared/ErrorBoundary'
 import Sidebar from '../../templates/Sidebar'
-import { useLocation } from '@reach/router'
 
 const Container = styled.div`
   height: calc(100vh - 64px);
@@ -47,17 +47,18 @@ const Content = styled.div`
 `
 
 const DocTemplate = ({ data, height }) => {
-  const { markdownRemark, allMarkdownRemark } = data
-  const frontmatter = markdownRemark?.frontmatter
-  const html = markdownRemark?.html ?? `<div>no data</div>`
-  const { edges } = allMarkdownRemark
+  const frontmatter = data?.markdownRemark?.frontmatter
+  const html = data?.markdownRemark?.html ?? `<div>no data</div>`
+  const edges = data?.allMarkdownRemark?.edges
 
+  const navigate = useNavigate()
   const { pathname } = useLocation()
   const pathElements = pathname.split('/').filter((p) => !!p)
 
   const [tab, setTab] = useState(0)
   const onChangeTab = useCallback(
     (event, value) => {
+      console.log('Dokumentation, onChangeTab', { event, value, pathElements })
       setTab(value)
       if (value === 0) {
         // eslint-disable-next-line no-unused-vars
@@ -65,7 +66,7 @@ const DocTemplate = ({ data, height }) => {
         navigate(`${first}/`)
       }
     },
-    [pathElements],
+    [navigate, pathElements],
   )
 
   const [stacked, setStacked] = useState(false)

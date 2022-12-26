@@ -1,5 +1,3 @@
-import { navigate } from 'gatsby'
-
 import createUserMutation from '../../Benutzer/createUserMutation'
 import deleteUserMutation from '../../Benutzer/deleteUserMutation'
 import createObjectMutation from '../../Objekt/createObjectMutation'
@@ -17,6 +15,7 @@ const onClickContextMenu = async ({
   treeRefetch,
   userId,
   store,
+  navigate,
 }) => {
   const { setEditingTaxonomies, setEditingPCs, editingTaxonomies } = store
   if (!data) return console.log('no data passed with click')

@@ -24,7 +24,7 @@ import {
 import styled from '@emotion/styled'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
-import { navigate } from 'gatsby'
+import { useNavigate } from 'react-router-dom'
 
 import PropertyReadOnly from '../../../shared/PropertyReadOnly'
 import PropertyReadOnlyStacked from '../../../shared/PropertyReadOnlyStacked'
@@ -102,6 +102,8 @@ const TaxonomyObject = ({ objekt, showLink, stacked }) => {
   const store = useContext(storeContext)
   const { editingTaxonomies, setEditingTaxonomies, login } = store
 
+  const navigate = useNavigate()
+
   const {
     data: organizationUsersData,
     loading: organizationUsersLoading,
@@ -144,7 +146,7 @@ const TaxonomyObject = ({ objekt, showLink, stacked }) => {
       e.stopPropagation()
       navigate(linkUrl)
     },
-    [linkUrl],
+    [linkUrl, navigate],
   )
   const onClickStopEditing = useCallback(
     (e) => {

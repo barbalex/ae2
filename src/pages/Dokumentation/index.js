@@ -42,8 +42,7 @@ const Content = styled.div`
 `
 
 const Dokumentation = ({ data }) => {
-  const { allMarkdownRemark } = data
-  const { edges } = allMarkdownRemark
+  const edges = data?.allMarkdownRemark?.edges ?? []
   const { pathname } = useLocation()
   const pathElements = pathname.split('/').filter((p) => !!p)
 
@@ -72,48 +71,48 @@ const Dokumentation = ({ data }) => {
   if (stacked) {
     return (
       <ErrorBoundary>
-          <StyledPaper>
-            <Tabs
-              variant="fullWidth"
-              value={tab}
-              onChange={onChangeTab}
-              indicatorColor="primary"
-            >
-              <Tab label="Navigation" />
-              <Tab label="Formular" />
-            </Tabs>
-          </StyledPaper>
-          <Content>
-            {tab === 0 && (
-              <Sidebar
-                title="Dokumentation"
-                titleLink="/Dokumentation/"
-                edges={edges}
-                stacked={true}
-              />
-            )}
-            {tab === 1 && (
-              <Doku>
-                <p>Hoffentlich nützliche Infos für Sie</p>
-              </Doku>
-            )}
-          </Content>
+        <StyledPaper>
+          <Tabs
+            variant="fullWidth"
+            value={tab}
+            onChange={onChangeTab}
+            indicatorColor="primary"
+          >
+            <Tab label="Navigation" />
+            <Tab label="Formular" />
+          </Tabs>
+        </StyledPaper>
+        <Content>
+          {tab === 0 && (
+            <Sidebar
+              title="Dokumentation"
+              titleLink="/Dokumentation/"
+              edges={edges}
+              stacked={true}
+            />
+          )}
+          {tab === 1 && (
+            <Doku>
+              <p>Hoffentlich nützliche Infos für Sie</p>
+            </Doku>
+          )}
+        </Content>
       </ErrorBoundary>
     )
   }
 
   return (
     <ErrorBoundary>
-        <Container>
-          <Sidebar
-            title="Dokumentation"
-            titleLink="/Dokumentation/"
-            edges={edges}
-          />
-          <Doku>
-            <p>Hoffentlich nützliche Infos für Sie</p>
-          </Doku>
-        </Container>
+      <Container>
+        <Sidebar
+          title="Dokumentation"
+          titleLink="/Dokumentation/"
+          edges={edges}
+        />
+        <Doku>
+          <p>Hoffentlich nützliche Infos für Sie</p>
+        </Doku>
+      </Container>
     </ErrorBoundary>
   )
 }

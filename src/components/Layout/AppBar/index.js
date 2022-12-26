@@ -7,8 +7,8 @@ import Button from '@mui/material/Button'
 import styled from '@emotion/styled'
 import { useQuery, gql } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
+import { useLocation } from '@reach/router'
 import { navigate, Link } from 'gatsby'
-import { Location } from '@reach/router'
 import { getSnapshot } from 'mobx-state-tree'
 
 import getActiveObjectIdFromNodeArray from '../../../modules/getActiveObjectIdFromNodeArray'
@@ -106,6 +106,7 @@ const Header = () => {
   const store = useContext(storeContext)
   const { login, singleColumnView } = store
   const activeNodeArray = getSnapshot(store.activeNodeArray)
+  const location = useLocation()
 
   const objectId = getActiveObjectIdFromNodeArray(activeNodeArray)
   let pCId = '99999999-9999-9999-9999-999999999999'
@@ -121,7 +122,7 @@ const Header = () => {
     taxId = activeNodeArray[1]
   }
   const existsTaxId = taxId !== '99999999-9999-9999-9999-999999999999'
-  const { data, error: dataError } = useQuery(query, {
+  const { data } = useQuery(query, {
     variables: {
       objectId: objectId || '99999999-9999-9999-9999-999999999999',
       existsObjectId: !!objectId,
@@ -160,7 +161,7 @@ const Header = () => {
     navigate('/Dokumentation')
   }, [])
   const onClickColumnButtonData = useCallback(() => {
-    navigate('/')
+    navigate('/Daten')
   }, [])
   const onClickColumnButtonExport = useCallback(() => {
     navigate('/Export')
@@ -186,105 +187,92 @@ const Header = () => {
       })
   }, [pCName, objektName, taxName, url0])
 
+  const { pathname } = location
+  const pathArray = pathname.split('/').filter((a) => !!a)
+
+  console.log('Header: pathArray:', pathArray)
+
   return (
-    <Location>
-      {({ location }) => {
-        const { pathname } = location
-        const pathArray = pathname.split('/').filter((a) => !!a)
-
-        if (dataError) return `Error fetching data: ${dataError.message}`
-
-        return (
-          <ErrorBoundary>
-            <Container>
-              <StyledAppBar position="static">
+    <ErrorBoundary>
+      <Container>
+        <StyledAppBar position="static">
+          <div>
+            <StyledToolbar>
+              {wide ? (
+                <TitleContainer>
+                  <SiteTitle
+                    variant="outlined"
+                    component={Link}
+                    to="/"
+                    title="Home"
+                  >
+                    Arteigenschaften
+                  </SiteTitle>
+                </TitleContainer>
+              ) : (
+                <div />
+              )}
+              <Buttons>
                 <div>
-                  <StyledToolbar>
-                    {wide ? (
-                      <TitleContainer>
-                        <SiteTitle
-                          variant="outlined"
-                          component={Link}
-                          to="/"
-                          title="Home"
-                        >
-                          Arteigenschaften
-                        </SiteTitle>
-                      </TitleContainer>
-                    ) : (
-                      <div />
-                    )}
-                    <Buttons>
-                      <div>
-                        <StyledButton
-                          data-active={
-                            [
-                              'Arten',
-                              'Lebensräume',
-                              'Lebensr%C3%A4ume',
-                              'Eigenschaften-Sammlungen',
-                              'Benutzer',
-                              'Organisationen',
-                            ].includes(pathArray[0]) || pathArray.length === 0
-                          }
-                          onClick={onClickColumnButtonData}
-                        >
-                          Daten
-                        </StyledButton>
-                      </div>
-                      <div>
-                        <StyledButton
-                          data-active={pathname === '/Export'}
-                          onClick={onClickColumnButtonExport}
-                        >
-                          Export
-                        </StyledButton>
-                      </div>
-                      <div>
-                        <LoginButton
-                          data-active={pathname === '/Login'}
-                          data-widelayout={wide}
-                          onClick={onClickColumnButtonLogin}
-                          title={loginTitle}
-                          color="inherit"
-                        >
-                          {loginLabel}
-                        </LoginButton>
-                      </div>
-                      {typeof navigator !== 'undefined' &&
-                        navigator.share !== undefined && (
-                          <>
-                            <ShareButton
-                              aria-label="teilen"
-                              onClick={onClickShare}
-                              color="inherit"
-                            >
-                              <Icon>
-                                <StyledMoreVertIcon />
-                              </Icon>
-                            </ShareButton>
-                          </>
-                        )}
-                      <div>
-                        <StyledButton
-                          data-active={pathname.includes('/Dokumentation')}
-                          onClick={onClickColumnButtonDocs}
-                        >
-                          Dokumentation
-                        </StyledButton>
-                      </div>
-                      <div>
-                        <MoreMenu />
-                      </div>
-                    </Buttons>
-                  </StyledToolbar>
+                  <StyledButton
+                    data-active={
+                      pathArray[0] === 'Daten' || pathArray.length === 0
+                    }
+                    onClick={onClickColumnButtonData}
+                  >
+                    Daten
+                  </StyledButton>
                 </div>
-              </StyledAppBar>
-            </Container>
-          </ErrorBoundary>
-        )
-      }}
-    </Location>
+                <div>
+                  <StyledButton
+                    data-active={pathname === '/Export/'}
+                    onClick={onClickColumnButtonExport}
+                  >
+                    Export
+                  </StyledButton>
+                </div>
+                <div>
+                  <LoginButton
+                    data-active={pathname === '/Login/'}
+                    data-widelayout={wide}
+                    onClick={onClickColumnButtonLogin}
+                    title={loginTitle}
+                    color="inherit"
+                  >
+                    {loginLabel}
+                  </LoginButton>
+                </div>
+                {typeof navigator !== 'undefined' &&
+                  navigator.share !== undefined && (
+                    <>
+                      <ShareButton
+                        aria-label="teilen"
+                        onClick={onClickShare}
+                        color="inherit"
+                      >
+                        <Icon>
+                          <StyledMoreVertIcon />
+                        </Icon>
+                      </ShareButton>
+                    </>
+                  )}
+                <div>
+                  <StyledButton
+                    data-active={pathname.includes('/Dokumentation')}
+                    onClick={onClickColumnButtonDocs}
+                  >
+                    Dokumentation
+                  </StyledButton>
+                </div>
+                <div>
+                  <MoreMenu />
+                </div>
+              </Buttons>
+            </StyledToolbar>
+          </div>
+        </StyledAppBar>
+      </Container>
+    </ErrorBoundary>
   )
 }
 

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import styled from '@emotion/styled'
 import { observer } from 'mobx-react-lite'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { getSnapshot } from 'mobx-state-tree'
 
 import ErrorBoundary from './shared/ErrorBoundary'
@@ -16,6 +16,9 @@ import PCO from './PropertyCollection/PCO'
 import RCO from './PropertyCollection/RCO'
 import Taxonomy from './Taxonomy'
 import PropertyCollection from './PropertyCollection'
+import Dokumentation from '../pages/Dokumentation'
+import ExportStacked from './Export/ExportStacked'
+import ExportFlexed from './Export/ExportFlexed'
 
 const Container = styled.div`
   height: 100%;
@@ -55,42 +58,45 @@ const App = () => {
   return (
     <ErrorBoundary>
       <Container>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Home />} />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route
+            path="Daten/*"
+            element={stacked ? <DataStacked /> : <DataFlexed />}
+          >
             <Route
-              path="/*"
-              element={stacked ? <DataStacked /> : <DataFlexed />}
-            >
-              <Route
-                path="Arten/*"
-                element={
-                  showTaxonomy ? <Taxonomy /> : showObjekt ? <Objekt /> : null
-                }
-              />
-              <Route
-                path="Lebensräume/*"
-                element={
-                  showTaxonomy ? <Taxonomy /> : showObjekt ? <Objekt /> : null
-                }
-              />
-              <Route
-                path="Eigenschaften-Sammlungen/*"
-                element={
-                  showPC ? (
-                    <PropertyCollection />
-                  ) : showPCO ? (
-                    <PCO />
-                  ) : showRCO ? (
-                    <RCO />
-                  ) : null
-                }
-              />
-              <Route path="Benutzer/*" element={<Benutzer />} />
-              <Route path="Organisationen/*" element={<Organisation />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
+              path="Daten/Arten/*"
+              element={
+                showTaxonomy ? <Taxonomy /> : showObjekt ? <Objekt /> : null
+              }
+            />
+            <Route
+              path="Daten/Lebensräume/*"
+              element={
+                showTaxonomy ? <Taxonomy /> : showObjekt ? <Objekt /> : null
+              }
+            />
+            <Route
+              path="Daten/Eigenschaften-Sammlungen/*"
+              element={
+                showPC ? (
+                  <PropertyCollection />
+                ) : showPCO ? (
+                  <PCO />
+                ) : showRCO ? (
+                  <RCO />
+                ) : null
+              }
+            />
+            <Route path="Daten/Benutzer/*" element={<Benutzer />} />
+            <Route path="Daten/Organisationen/*" element={<Organisation />} />
+          </Route>
+          <Route path="/Dokumentation/*" element={<Dokumentation />} />
+          <Route
+            path="/Export/*"
+            element={stacked ? <ExportStacked /> : <ExportFlexed />}
+          />
+        </Routes>
       </Container>
     </ErrorBoundary>
   )

@@ -115,7 +115,7 @@ const Row = ({ index = 0, style, data, userId }) => {
   const onClickNode = useCallback(async () => {
     // or if node is already active
     if (!isEqual(url, activeNodeArray)) {
-      navigate(`/${url.join('/')}`)
+      navigate(`/Daten/${url.join('/')}`)
     }
   }, [activeNodeArray, navigate, url])
   const onClickExpandMore = useCallback(
@@ -124,7 +124,7 @@ const Row = ({ index = 0, style, data, userId }) => {
         // close node if its expand more symbol was clicked
         const newUrl = [...url]
         newUrl.pop()
-        navigate(`/${newUrl.join('/')}`)
+        navigate(`/Daten/${newUrl.join('/')}`)
         // prevent onClick on node
         event.preventDefault()
       }
@@ -142,9 +142,10 @@ const Row = ({ index = 0, style, data, userId }) => {
         treeRefetch: () => {},
         userId,
         store,
+        navigate,
       })
     },
-    [client, userId, store],
+    [client, userId, store, navigate],
   )
 
   //console.log('Row, data:', data)
