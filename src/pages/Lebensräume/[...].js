@@ -1,9 +1,9 @@
 import React from 'react'
 
-import Router from '../../components/Router'
+import App from '../../components/App'
 import Header from '../../components/Head'
 
-const Lebensräume = ({ location }) => <Router location={location} />
+const Lebensräume = () => <App />
 
 export default Lebensräume
 

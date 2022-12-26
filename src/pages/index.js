@@ -1,9 +1,9 @@
 import React from 'react'
 
-import Router from '../components/Router'
 import Header from '../components/Head'
+import App from '../components/App'
 
-const Index = ({ location }) => <Router location={location} />
+const Index = () => <App />
 
 export default Index
 

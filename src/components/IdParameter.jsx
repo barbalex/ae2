@@ -1,10 +1,9 @@
-import React, { useEffect, useContext } from 'react'
+import { useEffect, useContext } from 'react'
 import { useQuery, gql } from '@apollo/client'
 import isUuid from 'is-uuid'
 import { navigate } from 'gatsby'
 import { observer } from 'mobx-react-lite'
 
-import App from './App'
 import getUrlForObject from '../modules/getUrlForObject'
 import getUrlParamByName from '../modules/getUrlParamByName'
 import storeContext from '../storeContext'
@@ -49,13 +48,13 @@ const objectQuery = gql`
   }
 `
 
-const Router = ({ location }) => {
+const IdParameter = () => {
   const store = useContext(storeContext)
   // set activeNodeArray when pathname changes
   const { setActiveNodeArray } = store
   useEffect(() => {
     setActiveNodeArray(getActiveNodeArrayFromPathname())
-  }, [location.pathname, setActiveNodeArray])
+  }, [window.location.pathname, setActiveNodeArray])
   /**
    * check if old url was passed that contains objectId-Param
    * for instance:
@@ -76,9 +75,8 @@ const Router = ({ location }) => {
     // if idParam was passed, open object
     const url = getUrlForObject(data.objectById)
     navigate(`/${url.join('/')}`)
-    return <App />
   }
-  return <App />
+  return null
 }
 
-export default observer(Router)
+export default observer(IdParameter)
