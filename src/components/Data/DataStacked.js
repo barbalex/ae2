@@ -24,6 +24,7 @@ const DataStacked = () => {
   const [tab, setTab] = useState(0)
   const onChangeTab = useCallback((event, value) => setTab(value), [])
 
+  // TODO: render outlet instead of DataType?
   return (
     <>
       <StyledPaper>

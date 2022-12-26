@@ -11,6 +11,9 @@ const Container = styled.div`
   flex-direction: column;
 `
 
+// TODO:
+// Use react-router with outlets
+// render routes in outlet inside Data
 const App = () => (
   <ErrorBoundary>
     <Container>

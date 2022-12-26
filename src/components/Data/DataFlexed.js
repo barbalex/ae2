@@ -10,6 +10,7 @@ const DataElement = styled(ReflexElement)`
   overflow-x: hidden !important;
 `
 
+// TODO: render outlet instead of DataType?
 const DataFlexed = () => (
   <ErrorBoundary>
     <ReflexContainer orientation="vertical">
