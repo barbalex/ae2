@@ -65,43 +65,19 @@ const App = () => {
               <Route
                 path="Arten/*"
                 element={
-                  showTaxonomy ? (
-                    <Taxonomy />
-                  ) : showObjekt ? (
-                    <Objekt />
-                  ) : showPC ? (
-                    <PropertyCollection />
-                  ) : showPCO ? (
-                    <PCO />
-                  ) : showRCO ? (
-                    <RCO />
-                  ) : null
+                  showTaxonomy ? <Taxonomy /> : showObjekt ? <Objekt /> : null
                 }
               />
               <Route
                 path="Lebensräume/*"
                 element={
-                  showTaxonomy ? (
-                    <Taxonomy />
-                  ) : showObjekt ? (
-                    <Objekt />
-                  ) : showPC ? (
-                    <PropertyCollection />
-                  ) : showPCO ? (
-                    <PCO />
-                  ) : showRCO ? (
-                    <RCO />
-                  ) : null
+                  showTaxonomy ? <Taxonomy /> : showObjekt ? <Objekt /> : null
                 }
               />
               <Route
                 path="Eigenschaften-Sammlungen/*"
                 element={
-                  showTaxonomy ? (
-                    <Taxonomy />
-                  ) : showObjekt ? (
-                    <Objekt />
-                  ) : showPC ? (
+                  showPC ? (
                     <PropertyCollection />
                   ) : showPCO ? (
                     <PCO />
