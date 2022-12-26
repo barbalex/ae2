@@ -35,25 +35,25 @@ const App = () => {
   const activeNodeArray = getSnapshot(store.activeNodeArray)
 
   const showObjekt =
-    ['Arten', 'Lebensräume'].includes(activeNodeArray[0]) &&
+    ['Arten', 'Lebensräume'].includes(activeNodeArray[1]) &&
     activeNodeArray.length > 1
   const showTaxonomy =
-    ['Arten', 'Lebensräume'].includes(activeNodeArray[0]) &&
+    ['Arten', 'Lebensräume'].includes(activeNodeArray[1]) &&
     activeNodeArray.length === 2
   const showPC =
-    activeNodeArray[0] === 'Eigenschaften-Sammlungen' &&
-    activeNodeArray[1] &&
-    activeNodeArray.length === 2
+    activeNodeArray[1] === 'Eigenschaften-Sammlungen' &&
+    activeNodeArray[2] &&
+    activeNodeArray.length === 3
   const showPCO =
-    activeNodeArray[0] === 'Eigenschaften-Sammlungen' &&
-    activeNodeArray[1] &&
-    activeNodeArray.length === 3 &&
-    activeNodeArray[2] === 'Eigenschaften'
+    activeNodeArray[1] === 'Eigenschaften-Sammlungen' &&
+    activeNodeArray[2] &&
+    activeNodeArray.length === 4 &&
+    activeNodeArray[3] === 'Eigenschaften'
   const showRCO =
-    activeNodeArray[0] === 'Eigenschaften-Sammlungen' &&
-    activeNodeArray[1] &&
-    activeNodeArray.length === 3 &&
-    activeNodeArray[2] === 'Beziehungen'
+    activeNodeArray[1] === 'Eigenschaften-Sammlungen' &&
+    activeNodeArray[2] &&
+    activeNodeArray.length === 4 &&
+    activeNodeArray[3] === 'Beziehungen'
 
   return (
     <ErrorBoundary>
@@ -64,6 +64,7 @@ const App = () => {
             path="Daten/*"
             element={stacked ? <DataStacked /> : <DataFlexed />}
           >
+            {/* <Route path="*" element={<Home />} /> */}
             <Route
               path="Daten/Arten/*"
               element={
