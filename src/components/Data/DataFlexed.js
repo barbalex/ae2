@@ -10,18 +10,17 @@ const DataElement = styled(ReflexElement)`
   overflow-x: hidden !important;
 `
 
-// TODO: render outlet instead of DataType?
 const DataFlexed = () => (
   <ErrorBoundary>
-      <ReflexContainer orientation="vertical">
-        <ReflexElement flex={0.35} className="tree-reflex-element">
-          <Tree />
-        </ReflexElement>
-        <ReflexSplitter key="treeSplitter" />
-        <DataElement>
-            <Outlet/>
-        </DataElement>
-      </ReflexContainer>
+    <ReflexContainer orientation="vertical">
+      <ReflexElement flex={0.35} className="tree-reflex-element">
+        <Tree />
+      </ReflexElement>
+      <ReflexSplitter key="treeSplitter" />
+      <DataElement>
+        <Outlet />
+      </DataElement>
+    </ReflexContainer>
   </ErrorBoundary>
 )
 
