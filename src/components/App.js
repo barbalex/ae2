@@ -3,7 +3,6 @@ import styled from '@emotion/styled'
 import { Router } from '@reach/router'
 
 import ErrorBoundary from './shared/ErrorBoundary'
-import Login from './Login'
 import Data from './Data'
 
 const Container = styled.div`
@@ -17,7 +16,6 @@ const App = () => (
     <Container>
       <Router>
         <Data path="/*" />
-        <Login path="/Login" />
       </Router>
     </Container>
   </ErrorBoundary>
