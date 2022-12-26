@@ -11,7 +11,7 @@ import Icon from '@mui/material/Icon'
 import isEqual from 'lodash/isEqual'
 import { useApolloClient } from '@apollo/client'
 import { observer } from 'mobx-react-lite'
-import { navigate } from 'gatsby'
+import { useNavigate } from 'react-router-dom'
 import { getSnapshot } from 'mobx-state-tree'
 
 import { ContextMenuTrigger } from '../../../modules/react-contextmenu'
@@ -89,6 +89,7 @@ const Row = ({ index = 0, style, data, userId }) => {
   const client = useApolloClient()
   const store = useContext(storeContext)
   const activeNodeArray = getSnapshot(store.activeNodeArray)
+  const navigate = useNavigate()
 
   const nodeIsInActiveNodePath = isUrlInActiveNodePath(
     data.url,
@@ -116,7 +117,7 @@ const Row = ({ index = 0, style, data, userId }) => {
     if (!isEqual(url, activeNodeArray)) {
       navigate(`/${url.join('/')}`)
     }
-  }, [activeNodeArray, url])
+  }, [activeNodeArray, navigate, url])
   const onClickExpandMore = useCallback(
     (event) => {
       if (isEqual(url, activeNodeArray)) {
@@ -128,7 +129,7 @@ const Row = ({ index = 0, style, data, userId }) => {
         event.preventDefault()
       }
     },
-    [url, activeNodeArray],
+    [url, activeNodeArray, navigate],
   )
   const onClickContextMenu = useCallback(
     (e, data, target) => {
